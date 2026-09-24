@@ -5,7 +5,7 @@
 - Default branch: main
 
 ## Current HEAD
-PENDING_BASELINE_COMMIT
+23e428cd893006f01b324d830ee0b17d49c3a3c0
 
 ## Current milestone
 Milestone A — Playable Foundation
@@ -25,6 +25,7 @@ Milestone A — Playable Foundation
 - Game design v1.0 added
 - Development plan v1.0 added
 - Architecture baseline added
+- DEV-001 specification added
 
 ## Pending validation
 - DEV-001 implementation has not started yet
