@@ -1,0 +1,22 @@
+.gradle/
+build/
+**/build/
+.idea/
+.vscode/
+*.iml
+
+dev-server/server/
+logs/
+crash-reports/
+world/
+world_nether/
+world_the_end/
+
+run/
+*.db
+*.sqlite
+.env
+
+# Licensed/proprietary plugin jars
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
