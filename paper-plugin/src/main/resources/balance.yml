@@ -1,0 +1,5 @@
+match:
+  target-minutes: 45
+
+return:
+  hold-seconds: 240
