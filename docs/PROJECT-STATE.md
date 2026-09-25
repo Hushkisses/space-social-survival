@@ -16,12 +16,20 @@ Milestone A — Playable Foundation
 
 ## Current DEV
 - DEV-002 GameSession Core
-- Status: PLANNED
+- Status: IMPLEMENTED
+- Development branch: dev/DEV-002-game-session
 
 ## Next DEV
 - DEV-003 PlayerState
 
 ## Implemented
+- DEV-002 GameSession lifecycle core
+- GameSessionId
+- GamePhase
+- validated lifecycle transitions
+- early termination from started phases
+- terminal FINISHED state
+- deterministic timestamp tests
 - Repository initialized
 - Game design v1.0
 - Development plan v1.0
@@ -48,7 +56,9 @@ Milestone A — Playable Foundation
 - Korean status output SUCCESS
 
 ## Pending validation
-- GitHub Actions verification can be handled through normal branch/PR activity
+- Windows `gradlew.bat test`
+- Windows `gradlew.bat build`
+- Paper smoke test: plugin load and `space status`
 
 ## Known issues
 - Paper startup reported the server build is 6 builds behind latest; project remains intentionally pinned to Paper 26.2 build 123 until the pinned environment is deliberately changed.
