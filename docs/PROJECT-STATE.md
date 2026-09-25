@@ -12,6 +12,7 @@
 Milestone A — Playable Foundation
 
 ## Last completed DEV
+- DEV-010 Lobby & Start Flow — COMPLETE
 - DEV-009 Map Debug Tools — COMPLETE
 - DEV-008 Constrained Random Map Generator — COMPLETE
 - DEV-007 Connection & TP — COMPLETE
@@ -23,13 +24,14 @@ Milestone A — Playable Foundation
 - DEV-001 Project Bootstrap — COMPLETE
 
 ## Current DEV
-- DEV-010 Lobby & Start Flow
+- DEV-011 Role Framework
 - Status: PLANNED
 
 ## Next DEV
-- DEV-011 Role Framework
+- DEV-012 Role Candidate Selection
 
 ## Implemented
+- DEV-010 lobby and start flow
 - DEV-009 deterministic map debug tools
 - DEV-008 constrained logical random map generation
 - DEV-007 connection access states and Paper teleport adapter
@@ -44,14 +46,13 @@ Milestone A — Playable Foundation
 - Core map logic remains coordinate-independent.
 
 ## Verified
-- DEV-001 through DEV-009 Windows test/build and Paper validation SUCCESS
-- DEV-009 deterministic seed validation SUCCESS for seed 12345
+- DEV-001 through DEV-010 Windows test/build and Paper validation SUCCESS
 
 ## Pending validation
-- None for DEV-009
+- None for DEV-010
 
 ## Known issues
-- DEV-009 debug tile definitions are synthetic and not final physical map content.
+- Successful 6+ player Paper-side start is covered by core tests and will be naturally exercised during multiplayer testing.
 - Physical coordinates/Structure Block placement remain intentionally deferred.
 - Paper startup reports build 123 is behind the current latest build; project remains intentionally pinned to Paper 26.2 build 123 until deliberately changed.
 
