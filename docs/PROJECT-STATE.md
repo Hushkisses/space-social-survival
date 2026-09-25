@@ -104,7 +104,8 @@ Post-MVP Vertical Slice Integration
 
 ## Verified
 - DEV-001 through DEV-052 Windows integrated test/build/Paper validation SUCCESS
-- DEV-053 through DEV-059 GitHub Actions full test/build SUCCESS (Build run #473)
+- DEV-053 through DEV-059 GitHub Actions full test/build SUCCESS
+- DEV-053.1 legacy balance.yml migration hotfix GitHub Actions test/build SUCCESS (Build run #483)
 
 ## Pending validation
 - Windows full test/build
@@ -114,6 +115,14 @@ Post-MVP Vertical Slice Integration
 - briefing GUI -> role selection -> automatic ACTIVE transition
 - live action-bar HUD
 - /space match reset and second devstart in same server process
+
+## Hotfixes
+- DEV-053.1 Legacy balance configuration migration
+  - existing server balance.yml files from DEV-052 and earlier do not contain the new map/objective/event/scenario keys.
+  - missing keys are now inserted with current development defaults at startup.
+  - existing user-configured values are preserved.
+  - the migrated file is saved automatically.
+  - manual deletion of balance.yml is not required.
 
 ## Scope notes
 - physical ship rooms are development geometry, not final art.
