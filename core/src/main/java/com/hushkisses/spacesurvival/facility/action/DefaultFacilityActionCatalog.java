@@ -48,6 +48,7 @@ public final class DefaultFacilityActionCatalog {
                 advanced("research.event_cause", DefaultFacilityCatalog.RESEARCH, "사건 원인 확인", RoleCapability.IDENTIFY_EVENT_CAUSE),
 
                 basic("cargo.store", DefaultFacilityCatalog.CARGO, "자원 저장"),
+                basic("cargo.deposit", DefaultFacilityCatalog.CARGO, "소지 자원 공용 창고 입고"),
                 basic("cargo.sort", DefaultFacilityCatalog.CARGO, "자원 분류"),
                 basic("cargo.process", DefaultFacilityCatalog.CARGO, "자원 가공"),
                 advanced("cargo.inventory", DefaultFacilityCatalog.CARGO, "정밀 재고 확인", RoleCapability.PRECISE_INVENTORY_CHECK),
