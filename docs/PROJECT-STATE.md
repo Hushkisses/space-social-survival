@@ -29,7 +29,7 @@ Milestone D — Death / PvE / Ending
 
 ## Current DEV
 - DEV-045 through DEV-052 MVP Ending Batch
-- Status: IMPLEMENTED / VALIDATION_PENDING
+- Status: VALIDATION_PENDING
 - Development branch: dev/DEV-045-052-mvp-ending-batch
 
 ## Next DEV
@@ -91,9 +91,9 @@ Milestone D — Death / PvE / Ending
 
 ## Verified
 - DEV-001 through DEV-044 Windows integrated test/build/Paper validation SUCCESS
+- DEV-045 through DEV-052 GitHub Actions full test/build SUCCESS (Build run #429)
 
 ## Pending validation
-- GitHub Actions full test/build for DEV-045 through DEV-052
 - Windows integrated test/build
 - Paper startup
 - death/infected respawn smoke flow
