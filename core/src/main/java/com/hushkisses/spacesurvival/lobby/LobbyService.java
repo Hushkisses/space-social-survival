@@ -81,6 +81,17 @@ public final class LobbyService {
         return players.containsKey(Objects.requireNonNull(playerId, "playerId"));
     }
 
+    public Optional<PlayerState> playerState(PlayerId playerId) {
+        return Optional.ofNullable(players.get(Objects.requireNonNull(playerId, "playerId")));
+    }
+
+    public List<PlayerId> alivePlayers() {
+        return players.values().stream()
+                .filter(PlayerState::isAlive)
+                .map(PlayerState::id)
+                .toList();
+    }
+
     public GameSession start() {
         if (gameSession != null) {
             throw new LobbyStartException("Match has already started");
