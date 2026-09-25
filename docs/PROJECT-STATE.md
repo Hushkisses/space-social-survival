@@ -22,43 +22,41 @@ Milestone A — Playable Foundation
 
 ## Current DEV
 - DEV-008 Constrained Random Map Generator
-- Status: PLANNED
+- Status: IMPLEMENTED
+- Development branch: dev/DEV-008-random-map-generator
 
 ## Next DEV
 - DEV-009 Map Debug Tools
 
 ## Implemented
+- DEV-008 configurable generation constraints
+- DEV-008 GeneratedMap graph model
+- DEV-008 constrained random tile selection
+- DEV-008 mandatory CORE tile inclusion
+- DEV-008 connection-point capacity enforcement
+- DEV-008 reachability / dead-end / core-distance validation
+- DEV-008 deterministic seeded generation tests
 - DEV-007 connection access states and Paper teleport adapter
 - DEV-006 logical tile registration
 - DEV-005 logical Sector/Room/Connection model
 - DEV-004 validated configuration system
 - DEV-003 PlayerState domain model
 - DEV-002 GameSession lifecycle core
-- Java 25 Gradle multi-module project
-- Paper 26.2 build 123 API dependency
-- JUnit 5 baseline
-- Gradle 9.7.1 Wrapper
-- GitHub Actions build workflow
-- Windows quick-deploy and dev-server start scripts
-
-## Verified
-- DEV-001 Windows test/build and Paper validation SUCCESS
-- DEV-002 Windows test/build and Paper validation SUCCESS
-- DEV-003 Windows test/build and Paper validation SUCCESS
-- DEV-004 Windows test/build and Paper validation SUCCESS
-- DEV-005 Windows test/build and Paper validation SUCCESS
-- DEV-006 Windows test/build and Paper validation SUCCESS
-- DEV-007 Windows test/build and Paper validation SUCCESS
 
 ## Map build decision
-- Physical ship modules will be built on a superflat/flat world to simplify construction and placement.
-- Core map logic remains coordinate-independent; flat-world placement belongs to the Paper/map-placement layer.
+- Physical ship modules will be built on a superflat/flat world for easier construction and predictable placement.
+- DEV-008 remains coordinate-independent; physical flat-world placement is a later Paper-layer concern.
+
+## Verified
+- DEV-001 through DEV-007 Windows test/build and Paper validation SUCCESS
 
 ## Pending validation
-- None for DEV-007
+- DEV-008 Windows `gradlew.bat test`
+- DEV-008 Windows `gradlew.bat build`
+- DEV-008 Paper smoke test: plugin load and `space status`
 
 ## Known issues
-- Physical teleport targets are intentionally not data-loaded yet; they will be supplied by later map-instance/placement work.
+- DEV-008 currently generates logical topology only; physical coordinates and structure placement are intentionally deferred.
 - Paper startup reports build 123 is behind the current latest build; project remains intentionally pinned to Paper 26.2 build 123 until deliberately changed.
 
 ## Environment
