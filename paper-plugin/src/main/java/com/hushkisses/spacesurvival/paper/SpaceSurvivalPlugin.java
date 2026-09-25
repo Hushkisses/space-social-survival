@@ -57,7 +57,9 @@ import com.hushkisses.spacesurvival.paper.pvp.ConditionalPvpListener;
 import com.hushkisses.spacesurvival.paper.resource.ResourcePhysicalItemService;
 import com.hushkisses.spacesurvival.paper.resource.ResourceWorldService;
 import com.hushkisses.spacesurvival.paper.runtime.GameRuntimeService;
+import com.hushkisses.spacesurvival.paper.social.MeetingGuiService;
 import com.hushkisses.spacesurvival.paper.social.SanctionEnforcementListener;
+import com.hushkisses.spacesurvival.paper.telemetry.MatchTelemetryService;
 import com.hushkisses.spacesurvival.paper.ui.OpeningBriefingUi;
 import com.hushkisses.spacesurvival.paper.ui.OpeningUiListener;
 import com.hushkisses.spacesurvival.paper.ui.MatchHudService;
@@ -121,6 +123,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private MeetingService meetingService;
     private SanctionStateRegistry sanctionStateRegistry;
     private SanctionExecutor sanctionExecutor;
+    private MeetingGuiService meetingGuiService;
     private PvpRuntimeState pvpRuntimeState;
     private ConditionalPvpPolicy conditionalPvpPolicy;
 
@@ -155,6 +158,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private MatchOrchestrator matchOrchestrator;
     private MatchHudService matchHudService;
     private IncidentDirector incidentDirector;
+    private MatchTelemetryService telemetryService;
 
     @Override
     public void onEnable() {
@@ -254,6 +258,8 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                 this,
                 physicalConnectionController
         );
+        telemetryService = new MatchTelemetryService(this);
+        meetingGuiService = new MeetingGuiService(this);
 
         registerCommands();
         getServer().getPluginManager().registerEvents(
@@ -305,6 +311,10 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                 new FunctionalItemListener(this, functionalItemService),
                 this
         );
+        getServer().getPluginManager().registerEvents(
+                meetingGuiService,
+                this
+        );
 
         matchHudService.start();
 
@@ -341,6 +351,9 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         if (incidentDirector != null) {
             incidentDirector.stop();
         }
+        if (telemetryService != null && telemetryService.snapshot().active()) {
+            telemetryService.finish("server_shutdown");
+        }
         getLogger().info("SpaceSurvival disabled.");
     }
 
@@ -374,6 +387,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public MeetingService meetingService() { return require(meetingService, "Meeting service"); }
     public SanctionStateRegistry sanctionStateRegistry() { return require(sanctionStateRegistry, "Sanction state registry"); }
     public SanctionExecutor sanctionExecutor() { return require(sanctionExecutor, "Sanction executor"); }
+    public MeetingGuiService meetingGuiService() { return require(meetingGuiService, "Meeting GUI service"); }
     public PvpRuntimeState pvpRuntimeState() { return require(pvpRuntimeState, "PvP runtime state"); }
     public ConditionalPvpPolicy conditionalPvpPolicy() { return require(conditionalPvpPolicy, "Conditional PvP policy"); }
     public RadioRuntimeState radioRuntimeState() { return require(radioRuntimeState, "Radio runtime state"); }
@@ -401,6 +415,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public FacilityActionExecutor facilityActionExecutor() { return require(facilityActionExecutor, "Facility action executor"); }
     public FacilityMenuService facilityMenuService() { return require(facilityMenuService, "Facility menu service"); }
     public IncidentDirector incidentDirector() { return require(incidentDirector, "Incident director"); }
+    public MatchTelemetryService telemetryService() { return require(telemetryService, "Telemetry service"); }
 
     public void resetScenarioRuntime() {
         scenarioEngine.clear();
