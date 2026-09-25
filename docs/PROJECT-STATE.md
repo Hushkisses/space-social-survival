@@ -9,98 +9,118 @@
 - Do not embed a self-referential HEAD value in this file.
 
 ## Current milestone
-Milestone D — Death / PvE / Ending
+Post-MVP Vertical Slice Integration
 
 ## Last completed DEV
-- DEV-044 Infection Scenario — COMPLETE
-- DEV-043 Infection System — COMPLETE
-- DEV-042 Sabotage Scenario — COMPLETE
-- DEV-041 Accident Scenario — COMPLETE
-- DEV-040 Scenario Engine — COMPLETE
-- DEV-039 Dead Communication — COMPLETE
-- DEV-038 Radio System — COMPLETE
-- DEV-037 Voice Chat Integration — COMPLETE
-- DEV-036 Conditional PvP — COMPLETE
-- DEV-035 Sanction Execution — COMPLETE
-- DEV-034 Sanction Voting — COMPLETE
-- DEV-033 Emergency Meeting — COMPLETE
-- DEV-032 Meeting System — COMPLETE
-- DEV-031 and earlier — COMPLETE
+- DEV-001 through DEV-052 MVP gameplay roadmap — COMPLETE
 
 ## Current DEV
-- MVP gameplay roadmap DEV-001 through DEV-052 — COMPLETE
+- DEV-053 through DEV-059 Vertical Slice Integration
+- Status: IMPLEMENTED / VALIDATION_PENDING
+- Development branch: dev/DEV-053-059-vertical-slice
 
 ## Next DEV
-- Post-MVP integration hardening / physical map / HUD-UX / content / playtest preparation
+- playtest-driven content, UX, and balance tickets
+- reserved extension ranges remain:
+  - DEV-060+ Objectives
+  - DEV-070+ Roles
+  - DEV-080+ Events
+  - DEV-090+ Map Tiles
+  - DEV-100+ Scenarios
+  - DEV-110+ Endings
+  - DEV-120+ Meta Progression
 
 ## Batch implementation
 
-### Death / infected post-death
-- DEV-045 Death State
-  - Bukkit player death bound to core PlayerState
-  - idempotent DeathRecord
-  - death cause and infected-at-death metadata
-  - personal objectives remain unrevealed until final result
-  - normal dead players respawn as spectators
-- DEV-046 Infected Player State
-  - infected death in infection scenario converts to INFECTED post-death form
-  - infected goals: infect others / breach restricted zone / attack facility
-  - living communication, repair, radio and ordinary door-use restrictions represented in core
-  - infected post-death attacks are allowed by conditional PvP policy
+### DEV-053 Match Setup Pipeline
+- /space match start [seed]
+- OP-only /space match devstart [seed] for one-player smoke tests
+- lobby -> PREPARING -> BRIEFING integration
+- seeded role candidate preparation
+- seeded objective conflict-set selection and base-objective assignment
+- configurable secret-mission chance
+- configurable scenario weights
+- configurable initial small-event count
+- all setup balance values loaded from balance.yml
 
-### PvE integrations
-- DEV-047 MythicMobs Integration
-  - optional runtime/reflection bridge
-  - Mythic mob spawn attempt by logical mob ID
-  - vanilla mob fallback when plugin/API/mob definition is unavailable
-- DEV-048 ModelEngine Integration
-  - optional runtime/API availability bridge
-  - no startup dependency when ModelEngine is absent
-  - visual model assets remain content work, not game-state authority
+### DEV-054 Automatic Match Activation
+- all participants receive the briefing GUI
+- role selection remains a player choice
+- after the final participant confirms a role:
+  - GameSession BRIEFING -> ACTIVE
+  - GameRuntime timer starts automatically
+  - server broadcasts match activation
 
-### Ending
-- DEV-049 Return Objective
-  - SURVIVAL_SYSTEMS -> NAVIGATION -> RETURN_PREPARATION -> FINAL_HOLD
-  - ship/facility health gate before navigation
-  - return thresholds are development defaults and not final balance
-- DEV-050 Final Hold
-  - configurable hold duration from BalanceConfig
-  - runtime scheduler
-  - GameSession ACTIVE -> RETURN_PHASE -> FINISHED integration
-  - explicit failure path
-- DEV-051 Result Evaluator
-  - common mission success gate
-  - survival / base objective / secret mission / common contribution / scenario bonus score breakdown
-  - survival is a score bonus, not mandatory winner condition
-- DEV-052 Winners & MVP
-  - common return success + base objective completion qualifies a winner
-  - multiple winners supported
-  - highest score among winners is MVP
-  - tied MVPs supported
-  - objective details are revealed only during final result output
+### DEV-055 Production MVP Tile Catalog
+- 20-tile initial pool from design:
+  - six named core facilities
+  - five corridors
+  - three junctions
+  - two airlocks
+  - four auxiliary rooms
+- core facilities: bridge / engineering / medical / research / cargo / habitation
 
-## Paper debug commands
-- /space death ...
-- /space infected ...
-- /space pve ...
-- /space return ...
-- /space result ...
+### DEV-056 Physical Dev Ship
+- dedicated flat world: space_ship_dev
+- logical generated map rendered as independent 15x15 development modules
+- generated connections rendered as gold pressure-plate teleport portals
+- every logical connection is traversable in both directions
+- players spawn in the bridge module
+- final art/build assets can later replace room shells without changing core map logic
+
+### DEV-057 Live HUD
+- action-bar HUD while a match session exists
+- power / oxygen / hull
+- crisis stage
+- current common return stage
+- current physical room name
+- does not reveal other-player locations, hidden objectives, resources, or scenario truth
+
+### DEV-058 Live Briefing GUI
+- public scenario briefing
+- initial incident count
+- generated module count
+- role candidate selection
+- explicitly preserves hidden scenario truth
+
+### DEV-059 Playtest Harness / Rematch Reset
+- /space match status
+- /space match reset
+- /space match bridge
+- rematch resets:
+  - lobby life states
+  - role selections
+  - resources
+  - events
+  - radio
+  - death/post-death state
+  - sanctions
+  - objectives
+  - scenario/infection/PvP runtime
+  - timer / ending runtime
+- lobby participants are retained for fast repeated tests
+- production start still enforces 6-player minimum
+- development start bypasses minimum only through explicit admin command
 
 ## Verified
-- DEV-001 through DEV-044 Windows integrated test/build/Paper validation SUCCESS
-- DEV-045 through DEV-052 GitHub Actions full test/build SUCCESS
-- DEV-045 through DEV-052 Windows integrated test/build/Paper validation SUCCESS
+- DEV-001 through DEV-052 Windows integrated test/build/Paper validation SUCCESS
 
 ## Pending validation
-- None for DEV-045 through DEV-052
+- GitHub Actions full test/build for DEV-053 through DEV-059
+- Windows full test/build
+- Paper startup
+- one-player /space match devstart flow
+- physical ship generation and portal traversal
+- briefing GUI -> role selection -> automatic ACTIVE transition
+- live action-bar HUD
+- /space match reset and second devstart in same server process
 
 ## Scope notes
-- Return health thresholds are development defaults: power 50, oxygen 50, hull 50, reactor 40.
-- Final hold duration uses existing returnHoldSeconds configuration; current project default is 240 seconds.
-- Debug command can reset the ending runtime with a shorter hold duration for smoke testing only.
-- MythicMobs IDs SpaceInfected / SpaceAlien are development integration IDs; missing definitions fall back to vanilla mobs.
-- ModelEngine visual application requires actual model assets/content and remains optional before MVP.
-- Result scoring uses design baseline development values: survival +3, base objective +5, secret mission +3, common contribution 0-3; scenario bonus is scenario-specific.
+- physical ship rooms are development geometry, not final art.
+- TP connections are intentional and match the modular-map design.
+- scenario weights, map size, secret mission chance, and initial-event count are development defaults in balance.yml.
+- final building/NBT assets can replace development room shells later.
+- HUD intentionally exposes only the minimal public information defined by the design.
 - Paper remains intentionally pinned to 26.2 build 123.
 
 ## Environment
