@@ -27,12 +27,19 @@ Milestone A — Playable Foundation
 
 ## Current DEV
 - DEV-013 Briefing & Initial Goal UI
-- Status: PLANNED
+- Status: IMPLEMENTED
+- Development branch: dev/DEV-013-briefing-goal-ui
 
 ## Next DEV
 - DEV-014 Game Timer & Crisis
 
 ## Implemented
+- DEV-013 opening accident briefing inventory UI
+- DEV-013 initial-problem and common-goal presentation
+- DEV-013 three-candidate role selection inventory GUI
+- DEV-013 click-to-select integration with RoleSelectionService
+- DEV-013 automatic briefing UI open after role candidate preparation
+- DEV-013 /space briefing and /space role gui developer reopen commands
 - DEV-012 role candidate generation and selection
 - DEV-011 role framework and six-role catalog
 - DEV-010 lobby and start flow
@@ -44,6 +51,12 @@ Milestone A — Playable Foundation
 - DEV-004 validated configuration system
 - DEV-003 PlayerState domain model
 - DEV-002 GameSession lifecycle core
+
+## Opening flow implementation note
+- DEV-013 presents the public accident briefing, initial problem examples, common objective, and role selection.
+- Private objective assignment is intentionally deferred to DEV-024+ Objective Engine.
+- Starter equipment/resource distribution is intentionally deferred to DEV-020+ resource/item work.
+- Initial problem values shown in DEV-013 are presentation placeholders from the design baseline, not live ShipState values.
 
 ## Role framework decision
 - Roles represent profession/specialty, not hidden alignment.
@@ -59,10 +72,19 @@ Milestone A — Playable Foundation
 - DEV-001 through DEV-012 Windows test/build and Paper validation SUCCESS
 
 ## Pending validation
-- None for DEV-012
+- DEV-013 Windows `gradlew.bat test`
+- DEV-013 Windows `gradlew.bat build`
+- DEV-013 Paper plugin load
+- DEV-013 `space status`
+- DEV-013 player lobby join
+- DEV-013 `space role prepare 12345`
+- DEV-013 briefing GUI display
+- DEV-013 click `직업 후보 확인`
+- DEV-013 role candidate GUI displays exactly 3 choices
+- DEV-013 candidate click selects role and closes GUI
 
 ## Known issues
-- Role selection is still command-accessible as a developer/debug path; player-facing GUI is planned for DEV-013.
+- Initial problem/common-goal UI uses baseline placeholder content until ShipState/Facility/Event/Objective systems provide live values.
 - Candidate generation can present a role that becomes full before a later player chooses it; selection is then rejected and the player must choose another offered role.
 - Role bonuses/capabilities remain metadata until corresponding facility/action systems are implemented.
 - Physical coordinates/Structure Block placement remain intentionally deferred.
