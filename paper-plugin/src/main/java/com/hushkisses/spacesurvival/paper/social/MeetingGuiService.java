@@ -71,6 +71,13 @@ public final class MeetingGuiService implements Listener {
         return activeVote != null && plugin.meetingService().activeMeeting().isPresent();
     }
 
+    public void resetRuntime() {
+        activeVote = null;
+        lastResult = null;
+        pendingSanction.clear();
+        targetSlots.clear();
+    }
+
     public void vote(Player player, SanctionChoice choice) {
         if (!hasActiveVote()) {
             throw new IllegalStateException("활성 회의가 없습니다.");
