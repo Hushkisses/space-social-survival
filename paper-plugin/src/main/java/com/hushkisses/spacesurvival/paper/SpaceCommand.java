@@ -6,6 +6,8 @@ import com.hushkisses.spacesurvival.lobby.LobbyLeaveResult;
 import com.hushkisses.spacesurvival.lobby.LobbySnapshot;
 import com.hushkisses.spacesurvival.lobby.LobbyStartException;
 import com.hushkisses.spacesurvival.paper.map.MapDebugService;
+import com.hushkisses.spacesurvival.paper.runtime.GameRuntimeService;
+import com.hushkisses.spacesurvival.time.CrisisStage;
 import com.hushkisses.spacesurvival.player.PlayerId;
 import com.hushkisses.spacesurvival.role.RoleDefinition;
 import com.hushkisses.spacesurvival.role.RoleId;
@@ -17,6 +19,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Duration;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -57,8 +60,118 @@ final class SpaceCommand implements CommandExecutor {
             return handleBriefing(sender);
         }
 
+        if (args[0].equalsIgnoreCase("runtime")) {
+            return handleRuntime(sender, args);
+        }
+
         sendUsage(sender);
         return true;
+    }
+
+    private boolean handleRuntime(CommandSender sender, String[] args) {
+        if (args.length < 2) {
+            sendRuntimeUsage(sender);
+            return true;
+        }
+
+        return switch (args[1].toLowerCase()) {
+            case "start" -> {
+                if (!sender.hasPermission("spacesurvival.admin")) {
+                    sender.sendMessage("§c런타임 시작 권한이 없습니다.");
+                    yield true;
+                }
+
+                try {
+                    plugin.gameRuntimeService().start();
+                    sender.sendMessage("§a게임 타이머를 시작했습니다.");
+                    sendRuntimeStatus(sender);
+                } catch (IllegalStateException exception) {
+                    sender.sendMessage("§c게임 타이머가 이미 실행 중입니다.");
+                }
+                yield true;
+            }
+            case "stop" -> {
+                if (!sender.hasPermission("spacesurvival.admin")) {
+                    sender.sendMessage("§c런타임 종료 권한이 없습니다.");
+                    yield true;
+                }
+
+                try {
+                    plugin.gameRuntimeService().stop();
+                    sender.sendMessage("§e게임 타이머를 정지했습니다.");
+                    sendRuntimeStatus(sender);
+                } catch (IllegalStateException exception) {
+                    sender.sendMessage("§c시작된 게임 타이머가 없습니다.");
+                }
+                yield true;
+            }
+            case "status" -> {
+                sendRuntimeStatus(sender);
+                yield true;
+            }
+            default -> {
+                sendRuntimeUsage(sender);
+                yield true;
+            }
+        };
+    }
+
+    private void sendRuntimeStatus(CommandSender sender) {
+        GameRuntimeService.RuntimeSnapshot snapshot = plugin.gameRuntimeService()
+                .snapshot()
+                .orElse(null);
+
+        sender.sendMessage("§6[우주 생존] §f게임 런타임 상태");
+
+        if (snapshot == null) {
+            sender.sendMessage("§7타이머: §e시작 전");
+            sender.sendMessage("§7위기 단계: §a안정");
+            return;
+        }
+
+        long elapsedSeconds = snapshot.time().elapsed().toSeconds();
+        long targetSeconds = snapshot.time().targetDuration().toSeconds();
+
+        sender.sendMessage(
+                "§7타이머: §f"
+                        + formatDuration(Duration.ofSeconds(elapsedSeconds))
+                        + " §7/ §f"
+                        + formatDuration(Duration.ofSeconds(targetSeconds))
+        );
+        sender.sendMessage(
+                "§7상태: "
+                        + (snapshot.time().running() ? "§a진행 중" : "§e정지")
+        );
+        sender.sendMessage(
+                "§7위기 단계: "
+                        + crisisColor(snapshot.crisisStage())
+                        + crisisName(snapshot.crisisStage())
+        );
+    }
+
+    private static String formatDuration(Duration duration) {
+        long seconds = duration.toSeconds();
+        long minutes = seconds / 60;
+        long remainingSeconds = seconds % 60;
+        return String.format("%02d:%02d", minutes, remainingSeconds);
+    }
+
+    private static String crisisName(CrisisStage stage) {
+        return switch (stage) {
+            case STABLE -> "안정";
+            case ALERT -> "경계";
+            case CRISIS -> "위기";
+            case COLLAPSE -> "붕괴";
+        };
+    }
+
+    private static String crisisColor(CrisisStage stage) {
+        return switch (stage) {
+            case STABLE -> "§a";
+            case ALERT -> "§e";
+            case CRISIS -> "§6";
+            case COLLAPSE -> "§c";
+        };
     }
 
     private boolean handleRole(CommandSender sender, String[] args) {
@@ -410,7 +523,7 @@ final class SpaceCommand implements CommandExecutor {
                         + "§7~§f"
                         + plugin.configuration().game().maxPlayers()
         );
-        sender.sendMessage("§7현재 DEV: §eDEV-013 Briefing & Initial Goal UI");
+        sender.sendMessage("§7현재 DEV: §eDEV-014 Game Timer & Crisis");
     }
 
     private void sendRoleUsage(CommandSender sender) {
@@ -419,6 +532,12 @@ final class SpaceCommand implements CommandExecutor {
         sender.sendMessage("§c사용법: /space role gui");
         sender.sendMessage("§c사용법: /space role choose <roleId>");
         sender.sendMessage("§c사용법: /space role status");
+    }
+
+    private void sendRuntimeUsage(CommandSender sender) {
+        sender.sendMessage("§c사용법: /space runtime start");
+        sender.sendMessage("§c사용법: /space runtime status");
+        sender.sendMessage("§c사용법: /space runtime stop");
     }
 
     private void sendLobbyUsage(CommandSender sender) {
@@ -432,6 +551,7 @@ final class SpaceCommand implements CommandExecutor {
         sender.sendMessage("§c사용법: /space status");
         sender.sendMessage("§c사용법: /space lobby join|leave|status|start");
         sender.sendMessage("§c사용법: /space briefing");
+        sender.sendMessage("§c사용법: /space runtime start|status|stop");
         sender.sendMessage("§c사용법: /space role prepare|candidates|gui|choose|status");
         sender.sendMessage("§c사용법: /space map generate [seed]");
     }

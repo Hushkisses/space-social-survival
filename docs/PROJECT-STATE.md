@@ -12,6 +12,7 @@
 Milestone A — Playable Foundation
 
 ## Last completed DEV
+- DEV-014 Game Timer & Crisis — COMPLETE
 - DEV-013 Briefing & Initial Goal UI — COMPLETE
 - DEV-012 Role Candidate Selection — COMPLETE
 - DEV-011 Role Framework — COMPLETE
@@ -27,13 +28,14 @@ Milestone A — Playable Foundation
 - DEV-001 Project Bootstrap — COMPLETE
 
 ## Current DEV
-- DEV-014 Game Timer & Crisis
+- DEV-015 ShipState
 - Status: PLANNED
 
 ## Next DEV
-- DEV-015 ShipState
+- DEV-016 Facility Framework
 
 ## Implemented
+- DEV-014 game timer and crisis foundation
 - DEV-013 opening briefing and role selection UI
 - DEV-012 role candidate generation and selection
 - DEV-011 role framework and six-role catalog
@@ -41,22 +43,17 @@ Milestone A — Playable Foundation
 - DEV-009 deterministic map debug tools
 - DEV-008 constrained logical random map generation
 - DEV-007 connection access states and Paper teleport adapter
-- DEV-006 logical tile registration
-- DEV-005 logical Sector/Room/Connection model
-- DEV-004 validated configuration system
-- DEV-003 PlayerState domain model
-- DEV-002 GameSession lifecycle core
 
 ## Verified
-- DEV-001 through DEV-013 Windows test/build and Paper validation SUCCESS
+- DEV-001 through DEV-014 Windows test/build and Paper validation SUCCESS
 
 ## Pending validation
-- None for DEV-013
+- None for DEV-014
 
 ## Known issues
-- Initial problem/common-goal UI uses baseline placeholder content until ShipState/Facility/Event/Objective systems provide live values.
-- Candidate generation can present a role that becomes full before a later player chooses it; selection is then rejected and the player must choose another offered role.
-- Role bonuses/capabilities remain metadata until corresponding facility/action systems are implemented.
+- DEV-014 external crisis pressure is neutral until ShipState and later incident systems exist.
+- Runtime start is currently an admin/debug command; automatic ACTIVE-phase binding will be added when the full game flow is wired.
+- Initial problem/common-goal UI still uses baseline placeholder content until ShipState/Facility/Event/Objective systems provide live values.
 - Physical coordinates/Structure Block placement remain intentionally deferred.
 - Paper startup reports build 123 is behind the current latest build; project remains intentionally pinned to Paper 26.2 build 123 until deliberately changed.
 
