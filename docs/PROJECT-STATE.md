@@ -12,6 +12,7 @@
 Milestone A — Playable Foundation
 
 ## Last completed DEV
+- DEV-006 Tile Registration — COMPLETE
 - DEV-005 Sector/Room/Connection Model — COMPLETE
 - DEV-004 Configuration System — COMPLETE
 - DEV-003 PlayerState — COMPLETE
@@ -19,19 +20,14 @@ Milestone A — Playable Foundation
 - DEV-001 Project Bootstrap — COMPLETE
 
 ## Current DEV
-- DEV-006 Tile Registration
-- Status: IMPLEMENTED
-- Development branch: dev/DEV-006-tile-registration
+- DEV-007 Connection & TP
+- Status: PLANNED
 
 ## Next DEV
-- DEV-007 Connection & TP
+- DEV-008 Constrained Random Map Generator
 
 ## Implemented
-- DEV-006 TileId / TileCategory
-- DEV-006 ConnectionPointId / ConnectionPointType
-- DEV-006 ConnectionPointDefinition
-- DEV-006 TileDefinition validation
-- DEV-006 TileRegistry and category queries
+- DEV-006 logical tile registration
 - DEV-005 logical Sector/Room/Connection model
 - DEV-004 validated configuration system
 - DEV-003 PlayerState domain model
@@ -49,11 +45,10 @@ Milestone A — Playable Foundation
 - DEV-003 Windows test/build and Paper validation SUCCESS
 - DEV-004 Windows test/build and Paper validation SUCCESS
 - DEV-005 Windows test/build and Paper validation SUCCESS
+- DEV-006 Windows test/build and Paper validation SUCCESS
 
 ## Pending validation
-- DEV-006 Windows `gradlew.bat test`
-- DEV-006 Windows `gradlew.bat build`
-- DEV-006 Paper smoke test: plugin load and `space status`
+- None for DEV-006
 
 ## Known issues
 - Paper startup reports build 123 is behind the current latest build; project remains intentionally pinned to Paper 26.2 build 123 until deliberately changed.
