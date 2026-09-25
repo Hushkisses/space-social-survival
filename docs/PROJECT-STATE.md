@@ -30,12 +30,11 @@ Milestone B — Gameplay Systems
 - DEV-001 Project Bootstrap — COMPLETE
 
 ## Current DEV
-- DEV-017 through DEV-031 Gameplay Systems Batch
-- Status: IMPLEMENTED / VALIDATION_PENDING
-- Development branch: dev/DEV-017-031-gameplay-systems-batch
+- DEV-032 Meeting System
+- Status: PLANNED
 
 ## Next DEV
-- DEV-032 Meeting System
+- DEV-033 Emergency Meeting
 
 ## Batch implementation
 ### Facilities
@@ -105,13 +104,11 @@ Milestone B — Gameplay Systems
 
 ## Verified
 - DEV-001 through DEV-016 Windows test/build and Paper validation SUCCESS
+- DEV-017 through DEV-031 GitHub Actions test/build SUCCESS
+- DEV-017 through DEV-031 Windows integrated test/build/Paper validation SUCCESS
 
 ## Pending validation
-- GitHub Actions test/build for DEV-017 through DEV-031 batch
-- Windows gradlew.bat test
-- Windows gradlew.bat build
-- Paper plugin startup
-- integrated facility/resource/objective/event smoke flow
+- None for DEV-017 through DEV-031
 
 ## Balance and scope notes
 - Numerical repair, treatment, resource-node, recipe, and event effects are development defaults, not final balance values.
