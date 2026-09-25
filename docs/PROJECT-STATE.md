@@ -31,7 +31,7 @@ Milestone C — Social / Communication / Scenario
 
 ## Current DEV
 - DEV-032 through DEV-044 Social / Communication / Scenario Batch
-- Status: IMPLEMENTED / VALIDATION_PENDING
+- Status: VALIDATION_PENDING
 - Development branch: dev/DEV-032-044-social-scenario-batch
 
 ## Next DEV
@@ -106,9 +106,9 @@ Milestone C — Social / Communication / Scenario
 
 ## Verified
 - DEV-001 through DEV-031 Windows integrated test/build/Paper validation SUCCESS
+- DEV-032 through DEV-044 GitHub Actions full test/build SUCCESS (Build run #389)
 
 ## Pending validation
-- GitHub Actions full test/build for DEV-032 through DEV-044
 - Windows integrated test/build
 - Paper plugin startup
 - meeting/sanction/PvP smoke flow
