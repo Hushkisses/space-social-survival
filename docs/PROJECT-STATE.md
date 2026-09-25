@@ -9,115 +9,98 @@
 - Do not embed a self-referential HEAD value in this file.
 
 ## Current milestone
-Milestone C — Social / Communication / Scenario
+Milestone D — Death / PvE / Ending
 
 ## Last completed DEV
-- DEV-031 Major Event Set — COMPLETE
-- DEV-030 Small Event Set — COMPLETE
-- DEV-029 Event Engine — COMPLETE
-- DEV-028 Secret Mission — COMPLETE
-- DEV-027 Objective Assignment — COMPLETE
-- DEV-026 ConflictSet — COMPLETE
-- DEV-025 Initial Objectives — COMPLETE
-- DEV-024 Objective Engine — COMPLETE
-- DEV-023 ItemsAdder Integration — COMPLETE
-- DEV-022 Processing — COMPLETE
-- DEV-021 ResourceNode Random Placement — COMPLETE
-- DEV-020 Resource Framework — COMPLETE
-- DEV-019 Remaining Facilities v1 — COMPLETE
-- DEV-018 Medical Facility — COMPLETE
-- DEV-017 Engineering Facility — COMPLETE
-- DEV-016 and earlier — COMPLETE
+- DEV-044 Infection Scenario — COMPLETE
+- DEV-043 Infection System — COMPLETE
+- DEV-042 Sabotage Scenario — COMPLETE
+- DEV-041 Accident Scenario — COMPLETE
+- DEV-040 Scenario Engine — COMPLETE
+- DEV-039 Dead Communication — COMPLETE
+- DEV-038 Radio System — COMPLETE
+- DEV-037 Voice Chat Integration — COMPLETE
+- DEV-036 Conditional PvP — COMPLETE
+- DEV-035 Sanction Execution — COMPLETE
+- DEV-034 Sanction Voting — COMPLETE
+- DEV-033 Emergency Meeting — COMPLETE
+- DEV-032 Meeting System — COMPLETE
+- DEV-031 and earlier — COMPLETE
 
 ## Current DEV
-- DEV-045 Death State
-- Status: PLANNED
+- MVP gameplay roadmap DEV-001 through DEV-052 — COMPLETE
 
 ## Next DEV
-- DEV-046 Infected Player State
+- Post-MVP integration hardening / physical map / HUD-UX / content / playtest preparation
 
 ## Batch implementation
 
-### Social
-- DEV-032 Meeting System
-  - regular meeting session
-  - bridge/infrastructure requirement
-  - cooldown
-- DEV-033 Emergency Meeting
-  - body / infection / reactor / security / special-event reasons
-  - bypasses regular infrastructure/cooldown restrictions
-- DEV-034 Sanction Voting
-  - no action / medical check / disarm / detain / access restriction / eject
-  - one vote per participant; revote replaces vote
-  - tie resolves to no action
-- DEV-035 Sanction Execution
-  - prerequisite-aware execution
-  - sanction runtime state
-  - disarm blocks PvP
-  - detention blocks player movement
-  - access-restriction/ejection authoritative flags await physical map/death systems
-- DEV-036 Conditional PvP
-  - default human PvP blocked
-  - allowed by collapse, scenario, special event, confirmed infection
-  - emergency security authorization path
+### Death / infected post-death
+- DEV-045 Death State
+  - Bukkit player death bound to core PlayerState
+  - idempotent DeathRecord
+  - death cause and infected-at-death metadata
+  - personal objectives remain unrevealed until final result
+  - normal dead players respawn as spectators
+- DEV-046 Infected Player State
+  - infected death in infection scenario converts to INFECTED post-death form
+  - infected goals: infect others / breach restricted zone / attack facility
+  - living communication, repair, radio and ordinary door-use restrictions represented in core
+  - infected post-death attacks are allowed by conditional PvP policy
 
-### Communication
-- DEV-037 Voice Chat Integration
-  - optional Simple Voice Chat Bukkit bridge
-  - dynamic plugin/API availability status
-  - no startup dependency when voice chat is absent
-- DEV-038 Radio System
-  - radio ownership
-  - long-range enable/disable
-  - communication outage state
-- DEV-039 Dead Communication
-  - dead-to-living communication denied
-  - dead-to-dead communication allowed
-  - rule is in core and will bind to actual death state in DEV-045
+### PvE integrations
+- DEV-047 MythicMobs Integration
+  - optional runtime/reflection bridge
+  - Mythic mob spawn attempt by logical mob ID
+  - vanilla mob fallback when plugin/API/mob definition is unavailable
+- DEV-048 ModelEngine Integration
+  - optional runtime/API availability bridge
+  - no startup dependency when ModelEngine is absent
+  - visual model assets remain content work, not game-state authority
 
-### Scenario
-- DEV-040 Scenario Engine
-  - one active scenario
-  - hidden initial hostile assignment
-- DEV-041 Accident Scenario
-  - zero initial hostile players
-- DEV-042 Sabotage Scenario
-  - configurable 0-2 initial hostile assignments
-  - public briefing separate from hidden truth
-- DEV-043 Infection System
-  - NONE / EXPOSED / LATENT / SYMPTOMATIC / SUPPRESSED
-  - progression, suppression, cure
-  - basic test can return INCONCLUSIVE; precise test returns truthful infection result
-  - positive test can mark confirmed infection for PvP policy
-- DEV-044 Infection Scenario
-  - begins as normal accident
-  - seeded hidden initial infection event
-  - public infection warning does not reveal infected identity
+### Ending
+- DEV-049 Return Objective
+  - SURVIVAL_SYSTEMS -> NAVIGATION -> RETURN_PREPARATION -> FINAL_HOLD
+  - ship/facility health gate before navigation
+  - return thresholds are development defaults and not final balance
+- DEV-050 Final Hold
+  - configurable hold duration from BalanceConfig
+  - runtime scheduler
+  - GameSession ACTIVE -> RETURN_PHASE -> FINISHED integration
+  - explicit failure path
+- DEV-051 Result Evaluator
+  - common mission success gate
+  - survival / base objective / secret mission / common contribution / scenario bonus score breakdown
+  - survival is a score bonus, not mandatory winner condition
+- DEV-052 Winners & MVP
+  - common return success + base objective completion qualifies a winner
+  - multiple winners supported
+  - highest score among winners is MVP
+  - tied MVPs supported
+  - objective details are revealed only during final result output
 
 ## Paper debug commands
-- /space meeting ...
-- /space sanction ...
-- /space pvp ...
-- /space radio ...
-- /space voice
-- /space scenario ...
-- /space infection ...
+- /space death ...
+- /space infected ...
+- /space pve ...
+- /space return ...
+- /space result ...
 
 ## Verified
-- DEV-001 through DEV-031 Windows integrated test/build/Paper validation SUCCESS
-- DEV-032 through DEV-044 GitHub Actions full test/build SUCCESS
-- DEV-032 through DEV-044 Windows integrated test/build/Paper validation SUCCESS
+- DEV-001 through DEV-044 Windows integrated test/build/Paper validation SUCCESS
+- DEV-045 through DEV-052 GitHub Actions full test/build SUCCESS
+- DEV-045 through DEV-052 Windows integrated test/build/Paper validation SUCCESS
 
 ## Pending validation
-- None for DEV-032 through DEV-044
+- None for DEV-045 through DEV-052
 
 ## Scope notes
-- Meeting cooldown is currently a development default of 3 minutes.
-- Physical access restriction and airlock ejection effects require later physical map/death integration.
-- Simple Voice Chat is optional. The bridge must not prevent startup when it is absent.
-- Death communication policy is implemented in core; actual dead-player binding starts with DEV-045.
-- Infection death/conversion into infected creatures remains DEV-046.
-- Sabotage hostile count 0-2 follows the design baseline and remains balance-configurable later.
+- Return health thresholds are development defaults: power 50, oxygen 50, hull 50, reactor 40.
+- Final hold duration uses existing returnHoldSeconds configuration; current project default is 240 seconds.
+- Debug command can reset the ending runtime with a shorter hold duration for smoke testing only.
+- MythicMobs IDs SpaceInfected / SpaceAlien are development integration IDs; missing definitions fall back to vanilla mobs.
+- ModelEngine visual application requires actual model assets/content and remains optional before MVP.
+- Result scoring uses design baseline development values: survival +3, base objective +5, secret mission +3, common contribution 0-3; scenario bonus is scenario-specific.
 - Paper remains intentionally pinned to 26.2 build 123.
 
 ## Environment

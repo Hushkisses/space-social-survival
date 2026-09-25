@@ -16,6 +16,8 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":integrations:itemsadder"))
     implementation(project(":integrations:voicechat"))
+    implementation(project(":integrations:mythicmobs"))
+    implementation(project(":integrations:modelengine"))
     compileOnly("io.papermc.paper:paper-api:26.2.build.123-stable")
 }
 
@@ -39,6 +41,8 @@ tasks.jar {
     dependsOn(project(":core").tasks.named("classes"))
     dependsOn(project(":integrations:itemsadder").tasks.named("classes"))
     dependsOn(project(":integrations:voicechat").tasks.named("classes"))
+    dependsOn(project(":integrations:mythicmobs").tasks.named("classes"))
+    dependsOn(project(":integrations:modelengine").tasks.named("classes"))
 
     from(project(":core").layout.buildDirectory.dir("classes/java/main"))
     from(project(":core").layout.buildDirectory.dir("resources/main"))
@@ -46,4 +50,8 @@ tasks.jar {
     from(project(":integrations:itemsadder").layout.buildDirectory.dir("resources/main"))
     from(project(":integrations:voicechat").layout.buildDirectory.dir("classes/java/main"))
     from(project(":integrations:voicechat").layout.buildDirectory.dir("resources/main"))
+    from(project(":integrations:mythicmobs").layout.buildDirectory.dir("classes/java/main"))
+    from(project(":integrations:mythicmobs").layout.buildDirectory.dir("resources/main"))
+    from(project(":integrations:modelengine").layout.buildDirectory.dir("classes/java/main"))
+    from(project(":integrations:modelengine").layout.buildDirectory.dir("resources/main"))
 }

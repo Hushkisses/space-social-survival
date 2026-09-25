@@ -16,6 +16,7 @@ import com.hushkisses.spacesurvival.paper.command.ResourceCommandHandler;
 import com.hushkisses.spacesurvival.paper.command.SocialCommandHandler;
 import com.hushkisses.spacesurvival.paper.command.CommunicationCommandHandler;
 import com.hushkisses.spacesurvival.paper.command.ScenarioCommandHandler;
+import com.hushkisses.spacesurvival.paper.command.MvpEndingCommandHandler;
 import com.hushkisses.spacesurvival.paper.runtime.GameRuntimeService;
 import com.hushkisses.spacesurvival.time.CrisisStage;
 import com.hushkisses.spacesurvival.ship.ShipMetric;
@@ -46,6 +47,7 @@ final class SpaceCommand implements CommandExecutor {
     private final SocialCommandHandler socialCommandHandler;
     private final CommunicationCommandHandler communicationCommandHandler;
     private final ScenarioCommandHandler scenarioCommandHandler;
+    private final MvpEndingCommandHandler mvpEndingCommandHandler;
 
     SpaceCommand(SpaceSurvivalPlugin plugin) {
         this.plugin = plugin;
@@ -56,6 +58,7 @@ final class SpaceCommand implements CommandExecutor {
         this.socialCommandHandler = new SocialCommandHandler(plugin);
         this.communicationCommandHandler = new CommunicationCommandHandler(plugin);
         this.scenarioCommandHandler = new ScenarioCommandHandler(plugin);
+        this.mvpEndingCommandHandler = new MvpEndingCommandHandler(plugin);
     }
 
     @Override
@@ -124,6 +127,10 @@ final class SpaceCommand implements CommandExecutor {
 
         if (scenarioCommandHandler.supports(args[0])) {
             return scenarioCommandHandler.handle(sender, args);
+        }
+
+        if (mvpEndingCommandHandler.supports(args[0])) {
+            return mvpEndingCommandHandler.handle(sender, args);
         }
 
         sendUsage(sender);
@@ -780,7 +787,7 @@ final class SpaceCommand implements CommandExecutor {
                         + "§7~§f"
                         + plugin.configuration().game().maxPlayers()
         );
-        sender.sendMessage("§7현재 DEV: §eDEV-032~044 Social Communication Scenario Batch");
+        sender.sendMessage("§7현재 DEV: §eDEV-045~052 MVP Ending Batch");
     }
 
     private void sendRoleUsage(CommandSender sender) {
@@ -837,6 +844,11 @@ final class SpaceCommand implements CommandExecutor {
         sender.sendMessage("§c사용법: /space voice");
         sender.sendMessage("§c사용법: /space scenario list|start|status|reset");
         sender.sendMessage("§c사용법: /space infection outbreak|status|expose|advance|test|suppress|cure");
+        sender.sendMessage("§c사용법: /space death status|kill");
+        sender.sendMessage("§c사용법: /space infected status");
+        sender.sendMessage("§c사용법: /space pve status|spawn");
+        sender.sendMessage("§c사용법: /space return status|check|navigation|prepare|hold|fail|reset");
+        sender.sendMessage("§c사용법: /space result contribution|scenario|evaluate|status");
         sender.sendMessage("§c사용법: /space role prepare|candidates|gui|choose|status");
         sender.sendMessage("§c사용법: /space map generate [seed]");
     }

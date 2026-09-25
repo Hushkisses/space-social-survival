@@ -5,3 +5,6 @@ include("paper-plugin")
 include("integrations:itemsadder")
 
 include("integrations:voicechat")
+
+include("integrations:mythicmobs")
+include("integrations:modelengine")

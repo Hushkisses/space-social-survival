@@ -52,6 +52,7 @@ public final class ConditionalPvpListener implements Listener {
                 plugin.pvpRuntimeState().scenarioAllows(),
                 plugin.gameRuntimeService().currentCrisisStage() == CrisisStage.COLLAPSE,
                 plugin.pvpRuntimeState().specialEventAllows()
+                        || plugin.infectedPlayerService().isInfectedForm(attackerId)
         );
 
         if (!plugin.conditionalPvpPolicy().isAllowed(context)) {

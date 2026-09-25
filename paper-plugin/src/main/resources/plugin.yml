@@ -4,7 +4,7 @@ main: com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin
 description: Minecraft space social survival game
 author: Hushkisses
 api-version: '26.2'
-softdepend: [ItemsAdder, voicechat]
+softdepend: [ItemsAdder, voicechat, MythicMobs, ModelEngine]
 
 commands:
   space:
