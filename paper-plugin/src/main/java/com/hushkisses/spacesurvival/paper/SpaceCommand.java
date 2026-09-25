@@ -53,6 +53,10 @@ final class SpaceCommand implements CommandExecutor {
             return handleRole(sender, args);
         }
 
+        if (args[0].equalsIgnoreCase("briefing")) {
+            return handleBriefing(sender);
+        }
+
         sendUsage(sender);
         return true;
     }
@@ -66,6 +70,7 @@ final class SpaceCommand implements CommandExecutor {
         return switch (args[1].toLowerCase()) {
             case "prepare" -> handleRolePrepare(sender, args);
             case "candidates" -> handleRoleCandidates(sender);
+            case "gui" -> handleRoleGui(sender);
             case "choose" -> handleRoleChoose(sender, args);
             case "status" -> {
                 sendRoleStatus(sender);
@@ -115,6 +120,34 @@ final class SpaceCommand implements CommandExecutor {
 
         sender.sendMessage("§a직업 후보를 생성했습니다. 시드: " + seed);
         sender.sendMessage("§7대상 인원: " + snapshot.playerCount());
+
+        for (PlayerId playerId : snapshot.players()) {
+            Player online = plugin.getServer().getPlayer(playerId.value());
+            if (online != null && online.isOnline()) {
+                plugin.openingBriefingUi().open(online);
+            }
+        }
+
+        return true;
+    }
+
+    private boolean handleBriefing(CommandSender sender) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§c이 명령어는 게임 안의 플레이어만 사용할 수 있습니다.");
+            return true;
+        }
+
+        plugin.openingBriefingUi().open(player);
+        return true;
+    }
+
+    private boolean handleRoleGui(CommandSender sender) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§c이 명령어는 게임 안의 플레이어만 사용할 수 있습니다.");
+            return true;
+        }
+
+        plugin.roleSelectionUi().open(player);
         return true;
     }
 
@@ -377,12 +410,13 @@ final class SpaceCommand implements CommandExecutor {
                         + "§7~§f"
                         + plugin.configuration().game().maxPlayers()
         );
-        sender.sendMessage("§7현재 DEV: §eDEV-012 Role Candidate Selection");
+        sender.sendMessage("§7현재 DEV: §eDEV-013 Briefing & Initial Goal UI");
     }
 
     private void sendRoleUsage(CommandSender sender) {
         sender.sendMessage("§c사용법: /space role prepare [seed]");
         sender.sendMessage("§c사용법: /space role candidates");
+        sender.sendMessage("§c사용법: /space role gui");
         sender.sendMessage("§c사용법: /space role choose <roleId>");
         sender.sendMessage("§c사용법: /space role status");
     }
@@ -397,7 +431,8 @@ final class SpaceCommand implements CommandExecutor {
     private void sendUsage(CommandSender sender) {
         sender.sendMessage("§c사용법: /space status");
         sender.sendMessage("§c사용법: /space lobby join|leave|status|start");
-        sender.sendMessage("§c사용법: /space role prepare|candidates|choose|status");
+        sender.sendMessage("§c사용법: /space briefing");
+        sender.sendMessage("§c사용법: /space role prepare|candidates|gui|choose|status");
         sender.sendMessage("§c사용법: /space map generate [seed]");
     }
 }
