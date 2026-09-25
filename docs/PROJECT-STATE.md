@@ -21,12 +21,18 @@ Milestone A — Playable Foundation
 
 ## Current DEV
 - DEV-007 Connection & TP
-- Status: PLANNED
+- Status: IMPLEMENTED
+- Development branch: dev/DEV-007-connection-tp
 
 ## Next DEV
 - DEV-008 Constrained Random Map Generator
 
 ## Implemented
+- DEV-007 connection access states
+- DEV-007 access decision policy
+- DEV-007 logical tile connection routes
+- DEV-007 Paper teleport target registry
+- DEV-007 asynchronous Paper teleport service
 - DEV-006 logical tile registration
 - DEV-005 logical Sector/Room/Connection model
 - DEV-004 validated configuration system
@@ -48,9 +54,12 @@ Milestone A — Playable Foundation
 - DEV-006 Windows test/build and Paper validation SUCCESS
 
 ## Pending validation
-- None for DEV-006
+- DEV-007 Windows `gradlew.bat test`
+- DEV-007 Windows `gradlew.bat build`
+- DEV-007 Paper smoke test: plugin load and `space status`
 
 ## Known issues
+- Physical teleport targets are intentionally not data-loaded yet; they will be supplied by later map-instance/placement work.
 - Paper startup reports build 123 is behind the current latest build; project remains intentionally pinned to Paper 26.2 build 123 until deliberately changed.
 
 ## Environment
