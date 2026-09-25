@@ -72,11 +72,18 @@ public final class FacilityActionExecutor {
             return FacilityActionExecutionResult.failure(denialMessage(decision.denialReason()));
         }
 
+        FacilityActionExecutionResult result;
         try {
-            return executeAllowed(player, action.id().value());
+            result = executeAllowed(player, action.id().value());
         } catch (IllegalStateException | IllegalArgumentException exception) {
-            return FacilityActionExecutionResult.failure(exception.getMessage());
+            result = FacilityActionExecutionResult.failure(exception.getMessage());
         }
+
+        plugin.telemetryService().recordFacilityAction(
+                action.id().value(),
+                result.success()
+        );
+        return result;
     }
 
     private FacilityActionExecutionResult executeAllowed(Player player, String id) {
@@ -224,15 +231,11 @@ public final class FacilityActionExecutor {
     }
 
     private FacilityActionExecutionResult startMeeting() {
-        MeetingStartResult meeting = plugin.meetingService().startRegular(
-                plugin.lobbyService().snapshot().players(),
-                plugin.radioRuntimeState().longRangeAvailable()
-        );
+        MeetingStartResult meeting = plugin.meetingGuiService().startRegular();
         if (!meeting.started()) {
             return failure("회의를 시작할 수 없습니다: " + meeting.denialReason());
         }
-        plugin.getServer().broadcastMessage("§6[회의] §f함교에서 일반 회의가 소집되었습니다.");
-        return result("회의를 소집했습니다.");
+        return result("회의를 소집했습니다. 참가자에게 투표 GUI가 열렸습니다.");
     }
 
     private FacilityActionExecutionResult advanceReturn() {
@@ -372,6 +375,7 @@ public final class FacilityActionExecutor {
             total += entry.getValue();
         }
 
+        plugin.telemetryService().recordResourceDeposit(total);
         return result("공용 창고에 자원 " + total + "개를 입고했습니다: " + removed);
     }
 
