@@ -12,6 +12,7 @@
 Milestone A — Playable Foundation
 
 ## Last completed DEV
+- DEV-015 ShipState — COMPLETE
 - DEV-014 Game Timer & Crisis — COMPLETE
 - DEV-013 Briefing & Initial Goal UI — COMPLETE
 - DEV-012 Role Candidate Selection — COMPLETE
@@ -28,13 +29,14 @@ Milestone A — Playable Foundation
 - DEV-001 Project Bootstrap — COMPLETE
 
 ## Current DEV
-- DEV-015 ShipState
+- DEV-016 Facility Framework
 - Status: PLANNED
 
 ## Next DEV
-- DEV-016 Facility Framework
+- DEV-017 Engineering Facility
 
 ## Implemented
+- DEV-015 global ShipState and crisis-pressure integration
 - DEV-014 game timer and crisis foundation
 - DEV-013 opening briefing and role selection UI
 - DEV-012 role candidate generation and selection
@@ -45,15 +47,15 @@ Milestone A — Playable Foundation
 - DEV-007 connection access states and Paper teleport adapter
 
 ## Verified
-- DEV-001 through DEV-014 Windows test/build and Paper validation SUCCESS
+- DEV-001 through DEV-015 Windows test/build and Paper validation SUCCESS
 
 ## Pending validation
-- None for DEV-014
+- None for DEV-015
 
 ## Known issues
-- DEV-014 external crisis pressure is neutral until ShipState and later incident systems exist.
-- Runtime start is currently an admin/debug command; automatic ACTIVE-phase binding will be added when the full game flow is wired.
-- Initial problem/common-goal UI still uses baseline placeholder content until ShipState/Facility/Event/Objective systems provide live values.
+- ShipState currently models global percentages only; facility-local state begins in DEV-016.
+- Pressure weights are development defaults and require multiplayer balance testing.
+- Runtime start remains an admin/debug command.
 - Physical coordinates/Structure Block placement remain intentionally deferred.
 - Paper startup reports build 123 is behind the current latest build; project remains intentionally pinned to Paper 26.2 build 123 until deliberately changed.
 
