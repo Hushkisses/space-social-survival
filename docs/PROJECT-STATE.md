@@ -30,12 +30,11 @@ Milestone C — Social / Communication / Scenario
 - DEV-016 and earlier — COMPLETE
 
 ## Current DEV
-- DEV-032 through DEV-044 Social / Communication / Scenario Batch
-- Status: VALIDATION_PENDING
-- Development branch: dev/DEV-032-044-social-scenario-batch
+- DEV-045 Death State
+- Status: PLANNED
 
 ## Next DEV
-- DEV-045 Death State
+- DEV-046 Infected Player State
 
 ## Batch implementation
 
@@ -106,14 +105,11 @@ Milestone C — Social / Communication / Scenario
 
 ## Verified
 - DEV-001 through DEV-031 Windows integrated test/build/Paper validation SUCCESS
-- DEV-032 through DEV-044 GitHub Actions full test/build SUCCESS (Build run #389)
+- DEV-032 through DEV-044 GitHub Actions full test/build SUCCESS
+- DEV-032 through DEV-044 Windows integrated test/build/Paper validation SUCCESS
 
 ## Pending validation
-- Windows integrated test/build
-- Paper plugin startup
-- meeting/sanction/PvP smoke flow
-- communication/radio bridge smoke flow
-- scenario/infection smoke flow
+- None for DEV-032 through DEV-044
 
 ## Scope notes
 - Meeting cooldown is currently a development default of 3 minutes.
