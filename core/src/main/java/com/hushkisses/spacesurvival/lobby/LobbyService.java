@@ -93,10 +93,23 @@ public final class LobbyService {
     }
 
     public GameSession start() {
+        return startInternal(true);
+    }
+
+    public GameSession startForDevelopment() {
+        return startInternal(false);
+    }
+
+    private GameSession startInternal(boolean enforceMinimumPlayers) {
         if (gameSession != null) {
             throw new LobbyStartException("Match has already started");
         }
-        if (players.size() < config.minPlayers()) {
+
+        if (players.isEmpty()) {
+            throw new LobbyStartException("No players in lobby");
+        }
+
+        if (enforceMinimumPlayers && players.size() < config.minPlayers()) {
             throw new LobbyStartException(
                     "Not enough players: " + players.size() + "/" + config.minPlayers()
             );
@@ -109,6 +122,20 @@ public final class LobbyService {
 
     public Optional<GameSession> gameSession() {
         return Optional.ofNullable(gameSession);
+    }
+
+    public void resetForNextMatch() {
+        LinkedHashMap<PlayerId, PlayerState> refreshed = new LinkedHashMap<>();
+        players.forEach((playerId, previous) -> {
+            PlayerState next = PlayerState.create(playerId, clock);
+            if (!previous.isConnected()) {
+                next.disconnect();
+            }
+            refreshed.put(playerId, next);
+        });
+        players.clear();
+        players.putAll(refreshed);
+        gameSession = null;
     }
 
     public LobbySnapshot snapshot() {

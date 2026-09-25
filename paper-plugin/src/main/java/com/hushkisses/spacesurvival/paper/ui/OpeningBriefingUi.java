@@ -14,15 +14,29 @@ public final class OpeningBriefingUi {
     public static final String TITLE = "§8우주선 사고 브리핑";
 
     public void open(Player player) {
+        open(
+                player,
+                "우주선이 심각한 손상을 입었습니다. 주요 시설을 복구하고 귀환 절차를 완료하십시오.",
+                0,
+                0
+        );
+    }
+
+    public void open(
+            Player player,
+            String publicBriefing,
+            int initialIncidentCount,
+            int generatedTileCount
+    ) {
         Inventory inventory = Bukkit.createInventory(null, 27, TITLE);
 
         inventory.setItem(10, item(
                 Material.WRITABLE_BOOK,
                 "§6공개 사고 브리핑",
                 List.of(
-                        "§7우주선이 심각한 손상을 입었습니다.",
-                        "§7여러 핵심 계통이 불안정한 상태입니다.",
-                        "§f승무원들은 협력하여 귀환 준비를 진행해야 합니다."
+                        "§7" + publicBriefing,
+                        "",
+                        "§8숨은 시나리오 진실은 공개되지 않습니다."
                 )
         ));
 
@@ -30,20 +44,19 @@ public final class OpeningBriefingUi {
                 Material.REDSTONE_TORCH,
                 "§c초기 문제",
                 List.of(
-                        "§7• 전력 출력 저하",
-                        "§7• 의료실 보조전원 정지",
-                        "§7• 장거리 통신 불능",
-                        "§8※ 현재는 DEV 브리핑용 기본 표시입니다."
+                        "§7감지된 초기 사건: §f" + initialIncidentCount + "건",
+                        "§7핵심 우주선 상태와 시설을 직접 확인하십시오.",
+                        "§8시스템 정보는 거짓말하지 않지만 모든 정보를 보여주지는 않습니다."
                 )
         ));
 
         inventory.setItem(16, item(
                 Material.COMPASS,
-                "§b공통 목표 — 1단계",
+                "§b공통 목표 — 생존 기반 복구",
                 List.of(
-                        "§f생존 기반 복구",
-                        "§7전력·산소·선체 등 생존 기반을 안정화하십시오.",
-                        "§8실제 수치 연동은 ShipState 구현 후 적용됩니다."
+                        "§7전력·산소·선체·원자로를 안정화하십시오.",
+                        "§7생존 기반이 확보되면 항법과 귀환 준비로 진행됩니다.",
+                        "§7이번 함선 모듈 수: §f" + generatedTileCount
                 )
         ));
 
@@ -52,7 +65,8 @@ public final class OpeningBriefingUi {
                 "§e직업 후보 확인",
                 List.of(
                         "§f클릭하여 직업 후보 3개를 확인합니다.",
-                        "§7직업은 전문 분야이며 숨은 진영과 무관합니다."
+                        "§7직업은 전문 분야이며 숨은 진영과 무관합니다.",
+                        "§7모든 승무원의 선택이 끝나면 임무가 자동 시작됩니다."
                 )
         ));
 

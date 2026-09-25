@@ -19,6 +19,15 @@ dependencies {
     implementation(project(":integrations:mythicmobs"))
     implementation(project(":integrations:modelengine"))
     compileOnly("io.papermc.paper:paper-api:26.2.build.123-stable")
+
+    testImplementation(platform("org.junit:junit-bom:5.13.4"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("io.papermc.paper:paper-api:26.2.build.123-stable")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 tasks.withType<JavaCompile>().configureEach {

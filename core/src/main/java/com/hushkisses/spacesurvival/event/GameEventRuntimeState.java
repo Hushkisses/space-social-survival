@@ -31,6 +31,11 @@ public final class GameEventRuntimeState {
         return List.copyOf(history);
     }
 
+    public void clear() {
+        activeFlags.clear();
+        history.clear();
+    }
+
     public record GameEventHistoryEntry(GameEventId eventId, Instant triggeredAt) {
         public GameEventHistoryEntry {
             Objects.requireNonNull(eventId, "eventId");

@@ -49,4 +49,8 @@ public final class InfectedPlayerService {
                 .map(value -> value.form() == PostDeathForm.INFECTED)
                 .orElse(false);
     }
+
+    public void clear() {
+        states.clear();
+    }
 }

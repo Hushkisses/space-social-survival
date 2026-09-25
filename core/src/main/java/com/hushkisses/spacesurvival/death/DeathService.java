@@ -54,4 +54,8 @@ public final class DeathService {
     public Collection<DeathRecord> records() {
         return Collections.unmodifiableCollection(records.values());
     }
+
+    public void clear() {
+        records.clear();
+    }
 }

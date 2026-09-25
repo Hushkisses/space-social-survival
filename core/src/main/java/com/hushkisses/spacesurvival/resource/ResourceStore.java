@@ -60,4 +60,8 @@ public final class ResourceStore {
         target.add(type, amount);
         return true;
     }
+
+    public void clear() {
+        quantities.clear();
+    }
 }

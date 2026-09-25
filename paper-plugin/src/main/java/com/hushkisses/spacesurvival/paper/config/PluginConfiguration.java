@@ -5,6 +5,7 @@ import com.hushkisses.spacesurvival.config.GameConfig;
 
 public record PluginConfiguration(
         GameConfig game,
-        BalanceConfig balance
+        BalanceConfig balance,
+        MatchSetupConfig matchSetup
 ) {
 }

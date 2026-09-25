@@ -17,6 +17,7 @@ import com.hushkisses.spacesurvival.paper.command.SocialCommandHandler;
 import com.hushkisses.spacesurvival.paper.command.CommunicationCommandHandler;
 import com.hushkisses.spacesurvival.paper.command.ScenarioCommandHandler;
 import com.hushkisses.spacesurvival.paper.command.MvpEndingCommandHandler;
+import com.hushkisses.spacesurvival.paper.command.MatchCommandHandler;
 import com.hushkisses.spacesurvival.paper.runtime.GameRuntimeService;
 import com.hushkisses.spacesurvival.time.CrisisStage;
 import com.hushkisses.spacesurvival.ship.ShipMetric;
@@ -48,6 +49,7 @@ final class SpaceCommand implements CommandExecutor {
     private final CommunicationCommandHandler communicationCommandHandler;
     private final ScenarioCommandHandler scenarioCommandHandler;
     private final MvpEndingCommandHandler mvpEndingCommandHandler;
+    private final MatchCommandHandler matchCommandHandler;
 
     SpaceCommand(SpaceSurvivalPlugin plugin) {
         this.plugin = plugin;
@@ -59,6 +61,7 @@ final class SpaceCommand implements CommandExecutor {
         this.communicationCommandHandler = new CommunicationCommandHandler(plugin);
         this.scenarioCommandHandler = new ScenarioCommandHandler(plugin);
         this.mvpEndingCommandHandler = new MvpEndingCommandHandler(plugin);
+        this.matchCommandHandler = new MatchCommandHandler(plugin);
     }
 
     @Override
@@ -131,6 +134,10 @@ final class SpaceCommand implements CommandExecutor {
 
         if (mvpEndingCommandHandler.supports(args[0])) {
             return mvpEndingCommandHandler.handle(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("match")) {
+            return matchCommandHandler.handle(sender, args);
         }
 
         sendUsage(sender);
@@ -787,7 +794,7 @@ final class SpaceCommand implements CommandExecutor {
                         + "§7~§f"
                         + plugin.configuration().game().maxPlayers()
         );
-        sender.sendMessage("§7현재 DEV: §eDEV-045~052 MVP Ending Batch");
+        sender.sendMessage("§7현재 DEV: §eDEV-053~059 Vertical Slice Integration");
     }
 
     private void sendRoleUsage(CommandSender sender) {
@@ -849,6 +856,7 @@ final class SpaceCommand implements CommandExecutor {
         sender.sendMessage("§c사용법: /space pve status|spawn");
         sender.sendMessage("§c사용법: /space return status|check|navigation|prepare|hold|fail|reset");
         sender.sendMessage("§c사용법: /space result contribution|scenario|evaluate|status");
+        sender.sendMessage("§c사용법: /space match start|devstart|status|reset|bridge");
         sender.sendMessage("§c사용법: /space role prepare|candidates|gui|choose|status");
         sender.sendMessage("§c사용법: /space map generate [seed]");
     }
