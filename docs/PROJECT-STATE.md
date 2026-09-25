@@ -5,27 +5,23 @@
 - Default branch: main
 
 ## Current HEAD
-- Resolve the latest GitHub branch HEAD at the start of every development session.
+- Resolve the latest GitHub main HEAD at the start of every development session.
 - Do not embed a self-referential HEAD value in this file.
 
 ## Current milestone
 Milestone A — Playable Foundation
 
 ## Last completed DEV
-- None
+- DEV-001 Project Bootstrap — COMPLETE
 
 ## Current DEV
-- DEV-001 Project Bootstrap
-- Status: IMPLEMENTED
-- Development branch: dev/DEV-001-bootstrap
-- Implementation checkpoint: e81e2171e55cd7cae8d35eca164edc1830d8a208
+- DEV-002 GameSession Core
+- Status: PLANNED
 
 ## Next DEV
-- DEV-002 GameSession Core
+- DEV-003 PlayerState
 
 ## Implemented
-- Windows `gradlew.bat test` verified SUCCESS
-- Windows `gradlew.bat build` verified SUCCESS
 - Repository initialized
 - Game design v1.0
 - Development plan v1.0
@@ -42,16 +38,23 @@ Milestone A — Playable Foundation
 - GitHub Actions build workflow
 - Windows quick-deploy and dev-server start scripts
 
+## Verified
+- Windows `gradlew.bat test` SUCCESS
+- Windows `gradlew.bat build` SUCCESS
+- Paper 26.2 build 123 server startup SUCCESS
+- SpaceSurvival v0.1.0-SNAPSHOT plugin load SUCCESS
+- SpaceSurvival enable log SUCCESS
+- `space status` console command SUCCESS
+- Korean status output SUCCESS
+
 ## Pending validation
-- GitHub Actions build verification
-- Paper 26.2 build 123 plugin load
-- `/space status` in-game/console verification
+- GitHub Actions verification can be handled through normal branch/PR activity
 
 ## Known issues
-- None currently recorded
+- Paper startup reported the server build is 6 builds behind latest; project remains intentionally pinned to Paper 26.2 build 123 until the pinned environment is deliberately changed.
 
 ## Environment
-- Java 25
+- Java 25.0.4.1
 - Gradle 9.7.1 Wrapper
 - Paper 26.2 build 123
 - Language: Java
