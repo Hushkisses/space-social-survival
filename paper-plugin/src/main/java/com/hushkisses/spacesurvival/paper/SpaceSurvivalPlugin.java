@@ -432,6 +432,9 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         }
 
         roleSelectionService.reset();
+        if (meetingGuiService != null) {
+            meetingGuiService.resetRuntime();
+        }
         shipState.reset();
         facilityRegistry.resetAll();
         resourceLedger.clear();
