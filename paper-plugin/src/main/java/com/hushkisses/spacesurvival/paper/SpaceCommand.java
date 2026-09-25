@@ -41,6 +41,6 @@ final class SpaceCommand implements CommandExecutor {
                         + "§7~§f"
                         + plugin.configuration().game().maxPlayers()
         );
-        sender.sendMessage("§7현재 DEV: §eDEV-004 Configuration System");
+        sender.sendMessage("§7현재 DEV: §eDEV-005 Sector/Room/Connection Model");
     }
 }
