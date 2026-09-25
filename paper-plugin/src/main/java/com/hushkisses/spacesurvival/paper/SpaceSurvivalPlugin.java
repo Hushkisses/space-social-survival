@@ -10,6 +10,7 @@ import com.hushkisses.spacesurvival.paper.ui.OpeningBriefingUi;
 import com.hushkisses.spacesurvival.paper.ui.OpeningUiListener;
 import com.hushkisses.spacesurvival.paper.ui.RoleSelectionUi;
 import com.hushkisses.spacesurvival.role.DefaultRoleCatalog;
+import com.hushkisses.spacesurvival.ship.ShipState;
 import com.hushkisses.spacesurvival.role.RoleRegistry;
 import com.hushkisses.spacesurvival.role.selection.RoleSelectionService;
 import org.bukkit.command.PluginCommand;
@@ -24,6 +25,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private OpeningBriefingUi openingBriefingUi;
     private RoleSelectionUi roleSelectionUi;
     private GameRuntimeService gameRuntimeService;
+    private ShipState shipState;
 
     @Override
     public void onEnable() {
@@ -33,9 +35,11 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         roleSelectionService = new RoleSelectionService(roleRegistry);
         openingBriefingUi = new OpeningBriefingUi();
         roleSelectionUi = new RoleSelectionUi(this, roleSelectionService, roleRegistry);
+        shipState = ShipState.healthy();
         gameRuntimeService = new GameRuntimeService(
                 this,
-                configuration.balance().targetMatchMinutes()
+                configuration.balance().targetMatchMinutes(),
+                shipState
         );
 
         registerCommands();
@@ -119,6 +123,22 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
             throw new IllegalStateException("Game runtime service is not initialized yet");
         }
         return gameRuntimeService;
+    }
+
+    public ShipState shipState() {
+        if (shipState == null) {
+            throw new IllegalStateException("Ship state is not initialized yet");
+        }
+        return shipState;
+    }
+
+    public void resetShipState() {
+        shipState = ShipState.healthy();
+        gameRuntimeService = new GameRuntimeService(
+                this,
+                configuration.balance().targetMatchMinutes(),
+                shipState
+        );
     }
 
     private void registerCommands() {
