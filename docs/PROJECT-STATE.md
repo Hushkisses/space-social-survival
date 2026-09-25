@@ -16,7 +16,7 @@ Playtest Integration
 
 ## Current batch
 - PT-001 through PT-005 Playtest Integration
-- Status: IMPLEMENTED / VALIDATION_PENDING
+- Status: VALIDATION_PENDING
 - Development branch: dev/PT-001-005-playtest-integration
 
 ## Included
@@ -106,9 +106,9 @@ New incident keys are added to legacy balance.yml automatically while preserving
 
 ## Verified
 - DEV-001 through DEV-059 automated and Windows/Paper validation SUCCESS
+- PT-001 through PT-005 GitHub Actions full test/build SUCCESS (Build run #507)
 
 ## Pending validation
-- GitHub Actions full test/build for PT-001 through PT-005
 - Windows full test/build
 - Paper startup
 - /space match devstart
