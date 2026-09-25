@@ -314,14 +314,20 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     }
 
     public void resetEndingRuntime() {
+        resetEndingRuntime(Duration.ofSeconds(configuration.balance().returnHoldSeconds()));
+    }
+
+    public void resetEndingRuntime(Duration holdDuration) {
+        if (holdDuration == null || holdDuration.isZero() || holdDuration.isNegative()) {
+            throw new IllegalArgumentException("holdDuration must be positive");
+        }
+
         returnObjectiveService = new ReturnObjectiveService(
                 shipState,
                 facilityRegistry,
                 ReturnRequirements.developmentDefaults()
         );
-        finalHoldService = new FinalHoldService(
-                Duration.ofSeconds(configuration.balance().returnHoldSeconds())
-        );
+        finalHoldService = new FinalHoldService(holdDuration);
         endingRuntimeService = new EndingRuntimeService(
                 this,
                 returnObjectiveService,
