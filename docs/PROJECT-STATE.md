@@ -12,25 +12,21 @@
 Milestone A — Playable Foundation
 
 ## Last completed DEV
+- DEV-005 Sector/Room/Connection Model — COMPLETE
 - DEV-004 Configuration System — COMPLETE
 - DEV-003 PlayerState — COMPLETE
 - DEV-002 GameSession Core — COMPLETE
 - DEV-001 Project Bootstrap — COMPLETE
 
 ## Current DEV
-- DEV-005 Sector/Room/Connection Model
-- Status: IMPLEMENTED
-- Development branch: dev/DEV-005-map-model
+- DEV-006 Tile Registration
+- Status: PLANNED
 
 ## Next DEV
-- DEV-006 Tile Registration
+- DEV-007 Connection & TP
 
 ## Implemented
-- DEV-005 SectorId / RoomId / ConnectionId
-- DEV-005 Sector / Room / Connection domain model
-- DEV-005 MapGraph registration
-- DEV-005 graph integrity validation
-- DEV-005 undirected adjacency lookup
+- DEV-005 logical Sector/Room/Connection model
 - DEV-004 validated configuration system
 - DEV-003 PlayerState domain model
 - DEV-002 GameSession lifecycle core
@@ -46,11 +42,10 @@ Milestone A — Playable Foundation
 - DEV-002 Windows test/build and Paper validation SUCCESS
 - DEV-003 Windows test/build and Paper validation SUCCESS
 - DEV-004 Windows test/build and Paper validation SUCCESS
+- DEV-005 Windows test/build and Paper validation SUCCESS
 
 ## Pending validation
-- DEV-005 Windows `gradlew.bat test`
-- DEV-005 Windows `gradlew.bat build`
-- DEV-005 Paper smoke test: plugin load and `space status`
+- None for DEV-005
 
 ## Known issues
 - Paper startup reports build 123 is behind the current latest build; project remains intentionally pinned to Paper 26.2 build 123 until deliberately changed.
