@@ -12,6 +12,7 @@
 Milestone A — Playable Foundation
 
 ## Last completed DEV
+- DEV-016 Facility Framework — COMPLETE
 - DEV-015 ShipState — COMPLETE
 - DEV-014 Game Timer & Crisis — COMPLETE
 - DEV-013 Briefing & Initial Goal UI — COMPLETE
@@ -29,33 +30,38 @@ Milestone A — Playable Foundation
 - DEV-001 Project Bootstrap — COMPLETE
 
 ## Current DEV
-- DEV-016 Facility Framework
+- DEV-017 Engineering Facility
 - Status: PLANNED
 
 ## Next DEV
-- DEV-017 Engineering Facility
+- DEV-018 Medical Facility
 
 ## Implemented
+- DEV-016 FacilityId / FacilityType / FacilityStatus
+- DEV-016 FacilityDefinition / FacilityState / FacilityStateSnapshot
+- DEV-016 FacilityRegistry
+- DEV-016 six default facilities
+- DEV-016 /space facility list|status|set|reset
 - DEV-015 global ShipState and crisis-pressure integration
 - DEV-014 game timer and crisis foundation
 - DEV-013 opening briefing and role selection UI
-- DEV-012 role candidate generation and selection
-- DEV-011 role framework and six-role catalog
-- DEV-010 lobby and start flow
-- DEV-009 deterministic map debug tools
-- DEV-008 constrained logical random map generation
-- DEV-007 connection access states and Paper teleport adapter
+
+## Facility framework decision
+- Player-facing facility state remains simple: NORMAL / DAMAGED / OFFLINE / QUARANTINED.
+- Static facility identity and mutable runtime state are separated.
+- The six default facilities are bridge, engineering, medical, research, cargo, habitation.
+- Facility-specific numerical sub-state and actions are deferred to later DEV tickets.
 
 ## Verified
-- DEV-001 through DEV-015 Windows test/build and Paper validation SUCCESS
+- DEV-001 through DEV-016 Windows test/build and Paper validation SUCCESS
 
 ## Pending validation
-- None for DEV-015
+- None for DEV-016
 
 ## Known issues
-- ShipState currently models global percentages only; facility-local state begins in DEV-016.
-- Pressure weights are development defaults and require multiplayer balance testing.
-- Runtime start remains an admin/debug command.
+- Facility status does not yet change ShipState; engineering-specific integration begins in DEV-017.
+- Medical behavior begins in DEV-018.
+- Remaining facility-specific functions begin in DEV-019.
 - Physical coordinates/Structure Block placement remain intentionally deferred.
 - Paper startup reports build 123 is behind the current latest build; project remains intentionally pinned to Paper 26.2 build 123 until deliberately changed.
 

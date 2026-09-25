@@ -1,6 +1,8 @@
 package com.hushkisses.spacesurvival.paper;
 
 import com.hushkisses.spacesurvival.core.BootstrapMarker;
+import com.hushkisses.spacesurvival.facility.DefaultFacilityCatalog;
+import com.hushkisses.spacesurvival.facility.FacilityRegistry;
 import com.hushkisses.spacesurvival.lobby.LobbyService;
 import com.hushkisses.spacesurvival.paper.config.PluginConfiguration;
 import com.hushkisses.spacesurvival.paper.config.PluginConfigurationLoader;
@@ -26,6 +28,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private RoleSelectionUi roleSelectionUi;
     private GameRuntimeService gameRuntimeService;
     private ShipState shipState;
+    private FacilityRegistry facilityRegistry;
 
     @Override
     public void onEnable() {
@@ -36,6 +39,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         openingBriefingUi = new OpeningBriefingUi();
         roleSelectionUi = new RoleSelectionUi(this, roleSelectionService, roleRegistry);
         shipState = ShipState.healthy();
+        facilityRegistry = DefaultFacilityCatalog.createRegistry();
         gameRuntimeService = new GameRuntimeService(
                 this,
                 configuration.balance().targetMatchMinutes(),
@@ -69,6 +73,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                         + configuration.balance().returnHoldSeconds()
         );
         getLogger().info("Role registry loaded: " + roleRegistry.size() + " roles");
+        getLogger().info("Facility registry loaded: " + facilityRegistry.size() + " facilities");
     }
 
     @Override
@@ -130,6 +135,13 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
             throw new IllegalStateException("Ship state is not initialized yet");
         }
         return shipState;
+    }
+
+    public FacilityRegistry facilityRegistry() {
+        if (facilityRegistry == null) {
+            throw new IllegalStateException("Facility registry is not initialized yet");
+        }
+        return facilityRegistry;
     }
 
     public void resetShipState() {

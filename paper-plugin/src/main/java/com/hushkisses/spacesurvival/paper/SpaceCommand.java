@@ -1,6 +1,9 @@
 package com.hushkisses.spacesurvival.paper;
 
 import com.hushkisses.spacesurvival.core.BootstrapMarker;
+import com.hushkisses.spacesurvival.facility.FacilityId;
+import com.hushkisses.spacesurvival.facility.FacilityStateSnapshot;
+import com.hushkisses.spacesurvival.facility.FacilityStatus;
 import com.hushkisses.spacesurvival.lobby.LobbyJoinResult;
 import com.hushkisses.spacesurvival.lobby.LobbyLeaveResult;
 import com.hushkisses.spacesurvival.lobby.LobbySnapshot;
@@ -70,8 +73,131 @@ final class SpaceCommand implements CommandExecutor {
             return handleShip(sender, args);
         }
 
+        if (args[0].equalsIgnoreCase("facility")) {
+            return handleFacility(sender, args);
+        }
+
         sendUsage(sender);
         return true;
+    }
+
+    private boolean handleFacility(CommandSender sender, String[] args) {
+        if (args.length < 2) {
+            sendFacilityUsage(sender);
+            return true;
+        }
+
+        return switch (args[1].toLowerCase()) {
+            case "list" -> {
+                sender.sendMessage("§6[우주 생존] §f시설 목록");
+                for (FacilityStateSnapshot snapshot : plugin.facilityRegistry().snapshots()) {
+                    sender.sendMessage(
+                            "§7- §f"
+                                    + snapshot.displayName()
+                                    + " §8("
+                                    + snapshot.id()
+                                    + ") §7: "
+                                    + facilityStatusColor(snapshot.status())
+                                    + facilityStatusName(snapshot.status())
+                    );
+                }
+                yield true;
+            }
+            case "status" -> handleFacilityStatus(sender, args);
+            case "set" -> handleFacilitySet(sender, args);
+            case "reset" -> {
+                if (!sender.hasPermission("spacesurvival.admin")) {
+                    sender.sendMessage("§c시설 상태 초기화 권한이 없습니다.");
+                    yield true;
+                }
+                plugin.facilityRegistry().resetAll();
+                sender.sendMessage("§a모든 시설 상태를 정상으로 초기화했습니다.");
+                yield true;
+            }
+            default -> {
+                sendFacilityUsage(sender);
+                yield true;
+            }
+        };
+    }
+
+    private boolean handleFacilityStatus(CommandSender sender, String[] args) {
+        if (args.length < 3) {
+            sendFacilityUsage(sender);
+            return true;
+        }
+
+        FacilityId id = new FacilityId(args[2].toLowerCase());
+        FacilityStateSnapshot snapshot = plugin.facilityRegistry().find(id)
+                .map(state -> state.snapshot())
+                .orElse(null);
+
+        if (snapshot == null) {
+            sender.sendMessage("§c존재하지 않는 시설 ID입니다.");
+            return true;
+        }
+
+        sender.sendMessage("§6[우주 생존] §f시설 상태");
+        sender.sendMessage("§7시설: §f" + snapshot.displayName() + " §8(" + snapshot.id() + ")");
+        sender.sendMessage(
+                "§7상태: "
+                        + facilityStatusColor(snapshot.status())
+                        + facilityStatusName(snapshot.status())
+        );
+        return true;
+    }
+
+    private boolean handleFacilitySet(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("spacesurvival.admin")) {
+            sender.sendMessage("§c시설 상태 변경 권한이 없습니다.");
+            return true;
+        }
+        if (args.length < 4) {
+            sendFacilityUsage(sender);
+            return true;
+        }
+
+        FacilityId id = new FacilityId(args[2].toLowerCase());
+        var facility = plugin.facilityRegistry().find(id).orElse(null);
+        if (facility == null) {
+            sender.sendMessage("§c존재하지 않는 시설 ID입니다.");
+            return true;
+        }
+
+        FacilityStatus status;
+        try {
+            status = FacilityStatus.valueOf(args[3].toUpperCase());
+        } catch (IllegalArgumentException exception) {
+            sender.sendMessage("§c상태는 normal, damaged, offline, quarantined 중 하나여야 합니다.");
+            return true;
+        }
+
+        facility.setStatus(status);
+        sender.sendMessage(
+                "§a시설 상태를 변경했습니다: "
+                        + facility.definition().displayName()
+                        + " -> "
+                        + facilityStatusName(status)
+        );
+        return true;
+    }
+
+    private static String facilityStatusName(FacilityStatus status) {
+        return switch (status) {
+            case NORMAL -> "정상";
+            case DAMAGED -> "손상";
+            case OFFLINE -> "정지";
+            case QUARANTINED -> "격리";
+        };
+    }
+
+    private static String facilityStatusColor(FacilityStatus status) {
+        return switch (status) {
+            case NORMAL -> "§a";
+            case DAMAGED -> "§e";
+            case OFFLINE -> "§c";
+            case QUARANTINED -> "§6";
+        };
     }
 
     private boolean handleShip(CommandSender sender, String[] args) {
@@ -605,7 +731,7 @@ final class SpaceCommand implements CommandExecutor {
                         + "§7~§f"
                         + plugin.configuration().game().maxPlayers()
         );
-        sender.sendMessage("§7현재 DEV: §eDEV-015 ShipState");
+        sender.sendMessage("§7현재 DEV: §eDEV-016 Facility Framework");
     }
 
     private void sendRoleUsage(CommandSender sender) {
@@ -614,6 +740,13 @@ final class SpaceCommand implements CommandExecutor {
         sender.sendMessage("§c사용법: /space role gui");
         sender.sendMessage("§c사용법: /space role choose <roleId>");
         sender.sendMessage("§c사용법: /space role status");
+    }
+
+    private void sendFacilityUsage(CommandSender sender) {
+        sender.sendMessage("§c사용법: /space facility list");
+        sender.sendMessage("§c사용법: /space facility status <id>");
+        sender.sendMessage("§c사용법: /space facility set <id> <normal|damaged|offline|quarantined>");
+        sender.sendMessage("§c사용법: /space facility reset");
     }
 
     private void sendShipUsage(CommandSender sender) {
@@ -641,6 +774,7 @@ final class SpaceCommand implements CommandExecutor {
         sender.sendMessage("§c사용법: /space briefing");
         sender.sendMessage("§c사용법: /space runtime start|status|stop");
         sender.sendMessage("§c사용법: /space ship status|set|reset");
+        sender.sendMessage("§c사용법: /space facility list|status|set|reset");
         sender.sendMessage("§c사용법: /space role prepare|candidates|gui|choose|status");
         sender.sendMessage("§c사용법: /space map generate [seed]");
     }
