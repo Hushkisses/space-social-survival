@@ -63,6 +63,13 @@ public final class ShipState {
         }
     }
 
+    public void reset() {
+        power = 100;
+        oxygen = 100;
+        hull = 100;
+        reactor = 100;
+    }
+
     public ShipStateSnapshot snapshot() {
         return new ShipStateSnapshot(power, oxygen, hull, reactor);
     }
