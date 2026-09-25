@@ -14,6 +14,7 @@ java {
 
 dependencies {
     implementation(project(":core"))
+    implementation(project(":integrations:itemsadder"))
     compileOnly("io.papermc.paper:paper-api:26.2.build.123-stable")
 }
 
@@ -30,13 +31,15 @@ tasks.processResources {
     }
 }
 
-// DEV-001 keeps one deployable plugin JAR while the core remains separately testable.
 tasks.jar {
     archiveBaseName.set("space-social-survival")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     dependsOn(project(":core").tasks.named("classes"))
+    dependsOn(project(":integrations:itemsadder").tasks.named("classes"))
 
     from(project(":core").layout.buildDirectory.dir("classes/java/main"))
     from(project(":core").layout.buildDirectory.dir("resources/main"))
+    from(project(":integrations:itemsadder").layout.buildDirectory.dir("classes/java/main"))
+    from(project(":integrations:itemsadder").layout.buildDirectory.dir("resources/main"))
 }

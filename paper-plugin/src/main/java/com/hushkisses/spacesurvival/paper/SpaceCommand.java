@@ -9,6 +9,10 @@ import com.hushkisses.spacesurvival.lobby.LobbyLeaveResult;
 import com.hushkisses.spacesurvival.lobby.LobbySnapshot;
 import com.hushkisses.spacesurvival.lobby.LobbyStartException;
 import com.hushkisses.spacesurvival.paper.map.MapDebugService;
+import com.hushkisses.spacesurvival.paper.command.EventCommandHandler;
+import com.hushkisses.spacesurvival.paper.command.FacilitySystemsCommandHandler;
+import com.hushkisses.spacesurvival.paper.command.ObjectiveCommandHandler;
+import com.hushkisses.spacesurvival.paper.command.ResourceCommandHandler;
 import com.hushkisses.spacesurvival.paper.runtime.GameRuntimeService;
 import com.hushkisses.spacesurvival.time.CrisisStage;
 import com.hushkisses.spacesurvival.ship.ShipMetric;
@@ -32,9 +36,17 @@ final class SpaceCommand implements CommandExecutor {
 
     private final SpaceSurvivalPlugin plugin;
     private final MapDebugService mapDebugService = new MapDebugService();
+    private final FacilitySystemsCommandHandler facilitySystemsCommandHandler;
+    private final ResourceCommandHandler resourceCommandHandler;
+    private final ObjectiveCommandHandler objectiveCommandHandler;
+    private final EventCommandHandler eventCommandHandler;
 
     SpaceCommand(SpaceSurvivalPlugin plugin) {
         this.plugin = plugin;
+        this.facilitySystemsCommandHandler = new FacilitySystemsCommandHandler(plugin);
+        this.resourceCommandHandler = new ResourceCommandHandler(plugin);
+        this.objectiveCommandHandler = new ObjectiveCommandHandler(plugin);
+        this.eventCommandHandler = new EventCommandHandler(plugin);
     }
 
     @Override
@@ -75,6 +87,22 @@ final class SpaceCommand implements CommandExecutor {
 
         if (args[0].equalsIgnoreCase("facility")) {
             return handleFacility(sender, args);
+        }
+
+        if (facilitySystemsCommandHandler.supports(args[0])) {
+            return facilitySystemsCommandHandler.handle(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("resource")) {
+            return resourceCommandHandler.handle(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("objective")) {
+            return objectiveCommandHandler.handle(sender, args);
+        }
+
+        if (args[0].equalsIgnoreCase("event")) {
+            return eventCommandHandler.handle(sender, args);
         }
 
         sendUsage(sender);
@@ -731,7 +759,7 @@ final class SpaceCommand implements CommandExecutor {
                         + "§7~§f"
                         + plugin.configuration().game().maxPlayers()
         );
-        sender.sendMessage("§7현재 DEV: §eDEV-016 Facility Framework");
+        sender.sendMessage("§7현재 DEV: §eDEV-017~031 Gameplay Systems Batch");
     }
 
     private void sendRoleUsage(CommandSender sender) {
@@ -775,6 +803,12 @@ final class SpaceCommand implements CommandExecutor {
         sender.sendMessage("§c사용법: /space runtime start|status|stop");
         sender.sendMessage("§c사용법: /space ship status|set|reset");
         sender.sendMessage("§c사용법: /space facility list|status|set|reset");
+        sender.sendMessage("§c사용법: /space engineering status|adjust");
+        sender.sendMessage("§c사용법: /space medical status|damage|treat|condition");
+        sender.sendMessage("§c사용법: /space actions <facilityId>");
+        sender.sendMessage("§c사용법: /space resource status|add|process|item|nodes|itemsadder");
+        sender.sendMessage("§c사용법: /space objective prepare|status|secret|advance|catalog");
+        sender.sendMessage("§c사용법: /space event list|trigger|random|status");
         sender.sendMessage("§c사용법: /space role prepare|candidates|gui|choose|status");
         sender.sendMessage("§c사용법: /space map generate [seed]");
     }

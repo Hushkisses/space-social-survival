@@ -9,7 +9,7 @@
 - Do not embed a self-referential HEAD value in this file.
 
 ## Current milestone
-Milestone A — Playable Foundation
+Milestone B — Gameplay Systems
 
 ## Last completed DEV
 - DEV-016 Facility Framework — COMPLETE
@@ -30,40 +30,93 @@ Milestone A — Playable Foundation
 - DEV-001 Project Bootstrap — COMPLETE
 
 ## Current DEV
-- DEV-017 Engineering Facility
+- DEV-032 Meeting System
 - Status: PLANNED
 
 ## Next DEV
+- DEV-033 Emergency Meeting
+
+## Batch implementation
+### Facilities
+- DEV-017 Engineering Facility
+  - ship diagnosis
+  - bounded POWER/HULL/REACTOR adjustment
+  - engineering availability enforcement
 - DEV-018 Medical Facility
+  - generic patient health
+  - WOUNDED / CONTAMINATED / EXHAUSTED conditions
+  - treatment and condition removal
+  - infection-specific truth remains deferred to DEV-043
+- DEV-019 Remaining Facilities v1
+  - shared basic/advanced facility action catalog
+  - role capability metadata
+  - facility-state action access policy
 
-## Implemented
-- DEV-016 FacilityId / FacilityType / FacilityStatus
-- DEV-016 FacilityDefinition / FacilityState / FacilityStateSnapshot
-- DEV-016 FacilityRegistry
-- DEV-016 six default facilities
-- DEV-016 /space facility list|status|set|reset
-- DEV-015 global ShipState and crisis-pressure integration
-- DEV-014 game timer and crisis foundation
-- DEV-013 opening briefing and role selection UI
+### Resources
+- DEV-020 Resource Framework
+  - seven core resource types
+  - personal/shared ResourceStore and ResourceLedger
+- DEV-021 ResourceNode Random Placement
+  - deterministic logical spawn-slot generator
+  - facility-biased resource selection
+- DEV-022 Processing
+  - data-driven processing recipes
+  - atomic input check/consume/output
+- DEV-023 ItemsAdder Integration
+  - optional reflection-based bridge
+  - Paper ResourceItemProvider
+  - vanilla fallback when ItemsAdder is absent
 
-## Facility framework decision
-- Player-facing facility state remains simple: NORMAL / DAMAGED / OFFLINE / QUARANTINED.
-- Static facility identity and mutable runtime state are separated.
-- The six default facilities are bridge, engineering, medical, research, cargo, habitation.
-- Facility-specific numerical sub-state and actions are deferred to later DEV tickets.
+### Objectives
+- DEV-024 Objective Engine
+  - BASE and SECRET slots
+  - progress/completion/failure/scoring
+- DEV-025 Initial Objectives
+  - 24 initial objective definitions from design
+- DEV-026 ConflictSet
+  - 8 conflict axes
+  - deterministic 2-3 axis selection
+- DEV-027 Objective Assignment
+  - conflict-focused base objective distribution
+- DEV-028 Secret Mission
+  - maximum one additional secret mission per player
+
+### Events
+- DEV-029 Event Engine
+  - event registry, effects, history and runtime flags
+  - ship/facility/shared-resource effect adapters
+- DEV-030 Small Event Set
+  - 8 initial small events
+- DEV-031 Major Event Set
+  - reactor runaway
+  - hull breach
+  - mass infection signal
+  - alien intrusion signal
+  - total power failure
+
+## Batch debug commands
+- /space engineering ...
+- /space medical ...
+- /space actions <facilityId>
+- /space resource ...
+- /space objective ...
+- /space event ...
 
 ## Verified
 - DEV-001 through DEV-016 Windows test/build and Paper validation SUCCESS
+- DEV-017 through DEV-031 GitHub Actions test/build SUCCESS
+- DEV-017 through DEV-031 Windows integrated test/build/Paper validation SUCCESS
 
 ## Pending validation
-- None for DEV-016
+- None for DEV-017 through DEV-031
 
-## Known issues
-- Facility status does not yet change ShipState; engineering-specific integration begins in DEV-017.
-- Medical behavior begins in DEV-018.
-- Remaining facility-specific functions begin in DEV-019.
-- Physical coordinates/Structure Block placement remain intentionally deferred.
-- Paper startup reports build 123 is behind the current latest build; project remains intentionally pinned to Paper 26.2 build 123 until deliberately changed.
+## Balance and scope notes
+- Numerical repair, treatment, resource-node, recipe, and event effects are development defaults, not final balance values.
+- Medical infection truth and infected-player state remain deferred to DEV-043/046.
+- Small-event door/lighting/comms effects use event flags until their physical subsystems exist.
+- ItemsAdder integration is optional and must not prevent startup when ItemsAdder is absent.
+- Physical map coordinates/Structure Block placement remain intentionally deferred.
+- Paper remains intentionally pinned to 26.2 build 123.
 
 ## Environment
 - Java 25.0.4.1
