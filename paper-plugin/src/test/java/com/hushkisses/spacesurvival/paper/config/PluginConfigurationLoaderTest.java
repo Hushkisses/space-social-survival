@@ -29,6 +29,12 @@ class PluginConfigurationLoaderTest {
         assertEquals(45, yaml.getInt("scenario.accident-weight"));
         assertEquals(35, yaml.getInt("scenario.sabotage-weight"));
         assertEquals(20, yaml.getInt("scenario.infection-weight"));
+        assertEquals(180, yaml.getInt("incident.small-min-seconds"));
+        assertEquals(360, yaml.getInt("incident.small-max-seconds"));
+        assertEquals(1080, yaml.getInt("incident.major-first-min-seconds"));
+        assertEquals(1440, yaml.getInt("incident.major-first-max-seconds"));
+        assertEquals(1920, yaml.getInt("incident.major-second-min-seconds"));
+        assertEquals(2280, yaml.getInt("incident.major-second-max-seconds"));
     }
 
     @Test
@@ -47,6 +53,12 @@ class PluginConfigurationLoaderTest {
         yaml.set("scenario.accident-weight", 45);
         yaml.set("scenario.sabotage-weight", 35);
         yaml.set("scenario.infection-weight", 20);
+        yaml.set("incident.small-min-seconds", 180);
+        yaml.set("incident.small-max-seconds", 360);
+        yaml.set("incident.major-first-min-seconds", 1080);
+        yaml.set("incident.major-first-max-seconds", 1440);
+        yaml.set("incident.major-second-min-seconds", 1920);
+        yaml.set("incident.major-second-max-seconds", 2280);
 
         assertFalse(PluginConfigurationLoader.applyBalanceDefaults(yaml));
     }
