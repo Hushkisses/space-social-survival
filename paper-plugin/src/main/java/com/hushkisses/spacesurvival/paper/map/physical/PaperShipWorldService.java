@@ -1,5 +1,6 @@
 package com.hushkisses.spacesurvival.paper.map.physical;
 
+import com.hushkisses.spacesurvival.facility.FacilityId;
 import com.hushkisses.spacesurvival.map.generation.ConstrainedRandomMapGenerator;
 import com.hushkisses.spacesurvival.map.generation.GeneratedConnection;
 import com.hushkisses.spacesurvival.map.generation.GeneratedMap;
@@ -9,7 +10,9 @@ import com.hushkisses.spacesurvival.map.tile.TileCategory;
 import com.hushkisses.spacesurvival.map.tile.TileDefinition;
 import com.hushkisses.spacesurvival.map.tile.TileId;
 import com.hushkisses.spacesurvival.paper.config.MatchSetupConfig;
+import com.hushkisses.spacesurvival.paper.facility.FacilityTerminalRegistry;
 import org.bukkit.*;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
 import java.util.function.Function;
@@ -25,7 +28,24 @@ public final class PaperShipWorldService {
     private static final int COLUMNS = 4;
 
     private final ConstrainedRandomMapGenerator generator = new ConstrainedRandomMapGenerator();
+    private final ShipModuleStructureLoader structureLoader;
+    private final FacilityTerminalRegistry terminals;
+    private final PhysicalConnectionController connections;
+
     private PhysicalShipSnapshot activeSnapshot;
+    private Map<TileId, StructurePlacementResult> structurePlacements = Map.of();
+
+    public PaperShipWorldService(
+            JavaPlugin plugin,
+            FacilityTerminalRegistry terminals,
+            PhysicalConnectionController connections
+    ) {
+        this.structureLoader = new ShipModuleStructureLoader(
+                Objects.requireNonNull(plugin, "plugin")
+        );
+        this.terminals = Objects.requireNonNull(terminals, "terminals");
+        this.connections = Objects.requireNonNull(connections, "connections");
+    }
 
     public PhysicalShipSnapshot generateAndRender(long seed, MatchSetupConfig config) {
         Objects.requireNonNull(config, "config");
@@ -49,7 +69,12 @@ public final class PaperShipWorldService {
         World world = resolveWorld();
         clearBuildArea(world);
 
+        terminals.clear();
+        connections.reset();
+
         LinkedHashMap<TileId, PhysicalTilePlacement> placements = new LinkedHashMap<>();
+        LinkedHashMap<TileId, StructurePlacementResult> placementResults = new LinkedHashMap<>();
+
         int index = 0;
         for (TileId tileId : generated.tileIds()) {
             int col = index % COLUMNS;
@@ -62,11 +87,29 @@ public final class PaperShipWorldService {
                     MODULE_SIZE
             );
             placements.put(tileId, placement);
-            renderModule(world, placement, definitions.get(tileId));
+
+            StructurePlacementResult structure = structureLoader.placeIfAvailable(
+                    tileId,
+                    new Location(world, placement.minX(), FLOOR_Y, placement.minZ()),
+                    new Random(seed ^ tileId.value().hashCode())
+            );
+            placementResults.put(tileId, structure);
+
+            if (!structure.placed()) {
+                renderModule(world, placement, definitions.get(tileId));
+            }
+
+            FacilityId facilityId = coreFacility(tileId);
+            if (facilityId != null) {
+                renderFacilityTerminal(world, placement, facilityId);
+            }
+
             index++;
         }
 
         LinkedHashMap<PortalBlockKey, Location> portals = new LinkedHashMap<>();
+        int connectionId = 0;
+
         for (GeneratedConnection connection : generated.connections()) {
             PhysicalTilePlacement first = placements.get(connection.first().tileId());
             PhysicalTilePlacement second = placements.get(connection.second().tileId());
@@ -79,7 +122,16 @@ public final class PaperShipWorldService {
 
             portals.put(PortalBlockKey.of(firstPad), second.center(world));
             portals.put(PortalBlockKey.of(secondPad), first.center(world));
+
+            connections.register(
+                    connectionId++,
+                    connection,
+                    firstPad,
+                    secondPad
+            );
         }
+
+        structurePlacements = Collections.unmodifiableMap(placementResults);
 
         activeSnapshot = new PhysicalShipSnapshot(
                 seed,
@@ -94,6 +146,14 @@ public final class PaperShipWorldService {
 
     public Optional<PhysicalShipSnapshot> activeSnapshot() {
         return Optional.ofNullable(activeSnapshot);
+    }
+
+    public Map<TileId, StructurePlacementResult> structurePlacements() {
+        return structurePlacements;
+    }
+
+    public ShipModuleStructureLoader structureLoader() {
+        return structureLoader;
     }
 
     private static World resolveWorld() {
@@ -123,7 +183,7 @@ public final class PaperShipWorldService {
 
         for (int x = -2; x <= maxX; x++) {
             for (int z = -2; z <= maxZ; z++) {
-                for (int y = FLOOR_Y; y <= FLOOR_Y + 7; y++) {
+                for (int y = FLOOR_Y; y <= FLOOR_Y + 12; y++) {
                     world.getBlockAt(x, y, z).setType(Material.AIR, false);
                 }
             }
@@ -166,6 +226,22 @@ public final class PaperShipWorldService {
                 .setType(Material.SEA_LANTERN, false);
     }
 
+    private void renderFacilityTerminal(
+            World world,
+            PhysicalTilePlacement placement,
+            FacilityId facilityId
+    ) {
+        Location terminal = new Location(
+                world,
+                placement.minX() + 2,
+                placement.floorY() + 1,
+                placement.minZ() + 2
+        );
+
+        terminal.getBlock().setType(Material.LODESTONE, false);
+        terminals.register(terminal, facilityId);
+    }
+
     private static void renderPortalPad(Location pad) {
         World world = pad.getWorld();
         if (world == null) return;
@@ -176,6 +252,14 @@ public final class PaperShipWorldService {
 
         world.getBlockAt(x, y - 1, z).setType(Material.GOLD_BLOCK, false);
         world.getBlockAt(x, y, z).setType(Material.LIGHT_WEIGHTED_PRESSURE_PLATE, false);
+    }
+
+    private static FacilityId coreFacility(TileId tileId) {
+        return switch (tileId.value()) {
+            case "bridge", "engineering", "medical", "research", "cargo", "habitation" ->
+                    new FacilityId(tileId.value());
+            default -> null;
+        };
     }
 
     private static Material accent(TileCategory category) {
