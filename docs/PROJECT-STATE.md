@@ -5,7 +5,8 @@
 - Default branch: main
 
 ## Current HEAD
-23e428cd893006f01b324d830ee0b17d49c3a3c0
+- Resolve the latest GitHub branch HEAD at the start of every development session.
+- Do not embed a self-referential HEAD value in this file.
 
 ## Current milestone
 Milestone A — Playable Foundation
@@ -15,24 +16,39 @@ Milestone A — Playable Foundation
 
 ## Current DEV
 - DEV-001 Project Bootstrap
-- Status: PLANNED
+- Status: IMPLEMENTED
+- Development branch: dev/DEV-001-bootstrap
+- Implementation checkpoint: e81e2171e55cd7cae8d35eca164edc1830d8a208
 
 ## Next DEV
 - DEV-002 GameSession Core
 
 ## Implemented
 - Repository initialized
-- Game design v1.0 added
-- Development plan v1.0 added
-- Architecture baseline added
-- DEV-001 specification added
+- Game design v1.0
+- Development plan v1.0
+- Architecture baseline
+- Java 25 Gradle multi-module project
+- core module
+- paper-plugin module
+- Paper 26.2 build 123 API dependency
+- JUnit 5 baseline
+- Gradle 9.7.1 Wrapper
+- minimal SpaceSurvival plugin bootstrap
+- /space status command
+- Korean player-facing DEV-001 status output
+- GitHub Actions build workflow
+- Windows quick-deploy and dev-server start scripts
 
 ## Pending validation
-- DEV-001 implementation has not started yet
-- Local Java/Gradle/Paper build validation pending
+- GitHub Actions build verification
+- Windows `gradlew.bat test`
+- Windows `gradlew.bat build`
+- Paper 26.2 build 123 plugin load
+- `/space status` in-game/console verification
 
 ## Known issues
-- None
+- None currently recorded
 
 ## Environment
 - Java 25
