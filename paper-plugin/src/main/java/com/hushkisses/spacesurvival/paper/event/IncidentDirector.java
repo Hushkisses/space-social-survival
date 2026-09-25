@@ -154,6 +154,7 @@ public final class IncidentDirector {
     private void trigger(GameEventDefinition event) {
         plugin.gameEventEngine().trigger(event, plugin.gameEventContext());
         lastEventId = event.id().value();
+        plugin.telemetryService().recordIncident(lastEventId);
 
         applyWorldConsequences(event);
 
