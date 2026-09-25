@@ -136,6 +136,15 @@ public final class MatchOrchestrator {
                 initialEventCount
         );
 
+        plugin.telemetryService().start(
+                seed,
+                players.size(),
+                scenarioDefinition.type().name()
+        );
+        plugin.telemetryService().add("resource.cache.count", resourceCaches);
+        plugin.telemetryService().add("initial.incident.count", initialEventCount);
+        plugin.telemetryService().event("match", "briefing");
+
         for (PlayerId playerId : players) {
             Player online = plugin.getServer().getPlayer(playerId.value());
             if (online == null) continue;
@@ -173,6 +182,7 @@ public final class MatchOrchestrator {
         plugin.starterKitService().giveRoleKits();
         plugin.gameRuntimeService().start();
         plugin.incidentDirector().start(setupSnapshot.seed());
+        plugin.telemetryService().event("match", "active");
         status = MatchLifecycleStatus.ACTIVE;
 
         plugin.getServer().broadcastMessage(
@@ -195,6 +205,7 @@ public final class MatchOrchestrator {
 
     public void reset() {
         plugin.incidentDirector().stop();
+        plugin.telemetryService().finish("reset");
         if (plugin.gameRuntimeService().isRunning()) {
             plugin.gameRuntimeService().stop();
         }
