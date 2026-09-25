@@ -22,3 +22,11 @@ scenario:
   accident-weight: 45
   sabotage-weight: 35
   infection-weight: 20
+
+incident:
+  small-min-seconds: 180
+  small-max-seconds: 360
+  major-first-min-seconds: 1080
+  major-first-max-seconds: 1440
+  major-second-min-seconds: 1920
+  major-second-max-seconds: 2280
