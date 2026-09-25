@@ -1,0 +1,10 @@
+package com.hushkisses.spacesurvival.role;
+
+public enum RolePassive {
+    REPAIR_EFFICIENCY,
+    TREATMENT_EFFICIENCY,
+    RESTRAINT_AND_WEAPON_EFFICIENCY,
+    ANALYSIS_SPEED,
+    COMMUNICATION_EFFICIENCY,
+    CARGO_AND_PROCESSING_EFFICIENCY
+}
