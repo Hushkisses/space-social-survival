@@ -45,4 +45,10 @@ public final class RadioRuntimeState {
     public Set<PlayerId> radioHolders() {
         return Set.copyOf(radioHolders);
     }
+
+    public void reset() {
+        radioHolders.clear();
+        longRangeEnabled = true;
+        communicationsOutage = false;
+    }
 }
