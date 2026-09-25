@@ -210,7 +210,7 @@ final class SpaceCommand implements CommandExecutor {
                         + "§7~§f"
                         + plugin.configuration().game().maxPlayers()
         );
-        sender.sendMessage("§7현재 DEV: §eDEV-010 Lobby & Start Flow");
+        sender.sendMessage("§7현재 DEV: §eDEV-011 Role Framework");
     }
 
     private void sendLobbyUsage(CommandSender sender) {
