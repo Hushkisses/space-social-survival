@@ -15,4 +15,8 @@ public final class SanctionStateRegistry {
                 ignored -> new PlayerSanctionState()
         );
     }
+
+    public void clear() {
+        states.clear();
+    }
 }
