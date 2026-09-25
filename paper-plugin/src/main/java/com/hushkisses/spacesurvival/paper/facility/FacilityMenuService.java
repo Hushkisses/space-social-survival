@@ -174,6 +174,7 @@ public final class FacilityMenuService implements Listener {
             case FACILITY_QUARANTINED -> "시설 격리";
             case FACILITY_DAMAGED_ADVANCED_UNAVAILABLE -> "시설 손상";
             case MISSING_ROLE_CAPABILITY -> "직업 권한 부족";
+            case MISSING_REQUIRED_EQUIPMENT -> "필수 장비 없음";
         };
     }
 }
