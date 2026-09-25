@@ -32,6 +32,13 @@ public final class ConditionalPvpListener implements Listener {
         PlayerId attackerId = PlayerId.of(attacker.getUniqueId());
         PlayerId targetId = PlayerId.of(target.getUniqueId());
 
+        var sanctionState = plugin.sanctionStateRegistry().state(attackerId);
+        if (sanctionState.disarmed() || sanctionState.detained()) {
+            event.setCancelled(true);
+            attacker.sendMessage("§c현재 처분 상태에서는 공격할 수 없습니다.");
+            return;
+        }
+
         boolean securityAuthorized = plugin.roleSelectionService()
                 .selectedRole(attackerId)
                 .map(plugin.roleRegistry()::require)
