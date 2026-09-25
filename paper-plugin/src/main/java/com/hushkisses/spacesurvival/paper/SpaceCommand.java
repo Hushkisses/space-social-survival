@@ -8,6 +8,8 @@ import com.hushkisses.spacesurvival.lobby.LobbyStartException;
 import com.hushkisses.spacesurvival.paper.map.MapDebugService;
 import com.hushkisses.spacesurvival.paper.runtime.GameRuntimeService;
 import com.hushkisses.spacesurvival.time.CrisisStage;
+import com.hushkisses.spacesurvival.ship.ShipMetric;
+import com.hushkisses.spacesurvival.ship.ShipStateSnapshot;
 import com.hushkisses.spacesurvival.player.PlayerId;
 import com.hushkisses.spacesurvival.role.RoleDefinition;
 import com.hushkisses.spacesurvival.role.RoleId;
@@ -64,8 +66,88 @@ final class SpaceCommand implements CommandExecutor {
             return handleRuntime(sender, args);
         }
 
+        if (args[0].equalsIgnoreCase("ship")) {
+            return handleShip(sender, args);
+        }
+
         sendUsage(sender);
         return true;
+    }
+
+    private boolean handleShip(CommandSender sender, String[] args) {
+        if (args.length < 2) {
+            sendShipUsage(sender);
+            return true;
+        }
+
+        return switch (args[1].toLowerCase()) {
+            case "status" -> {
+                sendShipStatus(sender);
+                yield true;
+            }
+            case "reset" -> {
+                if (!sender.hasPermission("spacesurvival.admin")) {
+                    sender.sendMessage("§c우주선 상태 초기화 권한이 없습니다.");
+                    yield true;
+                }
+                plugin.resetShipState();
+                sender.sendMessage("§a우주선 상태를 정상 상태로 초기화했습니다.");
+                sendShipStatus(sender);
+                yield true;
+            }
+            case "set" -> handleShipSet(sender, args);
+            default -> {
+                sendShipUsage(sender);
+                yield true;
+            }
+        };
+    }
+
+    private boolean handleShipSet(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("spacesurvival.admin")) {
+            sender.sendMessage("§c우주선 상태 변경 권한이 없습니다.");
+            return true;
+        }
+        if (args.length < 4) {
+            sendShipUsage(sender);
+            return true;
+        }
+
+        ShipMetric metric;
+        try {
+            metric = ShipMetric.valueOf(args[2].toUpperCase());
+        } catch (IllegalArgumentException exception) {
+            sender.sendMessage("§c항목은 power, oxygen, hull, reactor 중 하나여야 합니다.");
+            return true;
+        }
+
+        int value;
+        try {
+            value = Integer.parseInt(args[3]);
+        } catch (NumberFormatException exception) {
+            sender.sendMessage("§c값은 0~100 사이 정수여야 합니다.");
+            return true;
+        }
+
+        try {
+            plugin.shipState().set(metric, value);
+        } catch (IllegalArgumentException exception) {
+            sender.sendMessage("§c값은 0~100 사이여야 합니다.");
+            return true;
+        }
+
+        sender.sendMessage("§a우주선 상태를 변경했습니다: " + metric.name() + "=" + value);
+        sendShipStatus(sender);
+        return true;
+    }
+
+    private void sendShipStatus(CommandSender sender) {
+        ShipStateSnapshot ship = plugin.shipState().snapshot();
+        sender.sendMessage("§6[우주 생존] §f우주선 핵심 상태");
+        sender.sendMessage("§7전력: §f" + ship.power() + "%");
+        sender.sendMessage("§7산소: §f" + ship.oxygen() + "%");
+        sender.sendMessage("§7선체 안정도: §f" + ship.hull() + "%");
+        sender.sendMessage("§7원자로 안정도: §f" + ship.reactor() + "%");
     }
 
     private boolean handleRuntime(CommandSender sender, String[] args) {
@@ -523,7 +605,7 @@ final class SpaceCommand implements CommandExecutor {
                         + "§7~§f"
                         + plugin.configuration().game().maxPlayers()
         );
-        sender.sendMessage("§7현재 DEV: §eDEV-014 Game Timer & Crisis");
+        sender.sendMessage("§7현재 DEV: §eDEV-015 ShipState");
     }
 
     private void sendRoleUsage(CommandSender sender) {
@@ -532,6 +614,12 @@ final class SpaceCommand implements CommandExecutor {
         sender.sendMessage("§c사용법: /space role gui");
         sender.sendMessage("§c사용법: /space role choose <roleId>");
         sender.sendMessage("§c사용법: /space role status");
+    }
+
+    private void sendShipUsage(CommandSender sender) {
+        sender.sendMessage("§c사용법: /space ship status");
+        sender.sendMessage("§c사용법: /space ship set <power|oxygen|hull|reactor> <0-100>");
+        sender.sendMessage("§c사용법: /space ship reset");
     }
 
     private void sendRuntimeUsage(CommandSender sender) {
@@ -552,6 +640,7 @@ final class SpaceCommand implements CommandExecutor {
         sender.sendMessage("§c사용법: /space lobby join|leave|status|start");
         sender.sendMessage("§c사용법: /space briefing");
         sender.sendMessage("§c사용법: /space runtime start|status|stop");
+        sender.sendMessage("§c사용법: /space ship status|set|reset");
         sender.sendMessage("§c사용법: /space role prepare|candidates|gui|choose|status");
         sender.sendMessage("§c사용법: /space map generate [seed]");
     }
