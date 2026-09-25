@@ -15,6 +15,7 @@ java {
 dependencies {
     implementation(project(":core"))
     implementation(project(":integrations:itemsadder"))
+    implementation(project(":integrations:voicechat"))
     compileOnly("io.papermc.paper:paper-api:26.2.build.123-stable")
 }
 
@@ -37,9 +38,12 @@ tasks.jar {
 
     dependsOn(project(":core").tasks.named("classes"))
     dependsOn(project(":integrations:itemsadder").tasks.named("classes"))
+    dependsOn(project(":integrations:voicechat").tasks.named("classes"))
 
     from(project(":core").layout.buildDirectory.dir("classes/java/main"))
     from(project(":core").layout.buildDirectory.dir("resources/main"))
     from(project(":integrations:itemsadder").layout.buildDirectory.dir("classes/java/main"))
     from(project(":integrations:itemsadder").layout.buildDirectory.dir("resources/main"))
+    from(project(":integrations:voicechat").layout.buildDirectory.dir("classes/java/main"))
+    from(project(":integrations:voicechat").layout.buildDirectory.dir("resources/main"))
 }

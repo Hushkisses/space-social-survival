@@ -1,6 +1,11 @@
 package com.hushkisses.spacesurvival.paper;
 
 import com.hushkisses.spacesurvival.core.BootstrapMarker;
+import com.hushkisses.spacesurvival.communication.CommunicationPolicy;
+import com.hushkisses.spacesurvival.communication.RadioRuntimeState;
+import com.hushkisses.spacesurvival.communication.RadioService;
+import com.hushkisses.spacesurvival.infection.InfectionService;
+import com.hushkisses.spacesurvival.integration.voicechat.SimpleVoiceChatBridge;
 import com.hushkisses.spacesurvival.event.DefaultGameEventCatalog;
 import com.hushkisses.spacesurvival.event.GameEventContext;
 import com.hushkisses.spacesurvival.event.GameEventEngine;
@@ -23,6 +28,8 @@ import com.hushkisses.spacesurvival.paper.config.PluginConfigurationLoader;
 import com.hushkisses.spacesurvival.paper.item.DefaultResourceItemProvider;
 import com.hushkisses.spacesurvival.paper.item.ResourceItemProvider;
 import com.hushkisses.spacesurvival.paper.lobby.LobbyConnectionListener;
+import com.hushkisses.spacesurvival.paper.pvp.ConditionalPvpListener;
+import com.hushkisses.spacesurvival.paper.social.SanctionEnforcementListener;
 import com.hushkisses.spacesurvival.paper.runtime.GameRuntimeService;
 import com.hushkisses.spacesurvival.paper.ui.OpeningBriefingUi;
 import com.hushkisses.spacesurvival.paper.ui.OpeningUiListener;
@@ -35,6 +42,13 @@ import com.hushkisses.spacesurvival.role.DefaultRoleCatalog;
 import com.hushkisses.spacesurvival.role.RoleRegistry;
 import com.hushkisses.spacesurvival.role.selection.RoleSelectionService;
 import com.hushkisses.spacesurvival.ship.ShipState;
+import com.hushkisses.spacesurvival.scenario.InfectionScenarioService;
+import com.hushkisses.spacesurvival.scenario.ScenarioEngine;
+import com.hushkisses.spacesurvival.social.meeting.MeetingService;
+import com.hushkisses.spacesurvival.social.pvp.ConditionalPvpPolicy;
+import com.hushkisses.spacesurvival.social.pvp.PvpRuntimeState;
+import com.hushkisses.spacesurvival.social.sanction.SanctionExecutor;
+import com.hushkisses.spacesurvival.social.sanction.SanctionStateRegistry;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -67,6 +81,20 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private GameEventEngine gameEventEngine;
     private GameEventRuntimeState gameEventRuntimeState;
     private GameEventContext gameEventContext;
+
+    private MeetingService meetingService;
+    private SanctionStateRegistry sanctionStateRegistry;
+    private SanctionExecutor sanctionExecutor;
+    private PvpRuntimeState pvpRuntimeState;
+    private ConditionalPvpPolicy conditionalPvpPolicy;
+
+    private RadioRuntimeState radioRuntimeState;
+    private RadioService radioService;
+    private SimpleVoiceChatBridge simpleVoiceChatBridge;
+
+    private ScenarioEngine scenarioEngine;
+    private InfectionService infectionService;
+    private InfectionScenarioService infectionScenarioService;
 
     @Override
     public void onEnable() {
@@ -109,6 +137,24 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                 shipState
         );
 
+        meetingService = new MeetingService(
+                facilityRegistry,
+                shipState,
+                java.time.Duration.ofMinutes(3)
+        );
+        sanctionStateRegistry = new SanctionStateRegistry();
+        sanctionExecutor = new SanctionExecutor(sanctionStateRegistry);
+        pvpRuntimeState = new PvpRuntimeState();
+        conditionalPvpPolicy = new ConditionalPvpPolicy();
+
+        radioRuntimeState = new RadioRuntimeState();
+        radioService = new RadioService(radioRuntimeState, new CommunicationPolicy());
+        simpleVoiceChatBridge = new SimpleVoiceChatBridge();
+
+        scenarioEngine = new ScenarioEngine();
+        infectionService = new InfectionService();
+        infectionScenarioService = new InfectionScenarioService();
+
         registerCommands();
         getServer().getPluginManager().registerEvents(
                 new LobbyConnectionListener(lobbyService),
@@ -121,6 +167,14 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                         roleSelectionService,
                         roleRegistry
                 ),
+                this
+        );
+        getServer().getPluginManager().registerEvents(
+                new ConditionalPvpListener(this),
+                this
+        );
+        getServer().getPluginManager().registerEvents(
+                new SanctionEnforcementListener(this),
                 this
         );
 
@@ -142,6 +196,9 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         getLogger().info("Events loaded: " + gameEventRegistry.all().size());
         getLogger().info(
                 "ItemsAdder bridge available: " + resourceItemProvider.customItemsAvailable()
+        );
+        getLogger().info(
+                "Simple Voice Chat bridge: " + simpleVoiceChatBridge.status()
         );
     }
 
@@ -240,6 +297,56 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
 
     public GameEventContext gameEventContext() {
         return require(gameEventContext, "Game event context");
+    }
+
+    public MeetingService meetingService() {
+        return require(meetingService, "Meeting service");
+    }
+
+    public SanctionStateRegistry sanctionStateRegistry() {
+        return require(sanctionStateRegistry, "Sanction state registry");
+    }
+
+    public SanctionExecutor sanctionExecutor() {
+        return require(sanctionExecutor, "Sanction executor");
+    }
+
+    public PvpRuntimeState pvpRuntimeState() {
+        return require(pvpRuntimeState, "PvP runtime state");
+    }
+
+    public ConditionalPvpPolicy conditionalPvpPolicy() {
+        return require(conditionalPvpPolicy, "Conditional PvP policy");
+    }
+
+    public RadioRuntimeState radioRuntimeState() {
+        return require(radioRuntimeState, "Radio runtime state");
+    }
+
+    public RadioService radioService() {
+        return require(radioService, "Radio service");
+    }
+
+    public SimpleVoiceChatBridge simpleVoiceChatBridge() {
+        return require(simpleVoiceChatBridge, "Simple Voice Chat bridge");
+    }
+
+    public ScenarioEngine scenarioEngine() {
+        return require(scenarioEngine, "Scenario engine");
+    }
+
+    public InfectionService infectionService() {
+        return require(infectionService, "Infection service");
+    }
+
+    public InfectionScenarioService infectionScenarioService() {
+        return require(infectionScenarioService, "Infection scenario service");
+    }
+
+    public void resetScenarioRuntime() {
+        scenarioEngine.clear();
+        infectionService = new InfectionService();
+        pvpRuntimeState = new PvpRuntimeState();
     }
 
     public void resetShipState() {
