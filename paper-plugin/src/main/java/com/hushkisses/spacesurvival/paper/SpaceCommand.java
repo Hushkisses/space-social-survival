@@ -41,6 +41,6 @@ final class SpaceCommand implements CommandExecutor {
                         + "§7~§f"
                         + plugin.configuration().game().maxPlayers()
         );
-        sender.sendMessage("§7현재 DEV: §eDEV-007 Connection & TP");
+        sender.sendMessage("§7현재 DEV: §eDEV-008 Constrained Random Map Generator");
     }
 }
