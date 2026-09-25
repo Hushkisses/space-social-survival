@@ -18,28 +18,26 @@ Milestone A — Playable Foundation
 
 ## Current DEV
 - DEV-004 Configuration System
-- Status: PLANNED
+- Status: IMPLEMENTED
+- Development branch: dev/DEV-004-configuration
 
 ## Next DEV
 - DEV-005 Sector/Room/Connection Model
 
 ## Implemented
-- DEV-003 PlayerId
+- DEV-004 core GameConfig validation
+- DEV-004 core BalanceConfig validation
+- DEV-004 Paper YAML configuration loader
+- default config.yml
+- default balance.yml
+- fail-fast invalid configuration behavior
+- status command displays configured player range
 - DEV-003 PlayerState domain model
-- alive/dead state
-- connected/disconnected state
-- disconnect/reconnect idempotency
-- death timestamp
-- connection state-change timestamp
-- Paper-independent player state
 - DEV-002 GameSession lifecycle core
 - Java 25 Gradle multi-module project
-- core module
-- paper-plugin module
 - Paper 26.2 build 123 API dependency
 - JUnit 5 baseline
 - Gradle 9.7.1 Wrapper
-- /space status command
 - GitHub Actions build workflow
 - Windows quick-deploy and dev-server start scripts
 
@@ -49,7 +47,10 @@ Milestone A — Playable Foundation
 - DEV-003 Windows test/build and Paper validation SUCCESS
 
 ## Pending validation
-- None for DEV-003
+- DEV-004 Windows `gradlew.bat test`
+- DEV-004 Windows `gradlew.bat build`
+- DEV-004 Paper startup configuration-load verification
+- DEV-004 `space status` configuration output verification
 
 ## Known issues
 - Paper startup reports build 123 is behind the current latest build; project remains intentionally pinned to Paper 26.2 build 123 until deliberately changed.
