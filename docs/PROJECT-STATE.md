@@ -12,6 +12,7 @@
 Milestone A — Playable Foundation
 
 ## Last completed DEV
+- DEV-013 Briefing & Initial Goal UI — COMPLETE
 - DEV-012 Role Candidate Selection — COMPLETE
 - DEV-011 Role Framework — COMPLETE
 - DEV-010 Lobby & Start Flow — COMPLETE
@@ -26,20 +27,14 @@ Milestone A — Playable Foundation
 - DEV-001 Project Bootstrap — COMPLETE
 
 ## Current DEV
-- DEV-013 Briefing & Initial Goal UI
-- Status: IMPLEMENTED
-- Development branch: dev/DEV-013-briefing-goal-ui
+- DEV-014 Game Timer & Crisis
+- Status: PLANNED
 
 ## Next DEV
-- DEV-014 Game Timer & Crisis
+- DEV-015 ShipState
 
 ## Implemented
-- DEV-013 opening accident briefing inventory UI
-- DEV-013 initial-problem and common-goal presentation
-- DEV-013 three-candidate role selection inventory GUI
-- DEV-013 click-to-select integration with RoleSelectionService
-- DEV-013 automatic briefing UI open after role candidate preparation
-- DEV-013 /space briefing and /space role gui developer reopen commands
+- DEV-013 opening briefing and role selection UI
 - DEV-012 role candidate generation and selection
 - DEV-011 role framework and six-role catalog
 - DEV-010 lobby and start flow
@@ -52,36 +47,11 @@ Milestone A — Playable Foundation
 - DEV-003 PlayerState domain model
 - DEV-002 GameSession lifecycle core
 
-## Opening flow implementation note
-- DEV-013 presents the public accident briefing, initial problem examples, common objective, and role selection.
-- Private objective assignment is intentionally deferred to DEV-024+ Objective Engine.
-- Starter equipment/resource distribution is intentionally deferred to DEV-020+ resource/item work.
-- Initial problem values shown in DEV-013 are presentation placeholders from the design baseline, not live ShipState values.
-
-## Role framework decision
-- Roles represent profession/specialty, not hidden alignment.
-- Everyone keeps basic actions; role metadata grants passive advantages and advanced capabilities.
-- Initial defaults currently use maxCopies=2.
-- Support for maxCopies=1 is active in the selection engine, but no role is hardcoded singleton yet.
-
-## Map build decision
-- Physical ship modules will be built on a superflat/flat world for easier construction and predictable placement.
-- Core map logic remains coordinate-independent.
-
 ## Verified
-- DEV-001 through DEV-012 Windows test/build and Paper validation SUCCESS
+- DEV-001 through DEV-013 Windows test/build and Paper validation SUCCESS
 
 ## Pending validation
-- DEV-013 Windows `gradlew.bat test`
-- DEV-013 Windows `gradlew.bat build`
-- DEV-013 Paper plugin load
-- DEV-013 `space status`
-- DEV-013 player lobby join
-- DEV-013 `space role prepare 12345`
-- DEV-013 briefing GUI display
-- DEV-013 click `직업 후보 확인`
-- DEV-013 role candidate GUI displays exactly 3 choices
-- DEV-013 candidate click selects role and closes GUI
+- None for DEV-013
 
 ## Known issues
 - Initial problem/common-goal UI uses baseline placeholder content until ShipState/Facility/Event/Objective systems provide live values.
