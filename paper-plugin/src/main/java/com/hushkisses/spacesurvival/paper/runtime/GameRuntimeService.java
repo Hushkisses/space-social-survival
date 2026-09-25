@@ -1,5 +1,7 @@
 package com.hushkisses.spacesurvival.paper.runtime;
 
+import com.hushkisses.spacesurvival.ship.ShipCrisisPressure;
+import com.hushkisses.spacesurvival.ship.ShipState;
 import com.hushkisses.spacesurvival.time.CrisisEvaluator;
 import com.hushkisses.spacesurvival.time.CrisisFactors;
 import com.hushkisses.spacesurvival.time.CrisisStage;
@@ -18,13 +20,16 @@ public final class GameRuntimeService {
     private final JavaPlugin plugin;
     private final Duration targetDuration;
     private final CrisisEvaluator crisisEvaluator;
+    private final ShipState shipState;
+    private final ShipCrisisPressure shipCrisisPressure = new ShipCrisisPressure();
 
     private GameTimer timer;
     private CrisisStage crisisStage = CrisisStage.STABLE;
     private BukkitTask task;
 
-    public GameRuntimeService(JavaPlugin plugin, int targetMatchMinutes) {
+    public GameRuntimeService(JavaPlugin plugin, int targetMatchMinutes, ShipState shipState) {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
+        this.shipState = Objects.requireNonNull(shipState, "shipState");
 
         if (targetMatchMinutes < 1) {
             throw new IllegalArgumentException("targetMatchMinutes must be positive");
@@ -86,7 +91,7 @@ public final class GameRuntimeService {
         MatchTimeSnapshot time = timer.snapshot();
         CrisisStage stage = crisisEvaluator.evaluate(
                 time.elapsed(),
-                CrisisFactors.neutral()
+                shipCrisisPressure.evaluate(shipState.snapshot())
         );
 
         return Optional.of(new RuntimeSnapshot(time, stage));
@@ -104,7 +109,7 @@ public final class GameRuntimeService {
         MatchTimeSnapshot time = timer.snapshot();
         CrisisStage evaluated = crisisEvaluator.evaluate(
                 time.elapsed(),
-                CrisisFactors.neutral()
+                shipCrisisPressure.evaluate(shipState.snapshot())
         );
 
         if (evaluated != crisisStage) {
