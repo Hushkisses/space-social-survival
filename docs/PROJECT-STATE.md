@@ -23,12 +23,17 @@ Milestone A — Playable Foundation
 
 ## Current DEV
 - DEV-009 Map Debug Tools
-- Status: PLANNED
+- Status: IMPLEMENTED
+- Development branch: dev/DEV-009-map-debug-tools
 
 ## Next DEV
 - DEV-010 Lobby & Start Flow
 
 ## Implemented
+- DEV-009 synthetic 20-tile debug pool
+- DEV-009 deterministic map debug generation by seed
+- DEV-009 /space map generate [seed]
+- DEV-009 map tile/connection/dead-end debug output
 - DEV-008 constrained logical random map generation
 - DEV-007 connection access states and Paper teleport adapter
 - DEV-006 logical tile registration
@@ -45,10 +50,15 @@ Milestone A — Playable Foundation
 - DEV-001 through DEV-008 Windows test/build and Paper validation SUCCESS
 
 ## Pending validation
-- None for DEV-008
+- DEV-009 Windows `gradlew.bat test`
+- DEV-009 Windows `gradlew.bat build`
+- DEV-009 Paper plugin load
+- DEV-009 `space status`
+- DEV-009 `space map generate 12345`
 
 ## Known issues
-- DEV-008 generates logical topology only; physical coordinates and structure placement are intentionally deferred.
+- DEV-009 debug tile definitions are synthetic and are not final physical map content.
+- Physical coordinates/Structure Block placement remain intentionally deferred.
 - Paper startup reports build 123 is behind the current latest build; project remains intentionally pinned to Paper 26.2 build 123 until deliberately changed.
 
 ## Environment
