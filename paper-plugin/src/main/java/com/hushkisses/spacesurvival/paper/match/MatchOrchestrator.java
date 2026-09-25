@@ -168,6 +168,7 @@ public final class MatchOrchestrator {
 
         session.transitionTo(GamePhase.ACTIVE);
         plugin.gameRuntimeService().start();
+        plugin.incidentDirector().start(setupSnapshot.seed());
         status = MatchLifecycleStatus.ACTIVE;
 
         plugin.getServer().broadcastMessage(
@@ -189,6 +190,7 @@ public final class MatchOrchestrator {
     }
 
     public void reset() {
+        plugin.incidentDirector().stop();
         if (plugin.gameRuntimeService().isRunning()) {
             plugin.gameRuntimeService().stop();
         }
