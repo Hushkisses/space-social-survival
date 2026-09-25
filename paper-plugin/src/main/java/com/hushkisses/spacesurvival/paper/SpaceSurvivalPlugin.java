@@ -29,6 +29,7 @@ import com.hushkisses.spacesurvival.paper.item.DefaultResourceItemProvider;
 import com.hushkisses.spacesurvival.paper.item.ResourceItemProvider;
 import com.hushkisses.spacesurvival.paper.lobby.LobbyConnectionListener;
 import com.hushkisses.spacesurvival.paper.pvp.ConditionalPvpListener;
+import com.hushkisses.spacesurvival.paper.social.SanctionEnforcementListener;
 import com.hushkisses.spacesurvival.paper.runtime.GameRuntimeService;
 import com.hushkisses.spacesurvival.paper.ui.OpeningBriefingUi;
 import com.hushkisses.spacesurvival.paper.ui.OpeningUiListener;
@@ -170,6 +171,10 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         );
         getServer().getPluginManager().registerEvents(
                 new ConditionalPvpListener(this),
+                this
+        );
+        getServer().getPluginManager().registerEvents(
+                new SanctionEnforcementListener(this),
                 this
         );
 
