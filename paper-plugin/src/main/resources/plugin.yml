@@ -7,11 +7,14 @@ api-version: '26.2'
 
 commands:
   space:
-    description: 우주 생존게임 개발/관리 명령어
+    description: 우주 생존게임 명령어
     usage: /space status
-    permission: spacesurvival.admin
+    permission: spacesurvival.use
 
 permissions:
+  spacesurvival.use:
+    description: 우주 생존게임 기본 명령어 사용 권한
+    default: true
   spacesurvival.admin:
     description: 우주 생존게임 관리 명령어 사용 권한
     default: op
