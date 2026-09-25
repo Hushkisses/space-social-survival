@@ -24,6 +24,8 @@ Milestone A — Playable Foundation
 - DEV-002 GameSession Core
 
 ## Implemented
+- Windows `gradlew.bat test` verified SUCCESS
+- Windows `gradlew.bat build` verified SUCCESS
 - Repository initialized
 - Game design v1.0
 - Development plan v1.0
@@ -42,8 +44,6 @@ Milestone A — Playable Foundation
 
 ## Pending validation
 - GitHub Actions build verification
-- Windows `gradlew.bat test`
-- Windows `gradlew.bat build`
 - Paper 26.2 build 123 plugin load
 - `/space status` in-game/console verification
 
