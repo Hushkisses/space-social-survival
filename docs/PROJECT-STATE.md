@@ -15,9 +15,7 @@ Post-MVP Vertical Slice Integration
 - DEV-001 through DEV-052 MVP gameplay roadmap — COMPLETE
 
 ## Current DEV
-- DEV-053 through DEV-059 Vertical Slice Integration
-- Status: VALIDATION_PENDING
-- Development branch: dev/DEV-053-059-vertical-slice
+- DEV-001 through DEV-059 gameplay + vertical slice — COMPLETE
 
 ## Next DEV
 - playtest-driven content, UX, and balance tickets
@@ -106,15 +104,10 @@ Post-MVP Vertical Slice Integration
 - DEV-001 through DEV-052 Windows integrated test/build/Paper validation SUCCESS
 - DEV-053 through DEV-059 GitHub Actions full test/build SUCCESS
 - DEV-053.1 legacy balance.yml migration hotfix GitHub Actions test/build SUCCESS (Build run #483)
+- DEV-053 through DEV-059 Windows integrated vertical-slice validation SUCCESS
 
 ## Pending validation
-- Windows full test/build
-- Paper startup
-- one-player /space match devstart flow
-- physical ship generation and portal traversal
-- briefing GUI -> role selection -> automatic ACTIVE transition
-- live action-bar HUD
-- /space match reset and second devstart in same server process
+- None for DEV-053 through DEV-059
 
 ## Hotfixes
 - DEV-053.1 Legacy balance configuration migration
