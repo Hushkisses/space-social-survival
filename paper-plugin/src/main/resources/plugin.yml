@@ -1,0 +1,17 @@
+name: SpaceSurvival
+version: '${version}'
+main: com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin
+description: Minecraft space social survival game
+author: Hushkisses
+api-version: '26.2'
+
+commands:
+  space:
+    description: 우주 생존게임 개발/관리 명령어
+    usage: /space status
+    permission: spacesurvival.admin
+
+permissions:
+  spacesurvival.admin:
+    description: 우주 생존게임 관리 명령어 사용 권한
+    default: op

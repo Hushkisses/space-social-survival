@@ -1,0 +1,3 @@
+command:
+  usage: "사용법: /space status"
+  status-title: "[우주 생존] 개발 서버 상태"
