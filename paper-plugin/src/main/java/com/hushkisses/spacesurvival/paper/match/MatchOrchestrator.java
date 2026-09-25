@@ -103,6 +103,8 @@ public final class MatchOrchestrator {
                 seed,
                 config
         );
+        int resourceCaches = plugin.resourceWorldService().populate(ship, seed);
+        plugin.getLogger().info("Physical resource caches placed: " + resourceCaches);
 
         int initialEventCount = config.initialSmallEventsMin()
                 + random.nextInt(
@@ -138,6 +140,7 @@ public final class MatchOrchestrator {
             Player online = plugin.getServer().getPlayer(playerId.value());
             if (online == null) continue;
 
+            online.getInventory().clear();
             online.setGameMode(GameMode.SURVIVAL);
             online.teleportAsync(ship.bridgeSpawn());
             plugin.openingBriefingUi().open(
@@ -167,6 +170,7 @@ public final class MatchOrchestrator {
         }
 
         session.transitionTo(GamePhase.ACTIVE);
+        plugin.starterKitService().giveRoleKits();
         plugin.gameRuntimeService().start();
         plugin.incidentDirector().start(setupSnapshot.seed());
         status = MatchLifecycleStatus.ACTIVE;
