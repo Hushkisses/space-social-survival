@@ -12,6 +12,7 @@
 Milestone A — Playable Foundation
 
 ## Last completed DEV
+- DEV-013 Briefing & Initial Goal UI — COMPLETE
 - DEV-012 Role Candidate Selection — COMPLETE
 - DEV-011 Role Framework — COMPLETE
 - DEV-010 Lobby & Start Flow — COMPLETE
@@ -26,13 +27,14 @@ Milestone A — Playable Foundation
 - DEV-001 Project Bootstrap — COMPLETE
 
 ## Current DEV
-- DEV-013 Briefing & Initial Goal UI
+- DEV-014 Game Timer & Crisis
 - Status: PLANNED
 
 ## Next DEV
-- DEV-014 Game Timer & Crisis
+- DEV-015 ShipState
 
 ## Implemented
+- DEV-013 opening briefing and role selection UI
 - DEV-012 role candidate generation and selection
 - DEV-011 role framework and six-role catalog
 - DEV-010 lobby and start flow
@@ -45,24 +47,14 @@ Milestone A — Playable Foundation
 - DEV-003 PlayerState domain model
 - DEV-002 GameSession lifecycle core
 
-## Role framework decision
-- Roles represent profession/specialty, not hidden alignment.
-- Everyone keeps basic actions; role metadata grants passive advantages and advanced capabilities.
-- Initial defaults currently use maxCopies=2.
-- Support for maxCopies=1 is active in the selection engine, but no role is hardcoded singleton yet.
-
-## Map build decision
-- Physical ship modules will be built on a superflat/flat world for easier construction and predictable placement.
-- Core map logic remains coordinate-independent.
-
 ## Verified
-- DEV-001 through DEV-012 Windows test/build and Paper validation SUCCESS
+- DEV-001 through DEV-013 Windows test/build and Paper validation SUCCESS
 
 ## Pending validation
-- None for DEV-012
+- None for DEV-013
 
 ## Known issues
-- Role selection is still command-accessible as a developer/debug path; player-facing GUI is planned for DEV-013.
+- Initial problem/common-goal UI uses baseline placeholder content until ShipState/Facility/Event/Objective systems provide live values.
 - Candidate generation can present a role that becomes full before a later player chooses it; selection is then rejected and the player must choose another offered role.
 - Role bonuses/capabilities remain metadata until corresponding facility/action systems are implemented.
 - Physical coordinates/Structure Block placement remain intentionally deferred.

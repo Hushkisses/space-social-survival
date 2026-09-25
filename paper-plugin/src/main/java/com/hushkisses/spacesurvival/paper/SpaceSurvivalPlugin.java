@@ -5,6 +5,9 @@ import com.hushkisses.spacesurvival.lobby.LobbyService;
 import com.hushkisses.spacesurvival.paper.config.PluginConfiguration;
 import com.hushkisses.spacesurvival.paper.config.PluginConfigurationLoader;
 import com.hushkisses.spacesurvival.paper.lobby.LobbyConnectionListener;
+import com.hushkisses.spacesurvival.paper.ui.OpeningBriefingUi;
+import com.hushkisses.spacesurvival.paper.ui.OpeningUiListener;
+import com.hushkisses.spacesurvival.paper.ui.RoleSelectionUi;
 import com.hushkisses.spacesurvival.role.DefaultRoleCatalog;
 import com.hushkisses.spacesurvival.role.RoleRegistry;
 import com.hushkisses.spacesurvival.role.selection.RoleSelectionService;
@@ -17,6 +20,8 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private LobbyService lobbyService;
     private RoleRegistry roleRegistry;
     private RoleSelectionService roleSelectionService;
+    private OpeningBriefingUi openingBriefingUi;
+    private RoleSelectionUi roleSelectionUi;
 
     @Override
     public void onEnable() {
@@ -24,10 +29,21 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         lobbyService = new LobbyService(configuration.game());
         roleRegistry = DefaultRoleCatalog.createRegistry();
         roleSelectionService = new RoleSelectionService(roleRegistry);
+        openingBriefingUi = new OpeningBriefingUi();
+        roleSelectionUi = new RoleSelectionUi(this, roleSelectionService, roleRegistry);
 
         registerCommands();
         getServer().getPluginManager().registerEvents(
                 new LobbyConnectionListener(lobbyService),
+                this
+        );
+        getServer().getPluginManager().registerEvents(
+                new OpeningUiListener(
+                        openingBriefingUi,
+                        roleSelectionUi,
+                        roleSelectionService,
+                        roleRegistry
+                ),
                 this
         );
 
@@ -76,6 +92,20 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
             throw new IllegalStateException("Role selection service is not initialized yet");
         }
         return roleSelectionService;
+    }
+
+    public OpeningBriefingUi openingBriefingUi() {
+        if (openingBriefingUi == null) {
+            throw new IllegalStateException("Opening briefing UI is not initialized yet");
+        }
+        return openingBriefingUi;
+    }
+
+    public RoleSelectionUi roleSelectionUi() {
+        if (roleSelectionUi == null) {
+            throw new IllegalStateException("Role selection UI is not initialized yet");
+        }
+        return roleSelectionUi;
     }
 
     private void registerCommands() {
