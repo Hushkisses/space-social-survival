@@ -24,12 +24,20 @@ Milestone A — Playable Foundation
 
 ## Current DEV
 - DEV-010 Lobby & Start Flow
-- Status: PLANNED
+- Status: IMPLEMENTED
+- Development branch: dev/DEV-010-lobby-start-flow
 
 ## Next DEV
 - DEV-011 Role Framework
 
 ## Implemented
+- DEV-010 LobbyService
+- DEV-010 configured min/max player enforcement
+- DEV-010 join / leave / reconnect / disconnect flow
+- DEV-010 GameSession creation and WAITING -> PREPARING start transition
+- DEV-010 /space lobby join|leave|status|start
+- DEV-010 Paper join/quit connection listener
+- DEV-010 ordinary-player command permission and admin-only start
 - DEV-009 deterministic map debug tools
 - DEV-008 constrained logical random map generation
 - DEV-007 connection access states and Paper teleport adapter
@@ -48,10 +56,16 @@ Milestone A — Playable Foundation
 - DEV-009 deterministic seed validation SUCCESS for seed 12345
 
 ## Pending validation
-- None for DEV-009
+- DEV-010 Windows `gradlew.bat test`
+- DEV-010 Windows `gradlew.bat build`
+- DEV-010 Paper plugin load
+- DEV-010 `space status`
+- DEV-010 player `/space lobby join`
+- DEV-010 `space lobby status`
+- DEV-010 insufficient-player `space lobby start` rejection
 
 ## Known issues
-- DEV-009 debug tile definitions are synthetic and not final physical map content.
+- DEV-010 successful Paper-side match start with 6+ real players is covered by core tests but not required for single-developer smoke validation.
 - Physical coordinates/Structure Block placement remain intentionally deferred.
 - Paper startup reports build 123 is behind the current latest build; project remains intentionally pinned to Paper 26.2 build 123 until deliberately changed.
 
