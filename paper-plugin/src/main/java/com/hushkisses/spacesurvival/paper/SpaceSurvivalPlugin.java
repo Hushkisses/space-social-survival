@@ -42,6 +42,9 @@ import com.hushkisses.spacesurvival.paper.facility.FacilityInteractionListener;
 import com.hushkisses.spacesurvival.paper.facility.FacilityMenuService;
 import com.hushkisses.spacesurvival.paper.facility.FacilityTerminalRegistry;
 import com.hushkisses.spacesurvival.paper.item.DefaultResourceItemProvider;
+import com.hushkisses.spacesurvival.paper.item.FunctionalItemListener;
+import com.hushkisses.spacesurvival.paper.item.FunctionalItemService;
+import com.hushkisses.spacesurvival.paper.item.StarterKitService;
 import com.hushkisses.spacesurvival.paper.item.ResourceItemProvider;
 import com.hushkisses.spacesurvival.paper.lobby.LobbyConnectionListener;
 import com.hushkisses.spacesurvival.paper.map.physical.PaperShipWorldService;
@@ -51,6 +54,8 @@ import com.hushkisses.spacesurvival.paper.match.MatchOrchestrator;
 import com.hushkisses.spacesurvival.paper.pve.DefaultPveMobSpawner;
 import com.hushkisses.spacesurvival.paper.pve.PveMobSpawner;
 import com.hushkisses.spacesurvival.paper.pvp.ConditionalPvpListener;
+import com.hushkisses.spacesurvival.paper.resource.ResourcePhysicalItemService;
+import com.hushkisses.spacesurvival.paper.resource.ResourceWorldService;
 import com.hushkisses.spacesurvival.paper.runtime.GameRuntimeService;
 import com.hushkisses.spacesurvival.paper.social.SanctionEnforcementListener;
 import com.hushkisses.spacesurvival.paper.ui.OpeningBriefingUi;
@@ -99,6 +104,10 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private ProcessingRegistry processingRegistry;
     private ProcessingService processingService;
     private ResourceItemProvider resourceItemProvider;
+    private FunctionalItemService functionalItemService;
+    private StarterKitService starterKitService;
+    private ResourcePhysicalItemService resourcePhysicalItemService;
+    private ResourceWorldService resourceWorldService;
 
     private ObjectiveRegistry objectiveRegistry;
     private ObjectiveEngine objectiveEngine;
@@ -167,7 +176,15 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         resourceLedger = new ResourceLedger();
         processingRegistry = DefaultProcessingCatalog.createRegistry();
         processingService = new ProcessingService();
-        resourceItemProvider = new DefaultResourceItemProvider(new ItemsAdderBridge());
+        ItemsAdderBridge itemsAdderBridge = new ItemsAdderBridge();
+        resourceItemProvider = new DefaultResourceItemProvider(itemsAdderBridge);
+        functionalItemService = new FunctionalItemService(this, itemsAdderBridge);
+        starterKitService = new StarterKitService(this, functionalItemService);
+        resourcePhysicalItemService = new ResourcePhysicalItemService(
+                this,
+                resourceItemProvider
+        );
+        resourceWorldService = new ResourceWorldService(resourcePhysicalItemService);
 
         objectiveRegistry = DefaultObjectiveCatalog.createRegistry();
         resetObjectiveRuntime();
@@ -284,6 +301,10 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                 facilityMenuService,
                 this
         );
+        getServer().getPluginManager().registerEvents(
+                new FunctionalItemListener(this, functionalItemService),
+                this
+        );
 
         matchHudService.start();
 
@@ -339,6 +360,10 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public ProcessingRegistry processingRegistry() { return require(processingRegistry, "Processing registry"); }
     public ProcessingService processingService() { return require(processingService, "Processing service"); }
     public ResourceItemProvider resourceItemProvider() { return require(resourceItemProvider, "Resource item provider"); }
+    public FunctionalItemService functionalItemService() { return require(functionalItemService, "Functional item service"); }
+    public StarterKitService starterKitService() { return require(starterKitService, "Starter kit service"); }
+    public ResourcePhysicalItemService resourcePhysicalItemService() { return require(resourcePhysicalItemService, "Physical resource item service"); }
+    public ResourceWorldService resourceWorldService() { return require(resourceWorldService, "Resource world service"); }
     public ObjectiveRegistry objectiveRegistry() { return require(objectiveRegistry, "Objective registry"); }
     public ObjectiveEngine objectiveEngine() { return require(objectiveEngine, "Objective engine"); }
     public SecretMissionService secretMissionService() { return require(secretMissionService, "Secret mission service"); }
