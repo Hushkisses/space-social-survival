@@ -25,12 +25,18 @@ Milestone A — Playable Foundation
 
 ## Current DEV
 - DEV-011 Role Framework
-- Status: PLANNED
+- Status: IMPLEMENTED
+- Development branch: dev/DEV-011-role-framework
 
 ## Next DEV
 - DEV-012 Role Candidate Selection
 
 ## Implemented
+- DEV-011 RoleId / RoleDefinition / RoleRegistry
+- DEV-011 role passive metadata
+- DEV-011 role capability metadata
+- DEV-011 initial six-role catalog
+- DEV-011 per-role duplicate-limit support
 - DEV-010 lobby and start flow
 - DEV-009 deterministic map debug tools
 - DEV-008 constrained logical random map generation
@@ -41,6 +47,12 @@ Milestone A — Playable Foundation
 - DEV-003 PlayerState domain model
 - DEV-002 GameSession lifecycle core
 
+## Role framework decision
+- Roles represent profession/specialty, not hidden alignment.
+- Everyone keeps basic actions; role metadata grants passive advantages and advanced capabilities.
+- The six initial default roles currently use maxCopies=2.
+- Support for maxCopies=1 exists, but which roles should be singleton is deferred to DEV-012 balancing rather than hardcoded now.
+
 ## Map build decision
 - Physical ship modules will be built on a superflat/flat world for easier construction and predictable placement.
 - Core map logic remains coordinate-independent.
@@ -49,10 +61,14 @@ Milestone A — Playable Foundation
 - DEV-001 through DEV-010 Windows test/build and Paper validation SUCCESS
 
 ## Pending validation
-- None for DEV-010
+- DEV-011 Windows `gradlew.bat test`
+- DEV-011 Windows `gradlew.bat build`
+- DEV-011 Paper plugin load
+- DEV-011 `space status`
 
 ## Known issues
-- Successful 6+ player Paper-side start is covered by core tests and will be naturally exercised during multiplayer testing.
+- Role bonuses/capabilities are metadata only until their corresponding facility/action systems are implemented.
+- Role candidate generation and player role choice are intentionally deferred to DEV-012.
 - Physical coordinates/Structure Block placement remain intentionally deferred.
 - Paper startup reports build 123 is behind the current latest build; project remains intentionally pinned to Paper 26.2 build 123 until deliberately changed.
 
