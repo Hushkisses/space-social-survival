@@ -19,6 +19,7 @@ import com.hushkisses.spacesurvival.paper.command.ScenarioCommandHandler;
 import com.hushkisses.spacesurvival.paper.command.MvpEndingCommandHandler;
 import com.hushkisses.spacesurvival.paper.command.MatchCommandHandler;
 import com.hushkisses.spacesurvival.paper.command.PlaytestIntegrationCommandHandler;
+import com.hushkisses.spacesurvival.paper.command.PlaytestBuildCommandHandler;
 import com.hushkisses.spacesurvival.paper.runtime.GameRuntimeService;
 import com.hushkisses.spacesurvival.time.CrisisStage;
 import com.hushkisses.spacesurvival.ship.ShipMetric;
@@ -52,6 +53,7 @@ final class SpaceCommand implements CommandExecutor {
     private final MvpEndingCommandHandler mvpEndingCommandHandler;
     private final MatchCommandHandler matchCommandHandler;
     private final PlaytestIntegrationCommandHandler playtestIntegrationCommandHandler;
+    private final PlaytestBuildCommandHandler playtestBuildCommandHandler;
 
     SpaceCommand(SpaceSurvivalPlugin plugin) {
         this.plugin = plugin;
@@ -65,6 +67,7 @@ final class SpaceCommand implements CommandExecutor {
         this.mvpEndingCommandHandler = new MvpEndingCommandHandler(plugin);
         this.matchCommandHandler = new MatchCommandHandler(plugin);
         this.playtestIntegrationCommandHandler = new PlaytestIntegrationCommandHandler(plugin);
+        this.playtestBuildCommandHandler = new PlaytestBuildCommandHandler(plugin);
     }
 
     @Override
@@ -145,6 +148,10 @@ final class SpaceCommand implements CommandExecutor {
 
         if (playtestIntegrationCommandHandler.supports(args[0])) {
             return playtestIntegrationCommandHandler.handle(sender, args);
+        }
+
+        if (playtestBuildCommandHandler.supports(args[0])) {
+            return playtestBuildCommandHandler.handle(sender, args);
         }
 
         sendUsage(sender);
@@ -801,7 +808,7 @@ final class SpaceCommand implements CommandExecutor {
                         + "§7~§f"
                         + plugin.configuration().game().maxPlayers()
         );
-        sender.sendMessage("§7현재 개발: §ePT-001~005 Playtest Integration");
+        sender.sendMessage("§7현재 개발: §ePT-006~010 First Multiplayer Playtest Build");
     }
 
     private void sendRoleUsage(CommandSender sender) {
@@ -867,6 +874,9 @@ final class SpaceCommand implements CommandExecutor {
         sender.sendMessage("§c사용법: /space structure status");
         sender.sendMessage("§c사용법: /space door list|set|repair");
         sender.sendMessage("§c사용법: /space director status|force");
+        sender.sendMessage("§c사용법: /space playtest status|start|reset");
+        sender.sendMessage("§c사용법: /space telemetry status|save");
+        sender.sendMessage("§c사용법: /space item list|give");
         sender.sendMessage("§c사용법: /space role prepare|candidates|gui|choose|status");
         sender.sendMessage("§c사용법: /space map generate [seed]");
     }
