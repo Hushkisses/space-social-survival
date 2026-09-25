@@ -1,6 +1,5 @@
 package com.hushkisses.spacesurvival.paper.command;
 
-import com.hushkisses.spacesurvival.lobby.LobbyStartException;
 import com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin;
 import com.hushkisses.spacesurvival.paper.match.MatchSetupSnapshot;
 import org.bukkit.command.CommandSender;
@@ -57,7 +56,7 @@ public final class MatchCommandHandler {
             sender.sendMessage("§7갈등 축: §f" + snapshot.conflictAxes());
             sender.sendMessage("§8관리자 확인용 실제 시나리오: " + snapshot.scenario().definition().type());
             sender.sendMessage("§e플레이어가 직업을 모두 선택하면 ACTIVE 단계가 자동 시작됩니다.");
-        } catch (LobbyStartException | IllegalStateException exception) {
+        } catch (IllegalStateException exception) {
             sender.sendMessage("§c매치를 준비할 수 없습니다: " + exception.getMessage());
         }
         return true;
