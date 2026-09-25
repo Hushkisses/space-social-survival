@@ -299,14 +299,14 @@ public final class FacilityActionExecutor {
     }
 
     private FacilityActionExecutionResult suppressInfection(Player player) {
-        if (!shared().remove(ResourceType.MEDICAL_SUPPLIES, 1)) {
-            return failure("감염 억제에 필요한 의료 물자가 부족합니다.");
-        }
-
         PlayerId id = PlayerId.of(player.getUniqueId());
         if (!plugin.infectionService().state(id).infected()) {
             return result("현재 감염 상태가 아닙니다.");
         }
+        if (!shared().remove(ResourceType.MEDICAL_SUPPLIES, 1)) {
+            return failure("감염 억제에 필요한 의료 물자가 부족합니다.");
+        }
+
         plugin.infectionService().suppress(id);
         return result("감염 진행을 억제했습니다.");
     }
