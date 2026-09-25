@@ -23,7 +23,7 @@ First Multiplayer Playtest Build
 
 ## Current batch
 - PT-006 through PT-010 First Multiplayer Playtest Build
-- Status: IMPLEMENTED / VALIDATION_PENDING
+- Status: VALIDATION_PENDING
 - Development branch: dev/PT-006-010-playtest-build
 - This is a stacked branch based on dev/PT-001-005-playtest-integration until PR #21 is validated and merged.
 
@@ -136,6 +136,7 @@ First Multiplayer Playtest Build
 ## Verified
 - DEV-001 through DEV-059 automated and Windows/Paper validation SUCCESS
 - PT-001 through PT-005 GitHub Actions full test/build SUCCESS (Build #507)
+- PT-006 through PT-010 GitHub Actions full test/build SUCCESS (Build #535)
 
 ## Pending validation
 ### PT-001 through PT-005 prerequisite
@@ -148,7 +149,6 @@ First Multiplayer Playtest Build
 - match reset/rematch
 
 ### PT-006 through PT-010
-- GitHub Actions full test/build
 - Windows full test/build
 - role starter equipment
 - keycard-required connection access
