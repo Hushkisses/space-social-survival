@@ -12,56 +12,48 @@
 Milestone A — Playable Foundation
 
 ## Last completed DEV
-- DEV-001 Project Bootstrap — COMPLETE
-
-## Last completed DEV
 - DEV-002 GameSession Core — COMPLETE
+- DEV-001 Project Bootstrap — COMPLETE
 
 ## Current DEV
 - DEV-003 PlayerState
-- Status: PLANNED
+- Status: IMPLEMENTED
+- Development branch: dev/DEV-003-player-state
 
 ## Next DEV
 - DEV-004 Configuration System
 
 ## Implemented
+- DEV-003 PlayerId
+- DEV-003 PlayerState domain model
+- alive/dead state
+- connected/disconnected state
+- disconnect/reconnect idempotency
+- death timestamp
+- connection state-change timestamp
+- Paper-independent player state
 - DEV-002 GameSession lifecycle core
-- GameSessionId
-- GamePhase
-- validated lifecycle transitions
-- early termination from started phases
-- terminal FINISHED state
-- deterministic timestamp tests
-- Repository initialized
-- Game design v1.0
-- Development plan v1.0
-- Architecture baseline
 - Java 25 Gradle multi-module project
 - core module
 - paper-plugin module
 - Paper 26.2 build 123 API dependency
 - JUnit 5 baseline
 - Gradle 9.7.1 Wrapper
-- minimal SpaceSurvival plugin bootstrap
 - /space status command
-- Korean player-facing DEV-001 status output
 - GitHub Actions build workflow
 - Windows quick-deploy and dev-server start scripts
 
 ## Verified
-- Windows `gradlew.bat test` SUCCESS
-- Windows `gradlew.bat build` SUCCESS
-- Paper 26.2 build 123 server startup SUCCESS
-- SpaceSurvival v0.1.0-SNAPSHOT plugin load SUCCESS
-- SpaceSurvival enable log SUCCESS
-- `space status` console command SUCCESS
-- Korean status output SUCCESS
+- DEV-001 Windows test/build and Paper validation SUCCESS
+- DEV-002 Windows test/build and Paper validation SUCCESS
 
 ## Pending validation
-- None for DEV-002
+- DEV-003 Windows `gradlew.bat test`
+- DEV-003 Windows `gradlew.bat build`
+- DEV-003 Paper smoke test: plugin load and `space status`
 
 ## Known issues
-- Paper startup reported the server build is 6 builds behind latest; project remains intentionally pinned to Paper 26.2 build 123 until the pinned environment is deliberately changed.
+- Paper startup reports build 123 is behind the current latest build; project remains intentionally pinned to Paper 26.2 build 123 until deliberately changed.
 
 ## Environment
 - Java 25.0.4.1
