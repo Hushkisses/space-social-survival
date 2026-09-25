@@ -26,12 +26,19 @@ Milestone A — Playable Foundation
 
 ## Current DEV
 - DEV-012 Role Candidate Selection
-- Status: PLANNED
+- Status: IMPLEMENTED
+- Development branch: dev/DEV-012-role-candidate-selection
 
 ## Next DEV
 - DEV-013 Briefing & Initial Goal UI
 
 ## Implemented
+- DEV-012 exactly 3 distinct role candidates per player
+- DEV-012 deterministic seeded candidate generation
+- DEV-012 role choice limited to own candidates
+- DEV-012 per-role maxCopies enforcement
+- DEV-012 duplicate player selection prevention
+- DEV-012 /space role prepare|candidates|choose|status
 - DEV-011 role framework and six-role catalog
 - DEV-010 lobby and start flow
 - DEV-009 deterministic map debug tools
@@ -47,7 +54,7 @@ Milestone A — Playable Foundation
 - Roles represent profession/specialty, not hidden alignment.
 - Everyone keeps basic actions; role metadata grants passive advantages and advanced capabilities.
 - Initial defaults currently use maxCopies=2.
-- Support for per-role singleton limits exists but no role is hardcoded singleton yet.
+- Support for maxCopies=1 is active in the selection engine, but no role is hardcoded singleton yet.
 
 ## Map build decision
 - Physical ship modules will be built on a superflat/flat world for easier construction and predictable placement.
@@ -57,9 +64,19 @@ Milestone A — Playable Foundation
 - DEV-001 through DEV-011 Windows test/build and Paper validation SUCCESS
 
 ## Pending validation
-- None for DEV-011
+- DEV-012 Windows `gradlew.bat test`
+- DEV-012 Windows `gradlew.bat build`
+- DEV-012 Paper plugin load
+- DEV-012 `space status`
+- DEV-012 player lobby join
+- DEV-012 `space role prepare 12345`
+- DEV-012 player `/space role candidates`
+- DEV-012 player `/space role choose <roleId>`
+- DEV-012 `space role status`
 
 ## Known issues
+- Role selection is command-driven for DEV-012; GUI/briefing presentation is deferred to DEV-013.
+- Candidate generation can present a role that becomes full before a later player chooses it; the selection is then rejected and the player must choose another offered role. More advanced reservation/guaranteed-feasibility balancing can be added if multiplayer testing shows it is needed.
 - Role bonuses/capabilities remain metadata until corresponding facility/action systems are implemented.
 - Physical coordinates/Structure Block placement remain intentionally deferred.
 - Paper startup reports build 123 is behind the current latest build; project remains intentionally pinned to Paper 26.2 build 123 until deliberately changed.
