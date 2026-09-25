@@ -28,13 +28,10 @@ Milestone D — Death / PvE / Ending
 - DEV-031 and earlier — COMPLETE
 
 ## Current DEV
-- DEV-045 through DEV-052 MVP Ending Batch
-- Status: VALIDATION_PENDING
-- Development branch: dev/DEV-045-052-mvp-ending-batch
+- MVP gameplay roadmap DEV-001 through DEV-052 — COMPLETE
 
 ## Next DEV
-- MVP gameplay roadmap complete after this batch
-- next work should be integration hardening, physical map/content, HUD/UX, balance, and playtest-driven extension tickets
+- Post-MVP integration hardening / physical map / HUD-UX / content / playtest preparation
 
 ## Batch implementation
 
@@ -91,15 +88,11 @@ Milestone D — Death / PvE / Ending
 
 ## Verified
 - DEV-001 through DEV-044 Windows integrated test/build/Paper validation SUCCESS
-- DEV-045 through DEV-052 GitHub Actions full test/build SUCCESS (Build run #429)
+- DEV-045 through DEV-052 GitHub Actions full test/build SUCCESS
+- DEV-045 through DEV-052 Windows integrated test/build/Paper validation SUCCESS
 
 ## Pending validation
-- Windows integrated test/build
-- Paper startup
-- death/infected respawn smoke flow
-- PvE fallback/plugin bridge smoke flow
-- return/final hold smoke flow
-- result/winner/MVP smoke flow
+- None for DEV-045 through DEV-052
 
 ## Scope notes
 - Return health thresholds are development defaults: power 50, oxygen 50, hull 50, reactor 40.
