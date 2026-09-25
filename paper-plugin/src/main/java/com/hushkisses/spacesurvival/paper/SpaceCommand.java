@@ -7,12 +7,17 @@ import com.hushkisses.spacesurvival.lobby.LobbySnapshot;
 import com.hushkisses.spacesurvival.lobby.LobbyStartException;
 import com.hushkisses.spacesurvival.paper.map.MapDebugService;
 import com.hushkisses.spacesurvival.player.PlayerId;
+import com.hushkisses.spacesurvival.role.RoleDefinition;
+import com.hushkisses.spacesurvival.role.RoleId;
+import com.hushkisses.spacesurvival.role.selection.RoleCandidateSet;
+import com.hushkisses.spacesurvival.role.selection.RoleSelectionResult;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 final class SpaceCommand implements CommandExecutor {
@@ -44,8 +49,170 @@ final class SpaceCommand implements CommandExecutor {
             return handleLobby(sender, args);
         }
 
+        if (args[0].equalsIgnoreCase("role")) {
+            return handleRole(sender, args);
+        }
+
         sendUsage(sender);
         return true;
+    }
+
+    private boolean handleRole(CommandSender sender, String[] args) {
+        if (args.length < 2) {
+            sendRoleUsage(sender);
+            return true;
+        }
+
+        return switch (args[1].toLowerCase()) {
+            case "prepare" -> handleRolePrepare(sender, args);
+            case "candidates" -> handleRoleCandidates(sender);
+            case "choose" -> handleRoleChoose(sender, args);
+            case "status" -> {
+                sendRoleStatus(sender);
+                yield true;
+            }
+            default -> {
+                sendRoleUsage(sender);
+                yield true;
+            }
+        };
+    }
+
+    private boolean handleRolePrepare(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("spacesurvival.admin")) {
+            sender.sendMessage("§c직업 후보 생성 권한이 없습니다.");
+            return true;
+        }
+
+        LobbySnapshot snapshot = plugin.lobbyService().snapshot();
+        if (snapshot.players().isEmpty()) {
+            sender.sendMessage("§c대기실 참가자가 없습니다.");
+            return true;
+        }
+
+        long seed;
+        if (args.length >= 3) {
+            try {
+                seed = Long.parseLong(args[2]);
+            } catch (NumberFormatException exception) {
+                sender.sendMessage("§c시드는 정수여야 합니다.");
+                sender.sendMessage("§7사용법: /space role prepare [seed]");
+                return true;
+            }
+        } else {
+            seed = ThreadLocalRandom.current().nextLong();
+        }
+
+        try {
+            plugin.roleSelectionService().prepareCandidates(
+                    snapshot.players(),
+                    new Random(seed)
+            );
+        } catch (IllegalStateException exception) {
+            sender.sendMessage("§c이미 직업 선택이 시작되어 후보를 다시 만들 수 없습니다.");
+            return true;
+        }
+
+        sender.sendMessage("§a직업 후보를 생성했습니다. 시드: " + seed);
+        sender.sendMessage("§7대상 인원: " + snapshot.playerCount());
+        return true;
+    }
+
+    private boolean handleRoleCandidates(CommandSender sender) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§c이 명령어는 게임 안의 플레이어만 사용할 수 있습니다.");
+            return true;
+        }
+
+        PlayerId playerId = PlayerId.of(player.getUniqueId());
+        RoleCandidateSet set = plugin.roleSelectionService()
+                .candidates(playerId)
+                .orElse(null);
+
+        if (set == null) {
+            sender.sendMessage("§c아직 직업 후보가 생성되지 않았습니다.");
+            return true;
+        }
+
+        sender.sendMessage("§6[우주 생존] §f직업 후보 3개");
+        for (RoleId roleId : set.candidates()) {
+            RoleDefinition role = plugin.roleRegistry().require(roleId);
+            sender.sendMessage(
+                    "§e- §f"
+                            + role.displayName()
+                            + " §8("
+                            + role.id()
+                            + ")"
+            );
+            sender.sendMessage("  §7" + role.description());
+        }
+
+        plugin.roleSelectionService().selectedRole(playerId).ifPresent(roleId -> {
+            RoleDefinition role = plugin.roleRegistry().require(roleId);
+            sender.sendMessage("§a현재 선택: " + role.displayName());
+        });
+
+        return true;
+    }
+
+    private boolean handleRoleChoose(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§c이 명령어는 게임 안의 플레이어만 사용할 수 있습니다.");
+            return true;
+        }
+        if (args.length < 3) {
+            sender.sendMessage("§c사용법: /space role choose <roleId>");
+            return true;
+        }
+
+        RoleId roleId = new RoleId(args[2].toLowerCase());
+        if (plugin.roleRegistry().find(roleId).isEmpty()) {
+            sender.sendMessage("§c존재하지 않는 직업 ID입니다.");
+            return true;
+        }
+
+        PlayerId playerId = PlayerId.of(player.getUniqueId());
+        RoleSelectionResult result = plugin.roleSelectionService().select(playerId, roleId);
+
+        switch (result) {
+            case SELECTED -> {
+                RoleDefinition role = plugin.roleRegistry().require(roleId);
+                sender.sendMessage("§a직업을 확정했습니다: " + role.displayName());
+            }
+            case CANDIDATES_NOT_PREPARED ->
+                    sender.sendMessage("§c아직 직업 후보가 생성되지 않았습니다.");
+            case ROLE_NOT_OFFERED ->
+                    sender.sendMessage("§c본인에게 제시된 후보가 아닌 직업은 선택할 수 없습니다.");
+            case ROLE_FULL ->
+                    sender.sendMessage("§c해당 직업은 이미 선택 가능 인원이 가득 찼습니다.");
+            case ALREADY_SELECTED ->
+                    sender.sendMessage("§c이미 직업을 확정했습니다.");
+        }
+
+        return true;
+    }
+
+    private void sendRoleStatus(CommandSender sender) {
+        sender.sendMessage("§6[우주 생존] §f직업 선택 상태");
+        sender.sendMessage(
+                "§7후보 생성 인원: §f"
+                        + plugin.roleSelectionService().preparedPlayerCount()
+        );
+        sender.sendMessage(
+                "§7선택 완료 인원: §f"
+                        + plugin.roleSelectionService().selectedPlayerCount()
+        );
+
+        for (RoleDefinition role : plugin.roleRegistry().all()) {
+            sender.sendMessage(
+                    "§7"
+                            + role.displayName()
+                            + ": §f"
+                            + plugin.roleSelectionService().selectedCount(role.id())
+                            + "§7/§f"
+                            + role.maxCopies()
+            );
+        }
     }
 
     private boolean handleLobby(CommandSender sender, String[] args) {
@@ -210,7 +377,14 @@ final class SpaceCommand implements CommandExecutor {
                         + "§7~§f"
                         + plugin.configuration().game().maxPlayers()
         );
-        sender.sendMessage("§7현재 DEV: §eDEV-011 Role Framework");
+        sender.sendMessage("§7현재 DEV: §eDEV-012 Role Candidate Selection");
+    }
+
+    private void sendRoleUsage(CommandSender sender) {
+        sender.sendMessage("§c사용법: /space role prepare [seed]");
+        sender.sendMessage("§c사용법: /space role candidates");
+        sender.sendMessage("§c사용법: /space role choose <roleId>");
+        sender.sendMessage("§c사용법: /space role status");
     }
 
     private void sendLobbyUsage(CommandSender sender) {
@@ -223,6 +397,7 @@ final class SpaceCommand implements CommandExecutor {
     private void sendUsage(CommandSender sender) {
         sender.sendMessage("§c사용법: /space status");
         sender.sendMessage("§c사용법: /space lobby join|leave|status|start");
+        sender.sendMessage("§c사용법: /space role prepare|candidates|choose|status");
         sender.sendMessage("§c사용법: /space map generate [seed]");
     }
 }
