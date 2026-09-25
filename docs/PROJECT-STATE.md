@@ -12,16 +12,16 @@
 Milestone A — Playable Foundation
 
 ## Last completed DEV
+- DEV-003 PlayerState — COMPLETE
 - DEV-002 GameSession Core — COMPLETE
 - DEV-001 Project Bootstrap — COMPLETE
 
 ## Current DEV
-- DEV-003 PlayerState
-- Status: IMPLEMENTED
-- Development branch: dev/DEV-003-player-state
+- DEV-004 Configuration System
+- Status: PLANNED
 
 ## Next DEV
-- DEV-004 Configuration System
+- DEV-005 Sector/Room/Connection Model
 
 ## Implemented
 - DEV-003 PlayerId
@@ -46,11 +46,10 @@ Milestone A — Playable Foundation
 ## Verified
 - DEV-001 Windows test/build and Paper validation SUCCESS
 - DEV-002 Windows test/build and Paper validation SUCCESS
+- DEV-003 Windows test/build and Paper validation SUCCESS
 
 ## Pending validation
-- DEV-003 Windows `gradlew.bat test`
-- DEV-003 Windows `gradlew.bat build`
-- DEV-003 Paper smoke test: plugin load and `space status`
+- None for DEV-003
 
 ## Known issues
 - Paper startup reports build 123 is behind the current latest build; project remains intentionally pinned to Paper 26.2 build 123 until deliberately changed.
