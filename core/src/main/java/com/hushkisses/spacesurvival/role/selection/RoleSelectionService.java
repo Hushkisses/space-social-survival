@@ -101,4 +101,10 @@ public final class RoleSelectionService {
     public Map<PlayerId, RoleId> selections() {
         return Collections.unmodifiableMap(selections);
     }
+
+    public void reset() {
+        candidateSets = Map.of();
+        selections.clear();
+        selectedCounts.clear();
+    }
 }
