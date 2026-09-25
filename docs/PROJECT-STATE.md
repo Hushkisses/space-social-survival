@@ -12,6 +12,7 @@
 Milestone A — Playable Foundation
 
 ## Last completed DEV
+- DEV-016 Facility Framework — COMPLETE
 - DEV-015 ShipState — COMPLETE
 - DEV-014 Game Timer & Crisis — COMPLETE
 - DEV-013 Briefing & Initial Goal UI — COMPLETE
@@ -29,12 +30,11 @@ Milestone A — Playable Foundation
 - DEV-001 Project Bootstrap — COMPLETE
 
 ## Current DEV
-- DEV-016 Facility Framework
-- Status: IMPLEMENTED
-- Development branch: dev/DEV-016-facility-framework
+- DEV-017 Engineering Facility
+- Status: PLANNED
 
 ## Next DEV
-- DEV-017 Engineering Facility
+- DEV-018 Medical Facility
 
 ## Implemented
 - DEV-016 FacilityId / FacilityType / FacilityStatus
@@ -53,17 +53,10 @@ Milestone A — Playable Foundation
 - Facility-specific numerical sub-state and actions are deferred to later DEV tickets.
 
 ## Verified
-- DEV-001 through DEV-015 Windows test/build and Paper validation SUCCESS
+- DEV-001 through DEV-016 Windows test/build and Paper validation SUCCESS
 
 ## Pending validation
-- DEV-016 Windows `gradlew.bat test`
-- DEV-016 Windows `gradlew.bat build`
-- DEV-016 Paper plugin load
-- DEV-016 `space status`
-- DEV-016 `space facility list`
-- DEV-016 `space facility set engineering damaged`
-- DEV-016 `space facility status engineering`
-- DEV-016 `space facility reset`
+- None for DEV-016
 
 ## Known issues
 - Facility status does not yet change ShipState; engineering-specific integration begins in DEV-017.
