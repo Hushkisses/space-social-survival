@@ -12,6 +12,7 @@
 Milestone A — Playable Foundation
 
 ## Last completed DEV
+- DEV-015 ShipState — COMPLETE
 - DEV-014 Game Timer & Crisis — COMPLETE
 - DEV-013 Briefing & Initial Goal UI — COMPLETE
 - DEV-012 Role Candidate Selection — COMPLETE
@@ -28,50 +29,28 @@ Milestone A — Playable Foundation
 - DEV-001 Project Bootstrap — COMPLETE
 
 ## Current DEV
-- DEV-015 ShipState
-- Status: IMPLEMENTED
-- Development branch: dev/DEV-015-ship-state
+- DEV-016 Facility Framework
+- Status: PLANNED
 
 ## Next DEV
-- DEV-016 Facility Framework
+- DEV-017 Engineering Facility
 
 ## Implemented
-- DEV-015 ShipState with power, oxygen, hull, reactor percentages
-- DEV-015 ShipStateSnapshot and ShipMetric
-- DEV-015 ShipCrisisPressure
-- DEV-015 live ShipState integration into DEV-014 crisis evaluation
-- DEV-015 /space ship status|set|reset
+- DEV-015 global ShipState and crisis-pressure integration
 - DEV-014 game timer and crisis foundation
 - DEV-013 opening briefing and role selection UI
 - DEV-012 role candidate generation and selection
 - DEV-011 role framework and six-role catalog
 - DEV-010 lobby and start flow
-
-## ShipState design decision
-- Initial authoritative ship metrics are power, oxygen, hull stability, and reactor stability.
-- Values are integer percentages 0..100.
-- Power, oxygen, and hull directly support the initial common-goal design.
-- Reactor stability is included because reactor condition is explicitly a crisis driver.
-- Crisis-pressure weights are isolated development defaults and are not final balance values.
-
-## Crisis integration
-- Healthy ship state slightly offsets time-based crisis pressure.
-- Damaged/critical systems add increasing external pressure.
-- GameRuntimeService now evaluates crisis stage using the live ShipState snapshot.
-- Facility, infection, fire, creature, and event pressure remain future extensions.
+- DEV-009 deterministic map debug tools
+- DEV-008 constrained logical random map generation
+- DEV-007 connection access states and Paper teleport adapter
 
 ## Verified
-- DEV-001 through DEV-014 Windows test/build and Paper validation SUCCESS
+- DEV-001 through DEV-015 Windows test/build and Paper validation SUCCESS
 
 ## Pending validation
-- DEV-015 Windows `gradlew.bat test`
-- DEV-015 Windows `gradlew.bat build`
-- DEV-015 Paper plugin load
-- DEV-015 `space status`
-- DEV-015 `space ship status`
-- DEV-015 `space ship set power 10`
-- DEV-015 runtime start/status and confirm crisis responds to degraded ship state
-- DEV-015 `space ship reset`
+- None for DEV-015
 
 ## Known issues
 - ShipState currently models global percentages only; facility-local state begins in DEV-016.
