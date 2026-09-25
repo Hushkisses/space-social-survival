@@ -28,4 +28,9 @@ public final class ResourceLedger {
         personal.forEach((playerId, store) -> copy.put(playerId, store.snapshot()));
         return Collections.unmodifiableMap(copy);
     }
+
+    public void clear() {
+        shared.clear();
+        personal.clear();
+    }
 }
