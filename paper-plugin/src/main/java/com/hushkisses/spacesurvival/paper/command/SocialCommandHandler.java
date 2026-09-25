@@ -15,8 +15,6 @@ import java.util.Objects;
 public final class SocialCommandHandler {
 
     private final SpaceSurvivalPlugin plugin;
-    private SanctionVoteService activeVote;
-    private SanctionVoteResult lastVoteResult;
 
     public SocialCommandHandler(SpaceSurvivalPlugin plugin) {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
@@ -61,19 +59,10 @@ public final class SocialCommandHandler {
             return true;
         }
 
-        MeetingStartResult result = plugin.meetingService().startRegular(
-                plugin.lobbyService().snapshot().players(),
-                plugin.radioRuntimeState().longRangeAvailable()
-        );
-
+        MeetingStartResult result = plugin.meetingGuiService().startRegular();
         if (!result.started()) {
             sender.sendMessage("§c회의를 시작할 수 없습니다: " + denialName(result.denialReason()));
-            return true;
         }
-
-        activeVote = new SanctionVoteService(result.meeting());
-        lastVoteResult = null;
-        plugin.getServer().broadcastMessage("§6[회의] §f일반 회의가 시작되었습니다.");
         return true;
     }
 
@@ -101,21 +90,10 @@ public final class SocialCommandHandler {
             return true;
         }
 
-        MeetingStartResult result = plugin.meetingService().startEmergency(
-                plugin.lobbyService().snapshot().players(),
-                reason
-        );
-
+        MeetingStartResult result = plugin.meetingGuiService().startEmergency(reason);
         if (!result.started()) {
             sender.sendMessage("§c긴급회의를 시작할 수 없습니다: " + denialName(result.denialReason()));
-            return true;
         }
-
-        activeVote = new SanctionVoteService(result.meeting());
-        lastVoteResult = null;
-        plugin.getServer().broadcastMessage(
-                "§c[긴급회의] §f사유: " + emergencyReasonName(reason)
-        );
         return true;
     }
 
@@ -138,7 +116,7 @@ public final class SocialCommandHandler {
                 reason -> sender.sendMessage("§7사유: §f" + emergencyReasonName(reason))
         );
         sender.sendMessage("§7참가자 수: §f" + meeting.participants().size());
-        sender.sendMessage("§7투표 수: §f" + (activeVote == null ? 0 : activeVote.votes().size()));
+        sender.sendMessage("§7투표 수: §f" + plugin.meetingGuiService().voteCount());
         return true;
     }
 
@@ -153,9 +131,7 @@ public final class SocialCommandHandler {
             return true;
         }
 
-        plugin.meetingService().resolveActive();
-        activeVote = null;
-        plugin.getServer().broadcastMessage("§6[회의] §f회의가 종료되었습니다.");
+        plugin.meetingGuiService().cancel();
         return true;
     }
 
@@ -182,7 +158,7 @@ public final class SocialCommandHandler {
             sender.sendMessage("§c투표는 게임 안의 플레이어만 할 수 있습니다.");
             return true;
         }
-        if (activeVote == null || plugin.meetingService().activeMeeting().isEmpty()) {
+        if (!plugin.meetingGuiService().hasActiveVote()) {
             sender.sendMessage("§c활성 회의가 없습니다.");
             return true;
         }
@@ -216,8 +192,7 @@ public final class SocialCommandHandler {
         }
 
         try {
-            activeVote.vote(PlayerId.of(player.getUniqueId()), choice);
-            sender.sendMessage("§a회의 투표를 기록했습니다: " + type.name());
+            plugin.meetingGuiService().vote(player, choice);
         } catch (IllegalArgumentException | IllegalStateException exception) {
             sender.sendMessage("§c투표할 수 없습니다: " + exception.getMessage());
         }
@@ -229,60 +204,22 @@ public final class SocialCommandHandler {
             sender.sendMessage("§c투표 집계 권한이 없습니다.");
             return true;
         }
-        if (activeVote == null) {
-            sender.sendMessage("§c진행 중인 처분 투표가 없습니다.");
-            return true;
-        }
 
         try {
-            lastVoteResult = activeVote.resolve();
+            SanctionVoteResult result = plugin.meetingGuiService().resolveNow();
+            sender.sendMessage(
+                    "§6[투표 결과] §f"
+                            + result.winningChoice().sanction().name()
+                            + (result.tied() ? " §e(동률 → 무조치)" : "")
+            );
         } catch (IllegalStateException exception) {
-            sender.sendMessage("§c이미 집계된 투표입니다.");
-            return true;
+            sender.sendMessage("§c투표를 집계할 수 없습니다: " + exception.getMessage());
         }
-
-        sender.sendMessage(
-                "§6[투표 결과] §f"
-                        + lastVoteResult.winningChoice().sanction().name()
-                        + (lastVoteResult.tied() ? " §e(동률 → 무조치)" : "")
-        );
         return true;
     }
 
     private boolean sanctionExecute(CommandSender sender) {
-        if (!sender.hasPermission("spacesurvival.admin")) {
-            sender.sendMessage("§c처분 집행 권한이 없습니다.");
-            return true;
-        }
-        if (lastVoteResult == null) {
-            sender.sendMessage("§c먼저 처분 투표를 집계해야 합니다.");
-            return true;
-        }
-
-        boolean medicalAvailable = switch (
-                plugin.facilityRegistry().require(DefaultFacilityCatalog.MEDICAL).status()
-        ) {
-            case NORMAL, DAMAGED -> true;
-            case OFFLINE, QUARANTINED -> false;
-        };
-
-        SanctionExecutionContext context = new SanctionExecutionContext(
-                medicalAvailable,
-                true,
-                true,
-                true
-        );
-
-        SanctionExecutionResult result = plugin.sanctionExecutor().execute(
-                lastVoteResult.winningChoice(),
-                context
-        );
-
-        if (result.executed()) {
-            sender.sendMessage("§a회의 처분을 집행 상태에 반영했습니다.");
-        } else {
-            sender.sendMessage("§c처분 집행 실패: " + result.failureReason());
-        }
+        sender.sendMessage("§7PT-008부터 회의 처분은 투표 집계와 동시에 자동 집행됩니다.");
         return true;
     }
 
