@@ -12,6 +12,7 @@
 Milestone A — Playable Foundation
 
 ## Last completed DEV
+- DEV-007 Connection & TP — COMPLETE
 - DEV-006 Tile Registration — COMPLETE
 - DEV-005 Sector/Room/Connection Model — COMPLETE
 - DEV-004 Configuration System — COMPLETE
@@ -20,13 +21,14 @@ Milestone A — Playable Foundation
 - DEV-001 Project Bootstrap — COMPLETE
 
 ## Current DEV
-- DEV-007 Connection & TP
+- DEV-008 Constrained Random Map Generator
 - Status: PLANNED
 
 ## Next DEV
-- DEV-008 Constrained Random Map Generator
+- DEV-009 Map Debug Tools
 
 ## Implemented
+- DEV-007 connection access states and Paper teleport adapter
 - DEV-006 logical tile registration
 - DEV-005 logical Sector/Room/Connection model
 - DEV-004 validated configuration system
@@ -46,11 +48,17 @@ Milestone A — Playable Foundation
 - DEV-004 Windows test/build and Paper validation SUCCESS
 - DEV-005 Windows test/build and Paper validation SUCCESS
 - DEV-006 Windows test/build and Paper validation SUCCESS
+- DEV-007 Windows test/build and Paper validation SUCCESS
+
+## Map build decision
+- Physical ship modules will be built on a superflat/flat world to simplify construction and placement.
+- Core map logic remains coordinate-independent; flat-world placement belongs to the Paper/map-placement layer.
 
 ## Pending validation
-- None for DEV-006
+- None for DEV-007
 
 ## Known issues
+- Physical teleport targets are intentionally not data-loaded yet; they will be supplied by later map-instance/placement work.
 - Paper startup reports build 123 is behind the current latest build; project remains intentionally pinned to Paper 26.2 build 123 until deliberately changed.
 
 ## Environment
