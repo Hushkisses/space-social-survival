@@ -26,14 +26,28 @@ public final class PluginConfigurationLoader {
         );
 
         File balanceFile = new File(plugin.getDataFolder(), "balance.yml");
-        YamlConfiguration balanceYaml = YamlConfiguration.loadConfiguration(balanceFile);
+        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(balanceFile);
 
         BalanceConfig balance = new BalanceConfig(
-                balanceYaml.getInt("match.target-minutes"),
-                balanceYaml.getInt("return.hold-seconds")
+                yaml.getInt("match.target-minutes"),
+                yaml.getInt("return.hold-seconds")
         );
 
-        return new PluginConfiguration(game, balance);
+        MatchSetupConfig matchSetup = new MatchSetupConfig(
+                yaml.getInt("map.min-tiles"),
+                yaml.getInt("map.max-tiles"),
+                yaml.getInt("map.max-dead-ends"),
+                yaml.getInt("map.max-core-distance"),
+                yaml.getInt("map.max-attempts"),
+                yaml.getInt("objectives.secret-mission-chance-percent"),
+                yaml.getInt("events.initial-small-min"),
+                yaml.getInt("events.initial-small-max"),
+                yaml.getInt("scenario.accident-weight"),
+                yaml.getInt("scenario.sabotage-weight"),
+                yaml.getInt("scenario.infection-weight")
+        );
+
+        return new PluginConfiguration(game, balance, matchSetup);
     }
 
     private void saveResourceIfMissing(String name) {
