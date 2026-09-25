@@ -39,6 +39,9 @@ import com.hushkisses.spacesurvival.paper.ending.MatchResultRuntimeService;
 import com.hushkisses.spacesurvival.paper.item.DefaultResourceItemProvider;
 import com.hushkisses.spacesurvival.paper.item.ResourceItemProvider;
 import com.hushkisses.spacesurvival.paper.lobby.LobbyConnectionListener;
+import com.hushkisses.spacesurvival.paper.map.physical.PaperShipWorldService;
+import com.hushkisses.spacesurvival.paper.map.physical.ShipPortalListener;
+import com.hushkisses.spacesurvival.paper.match.MatchOrchestrator;
 import com.hushkisses.spacesurvival.paper.pve.DefaultPveMobSpawner;
 import com.hushkisses.spacesurvival.paper.pve.PveMobSpawner;
 import com.hushkisses.spacesurvival.paper.pvp.ConditionalPvpListener;
@@ -46,6 +49,7 @@ import com.hushkisses.spacesurvival.paper.runtime.GameRuntimeService;
 import com.hushkisses.spacesurvival.paper.social.SanctionEnforcementListener;
 import com.hushkisses.spacesurvival.paper.ui.OpeningBriefingUi;
 import com.hushkisses.spacesurvival.paper.ui.OpeningUiListener;
+import com.hushkisses.spacesurvival.paper.ui.MatchHudService;
 import com.hushkisses.spacesurvival.paper.ui.RoleSelectionUi;
 import com.hushkisses.spacesurvival.resource.ResourceLedger;
 import com.hushkisses.spacesurvival.resource.processing.DefaultProcessingCatalog;
@@ -127,6 +131,10 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private ResultEvaluator resultEvaluator;
     private MatchResultRuntimeService matchResultRuntimeService;
 
+    private PaperShipWorldService shipWorldService;
+    private MatchOrchestrator matchOrchestrator;
+    private MatchHudService matchHudService;
+
     @Override
     public void onEnable() {
         configuration = new PluginConfigurationLoader(this).load();
@@ -195,6 +203,10 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
 
         resetEndingRuntime();
 
+        shipWorldService = new PaperShipWorldService();
+        matchOrchestrator = new MatchOrchestrator(this, shipWorldService);
+        matchHudService = new MatchHudService(this, shipWorldService);
+
         registerCommands();
         getServer().getPluginManager().registerEvents(
                 new LobbyConnectionListener(lobbyService),
@@ -205,7 +217,8 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                         openingBriefingUi,
                         roleSelectionUi,
                         roleSelectionService,
-                        roleRegistry
+                        roleRegistry,
+                        matchOrchestrator::tryActivateIfReady
                 ),
                 this
         );
@@ -221,6 +234,12 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                 new PlayerDeathStateListener(this),
                 this
         );
+        getServer().getPluginManager().registerEvents(
+                new ShipPortalListener(shipWorldService),
+                this
+        );
+
+        matchHudService.start();
 
         getLogger().info("SpaceSurvival enabled. core=" + BootstrapMarker.moduleName());
         getLogger().info(
@@ -249,6 +268,9 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (matchHudService != null) {
+            matchHudService.stop();
+        }
         getLogger().info("SpaceSurvival disabled.");
     }
 
@@ -297,11 +319,50 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public CommonContributionLedger commonContributionLedger() { return require(commonContributionLedger, "Common contribution ledger"); }
     public ResultEvaluator resultEvaluator() { return require(resultEvaluator, "Result evaluator"); }
     public MatchResultRuntimeService matchResultRuntimeService() { return require(matchResultRuntimeService, "Match result runtime service"); }
+    public PaperShipWorldService shipWorldService() { return require(shipWorldService, "Ship world service"); }
+    public MatchOrchestrator matchOrchestrator() { return require(matchOrchestrator, "Match orchestrator"); }
+    public MatchHudService matchHudService() { return require(matchHudService, "Match HUD service"); }
 
     public void resetScenarioRuntime() {
         scenarioEngine.clear();
         infectionService = new InfectionService();
         pvpRuntimeState = new PvpRuntimeState();
+    }
+
+    public void resetForNewMatch() {
+        if (gameRuntimeService != null && gameRuntimeService.isRunning()) {
+            gameRuntimeService.stop();
+        }
+
+        roleSelectionService.reset();
+        shipState.reset();
+        facilityRegistry.resetAll();
+        resourceLedger.clear();
+        gameEventRuntimeState.clear();
+        radioRuntimeState.reset();
+        deathService.clear();
+        infectedPlayerService.clear();
+        sanctionStateRegistry.clear();
+
+        resetObjectiveRuntime();
+
+        scenarioEngine.clear();
+        infectionService = new InfectionService();
+        pvpRuntimeState = new PvpRuntimeState();
+
+        meetingService = new MeetingService(
+                facilityRegistry,
+                shipState,
+                Duration.ofMinutes(3)
+        );
+
+        gameRuntimeService = new GameRuntimeService(
+                this,
+                configuration.balance().targetMatchMinutes(),
+                shipState
+        );
+
+        resetEndingRuntime();
     }
 
     public void resetShipState() {
