@@ -35,6 +35,12 @@ final class SpaceCommand implements CommandExecutor {
         sender.sendMessage("§7플러그인: §a정상");
         sender.sendMessage("§7버전: §f" + plugin.getPluginMeta().getVersion());
         sender.sendMessage("§7코어: §f" + BootstrapMarker.moduleName());
-        sender.sendMessage("§7현재 DEV: §eDEV-003 PlayerState");
+        sender.sendMessage(
+                "§7플레이어 설정: §f"
+                        + plugin.configuration().game().minPlayers()
+                        + "§7~§f"
+                        + plugin.configuration().game().maxPlayers()
+        );
+        sender.sendMessage("§7현재 DEV: §eDEV-004 Configuration System");
     }
 }
