@@ -91,7 +91,7 @@ public final class ConstrainedRandomMapGenerator {
         for (int i = 1; i < selected.size(); i++) {
             TileDefinition next = selected.get(i);
 
-            ArrayList<TileId> possibleParents = connected.stream()
+            List<TileId> possibleParents = connected.stream()
                     .filter(id -> !unusedPoints.get(id).isEmpty())
                     .toList();
 
