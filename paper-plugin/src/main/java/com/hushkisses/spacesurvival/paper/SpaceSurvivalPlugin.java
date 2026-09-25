@@ -5,6 +5,7 @@ import com.hushkisses.spacesurvival.lobby.LobbyService;
 import com.hushkisses.spacesurvival.paper.config.PluginConfiguration;
 import com.hushkisses.spacesurvival.paper.config.PluginConfigurationLoader;
 import com.hushkisses.spacesurvival.paper.lobby.LobbyConnectionListener;
+import com.hushkisses.spacesurvival.paper.runtime.GameRuntimeService;
 import com.hushkisses.spacesurvival.paper.ui.OpeningBriefingUi;
 import com.hushkisses.spacesurvival.paper.ui.OpeningUiListener;
 import com.hushkisses.spacesurvival.paper.ui.RoleSelectionUi;
@@ -22,6 +23,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private RoleSelectionService roleSelectionService;
     private OpeningBriefingUi openingBriefingUi;
     private RoleSelectionUi roleSelectionUi;
+    private GameRuntimeService gameRuntimeService;
 
     @Override
     public void onEnable() {
@@ -31,6 +33,10 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         roleSelectionService = new RoleSelectionService(roleRegistry);
         openingBriefingUi = new OpeningBriefingUi();
         roleSelectionUi = new RoleSelectionUi(this, roleSelectionService, roleRegistry);
+        gameRuntimeService = new GameRuntimeService(
+                this,
+                configuration.balance().targetMatchMinutes()
+        );
 
         registerCommands();
         getServer().getPluginManager().registerEvents(
@@ -106,6 +112,13 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
             throw new IllegalStateException("Role selection UI is not initialized yet");
         }
         return roleSelectionUi;
+    }
+
+    public GameRuntimeService gameRuntimeService() {
+        if (gameRuntimeService == null) {
+            throw new IllegalStateException("Game runtime service is not initialized yet");
+        }
+        return gameRuntimeService;
     }
 
     private void registerCommands() {
