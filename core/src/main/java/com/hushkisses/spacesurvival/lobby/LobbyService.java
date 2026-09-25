@@ -111,6 +111,20 @@ public final class LobbyService {
         return Optional.ofNullable(gameSession);
     }
 
+    public void resetForNextMatch() {
+        LinkedHashMap<PlayerId, PlayerState> refreshed = new LinkedHashMap<>();
+        players.forEach((playerId, previous) -> {
+            PlayerState next = PlayerState.create(playerId, clock);
+            if (!previous.isConnected()) {
+                next.disconnect();
+            }
+            refreshed.put(playerId, next);
+        });
+        players.clear();
+        players.putAll(refreshed);
+        gameSession = null;
+    }
+
     public LobbySnapshot snapshot() {
         return new LobbySnapshot(
                 config.minPlayers(),
