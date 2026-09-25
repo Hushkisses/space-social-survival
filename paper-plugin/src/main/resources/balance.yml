@@ -3,3 +3,22 @@ match:
 
 return:
   hold-seconds: 240
+
+map:
+  min-tiles: 10
+  max-tiles: 14
+  max-dead-ends: 6
+  max-core-distance: 6
+  max-attempts: 500
+
+objectives:
+  secret-mission-chance-percent: 50
+
+events:
+  initial-small-min: 2
+  initial-small-max: 3
+
+scenario:
+  accident-weight: 45
+  sabotage-weight: 35
+  infection-weight: 20
