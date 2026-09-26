@@ -46,6 +46,12 @@ Player Comprehension / Playability
 - persistent right-click Crew PDA granted on activation
 - PDA restored on participant respawn/reconnect and protected from normal dropping
 - no hidden scenario truth or other-player private data exposed
+- opening recovery gate:
+  - match setup now applies a deliberately damaged, balance-configurable starting ship state before initial incidents
+  - current playability defaults: power 35 / oxygen 40 / hull 38 / reactor 30
+  - current defaults cannot satisfy the first return-stage gate without real recovery actions
+  - a small configurable shared emergency reserve prevents unlucky initial incident rolls from making the mandatory opening recovery impossible
+  - these are playtest tuning values, not final balance
 
 ## PX-002 Role Card / Personal Objective UX
 - private PDA displays:
@@ -64,7 +70,10 @@ Player Comprehension / Playability
 - added core PlayerGuidanceResolver
 - PX-003.1 presentation polish:
   - persistent guidance moved from center ActionBar to a compact right-side scoreboard
-  - scoreboard shows return stage, crisis, current room, one public priority, target facility and need
+  - scoreboard prioritizes the viewing player's base personal objective and progress
+  - secret mission content remains in the private PDA; the HUD only indicates that a secret mission exists
+  - stage/crisis lines were removed from the normal scoreboard
+  - scoreboard retains current room plus one public urgent objective, target facility and need
   - CRISIS/COLLAPSE uses a top boss bar for urgent ship-wide attention
   - ActionBar is reserved for short action-result feedback instead of permanent HUD text
   - scoreboard/bossbar are removed when the match runtime is absent
@@ -130,6 +139,7 @@ Player Comprehension / Playability
 - PX-005~007 World Readability CI: SUCCESS (Build #667)
 - PX-005/006 playtest correction CI: SUCCESS (Build #707)
 - PX-006 priority-route hologram CI: SUCCESS (Build #719)
+- opening recovery + personal-objective HUD CI: SUCCESS (Build #740)
 - PX-001~004 Windows/Paper integrated validation: pending
 - PT-011~015 Windows/Paper integrated validation: still pending
 - first blind 1~3 player 20-minute playability gate: not yet attempted
