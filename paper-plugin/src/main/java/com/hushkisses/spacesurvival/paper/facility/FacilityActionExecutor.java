@@ -373,6 +373,15 @@ public final class FacilityActionExecutor {
     }
 
     private FacilityActionExecutionResult depositCarriedResources(Player player) {
+        PlayerId playerId = PlayerId.of(player.getUniqueId());
+        Map<String, Integer> beforeProgress = new LinkedHashMap<>();
+        for (var objective : plugin.objectiveEngine().objectives(playerId)) {
+            beforeProgress.put(
+                    objective.definition().id().value(),
+                    objective.progress()
+            );
+        }
+
         Map<ResourceType, Integer> removed =
                 plugin.resourcePhysicalItemService().removeAllFrom(player);
 
@@ -381,14 +390,53 @@ public final class FacilityActionExecutor {
         }
 
         int total = 0;
+        ArrayList<String> deposited = new ArrayList<>();
         for (Map.Entry<ResourceType, Integer> entry : removed.entrySet()) {
             shared().add(entry.getKey(), entry.getValue());
             total += entry.getValue();
+            deposited.add(
+                    resourceName(entry.getKey())
+                            + " "
+                            + entry.getValue()
+                            + "개"
+                            + "→공용 "
+                            + shared().quantity(entry.getKey())
+            );
         }
 
         plugin.telemetryService().recordResourceDeposit(total);
         plugin.objectiveGameplayProgressService().recordDeposit(player, removed);
-        return result("공용 창고에 자원 " + total + "개를 입고했습니다: " + removed);
+
+        int objectiveDelta = 0;
+        for (var objective : plugin.objectiveEngine().objectives(playerId)) {
+            int before = beforeProgress.getOrDefault(
+                    objective.definition().id().value(),
+                    objective.progress()
+            );
+            objectiveDelta += Math.max(0, objective.progress() - before);
+        }
+
+        String objectiveText = objectiveDelta > 0
+                ? " | 개인 목표 +" + objectiveDelta
+                : "";
+
+        return result(
+                "입고 완료 " + total + "개 — "
+                        + String.join(", ", deposited)
+                        + objectiveText
+        );
+    }
+
+    private static String resourceName(ResourceType type) {
+        return switch (type) {
+            case REPAIR_PARTS -> "수리 부품";
+            case CIRCUITS -> "회로판";
+            case POWER_CELLS -> "전력 셀";
+            case FUEL -> "연료";
+            case MEDICAL_SUPPLIES -> "의료 물자";
+            case BIO_SAMPLES -> "생체 샘플";
+            case DATA_CORES -> "데이터 코어";
+        };
     }
 
     private ResourceStore shared() {
