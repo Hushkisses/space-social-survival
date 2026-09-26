@@ -1,5 +1,6 @@
 package com.hushkisses.spacesurvival.paper.config;
 
+import com.hushkisses.spacesurvival.ending.ReturnRequirements;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 
@@ -32,6 +33,15 @@ class PluginConfigurationLoaderTest {
         assertEquals(2, yaml.getInt("starting-shared-resources.power-cells"));
         assertEquals(2, yaml.getInt("starting-shared-resources.fuel"));
         assertEquals(2, yaml.getInt("starting-shared-resources.medical-supplies"));
+
+        ReturnRequirements requirements = ReturnRequirements.developmentDefaults();
+        boolean immediatelyReturnReady =
+                yaml.getInt("starting-ship.power") >= requirements.minPower()
+                        && yaml.getInt("starting-ship.oxygen") >= requirements.minOxygen()
+                        && yaml.getInt("starting-ship.hull") >= requirements.minHull()
+                        && yaml.getInt("starting-ship.reactor") >= requirements.minReactor();
+        assertFalse(immediatelyReturnReady, "default opening state must require recovery work");
+
         assertEquals(2, yaml.getInt("events.initial-small-min"));
         assertEquals(3, yaml.getInt("events.initial-small-max"));
         assertEquals(45, yaml.getInt("scenario.accident-weight"));
