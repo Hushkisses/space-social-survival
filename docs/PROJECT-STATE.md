@@ -77,7 +77,7 @@ Player Comprehension / Playability
   - safe predicted effects
 
 ## Validation status
-- PX-001~004 GitHub Actions full test/build: pending for current branch/PR
+- PX-001~004 GitHub Actions full test/build: SUCCESS (Build #595)
 - PX-001~004 Windows/Paper integrated validation: pending
 - PT-011~015 Windows/Paper integrated validation: still pending
 - first blind 1~3 player 20-minute playability gate: not yet attempted

@@ -116,7 +116,7 @@ Added `PlayerGuidanceResolverTest` covering:
 - unusable Engineering taking priority over metric repair
 - Navigation stage routing to Bridge
 
-GitHub Actions full test/build is required before this batch is considered implemented.
+GitHub Actions full test/build SUCCESS (Build #595).
 
 ## Manual Windows/Paper validation
 
