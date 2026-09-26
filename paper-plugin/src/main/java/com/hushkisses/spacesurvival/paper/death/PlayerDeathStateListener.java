@@ -29,6 +29,28 @@ public final class PlayerDeathStateListener implements Listener {
         Player player = event.getEntity();
         PlayerId playerId = PlayerId.of(player.getUniqueId());
 
+        if (plugin.lobbyService().contains(playerId)) {
+            event.setKeepInventory(false);
+            int recoverableStacks = 0;
+            int recoverableUnits = 0;
+
+            for (var drop : event.getDrops()) {
+                boolean functional = plugin.functionalItemService().typeOf(drop).isPresent();
+                boolean resource = plugin.resourcePhysicalItemService().typeOf(drop).isPresent();
+                if (functional || resource) {
+                    recoverableStacks++;
+                    recoverableUnits += drop.getAmount();
+                }
+            }
+
+            plugin.telemetryService().add("loot.recoverable.stacks", recoverableStacks);
+            plugin.telemetryService().add("loot.recoverable.units", recoverableUnits);
+            plugin.telemetryService().event(
+                    "loot.drop",
+                    player.getName() + ":stacks=" + recoverableStacks + ":units=" + recoverableUnits
+            );
+        }
+
         PlayerState playerState = plugin.lobbyService().playerState(playerId).orElse(null);
         if (playerState == null) {
             return;
