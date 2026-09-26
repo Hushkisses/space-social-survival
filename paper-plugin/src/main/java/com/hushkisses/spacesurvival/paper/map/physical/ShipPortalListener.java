@@ -2,6 +2,7 @@ package com.hushkisses.spacesurvival.paper.map.physical;
 
 import com.hushkisses.spacesurvival.map.connection.ConnectionAccessDecision;
 import com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin;
+import com.hushkisses.spacesurvival.paper.item.FunctionalItemType;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -56,7 +57,10 @@ public final class ShipPortalListener implements Listener {
         ConnectionAccessDecision access = connections.accessAt(
                 to,
                 plugin.shipState().power() > 0,
-                false
+                plugin.functionalItemService().has(
+                        player,
+                        FunctionalItemType.SECURITY_KEYCARD
+                )
         ).orElse(null);
 
         if (access != null && !access.allowed()) {

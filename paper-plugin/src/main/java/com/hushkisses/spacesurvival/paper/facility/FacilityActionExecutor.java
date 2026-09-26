@@ -7,6 +7,7 @@ import com.hushkisses.spacesurvival.facility.action.*;
 import com.hushkisses.spacesurvival.facility.medical.MedicalCondition;
 import com.hushkisses.spacesurvival.infection.InfectionTestResult;
 import com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin;
+import com.hushkisses.spacesurvival.paper.item.FunctionalItemType;
 import com.hushkisses.spacesurvival.paper.map.physical.PhysicalConnectionController;
 import com.hushkisses.spacesurvival.player.PlayerId;
 import com.hushkisses.spacesurvival.resource.ResourceStore;
@@ -45,7 +46,21 @@ public final class FacilityActionExecutor {
                 .require(action.facilityId())
                 .status();
 
-        return accessPolicy.evaluate(status, action, capabilities(player));
+        FacilityActionAccessDecision coreDecision =
+                accessPolicy.evaluate(status, action, capabilities(player));
+        if (!coreDecision.allowed()) {
+            return coreDecision;
+        }
+
+        FunctionalItemType requiredItem = requiredEquipment(action.id().value());
+        if (requiredItem != null
+                && !plugin.functionalItemService().has(player, requiredItem)) {
+            return FacilityActionAccessDecision.deny(
+                    FacilityActionAccessDecision.DenialReason.MISSING_REQUIRED_EQUIPMENT
+            );
+        }
+
+        return FacilityActionAccessDecision.allow();
     }
 
     public FacilityActionExecutionResult execute(
@@ -57,11 +72,18 @@ public final class FacilityActionExecutor {
             return FacilityActionExecutionResult.failure(denialMessage(decision.denialReason()));
         }
 
+        FacilityActionExecutionResult result;
         try {
-            return executeAllowed(player, action.id().value());
+            result = executeAllowed(player, action.id().value());
         } catch (IllegalStateException | IllegalArgumentException exception) {
-            return FacilityActionExecutionResult.failure(exception.getMessage());
+            result = FacilityActionExecutionResult.failure(exception.getMessage());
         }
+
+        plugin.telemetryService().recordFacilityAction(
+                action.id().value(),
+                result.success()
+        );
+        return result;
     }
 
     private FacilityActionExecutionResult executeAllowed(Player player, String id) {
@@ -180,6 +202,7 @@ public final class FacilityActionExecutor {
             case "cargo.store", "cargo.sort", "cargo.inventory" -> result(
                     "공용 재고: " + shared().snapshot()
             );
+            case "cargo.deposit" -> depositCarriedResources(player);
             case "cargo.process" -> process("circuit_salvage");
             case "cargo.rare" -> result(
                     "희귀 자원 — 생체 샘플 "
@@ -208,15 +231,11 @@ public final class FacilityActionExecutor {
     }
 
     private FacilityActionExecutionResult startMeeting() {
-        MeetingStartResult meeting = plugin.meetingService().startRegular(
-                plugin.lobbyService().snapshot().players(),
-                plugin.radioRuntimeState().longRangeAvailable()
-        );
+        MeetingStartResult meeting = plugin.meetingGuiService().startRegular();
         if (!meeting.started()) {
             return failure("회의를 시작할 수 없습니다: " + meeting.denialReason());
         }
-        plugin.getServer().broadcastMessage("§6[회의] §f함교에서 일반 회의가 소집되었습니다.");
-        return result("회의를 소집했습니다.");
+        return result("회의를 소집했습니다. 참가자에게 투표 GUI가 열렸습니다.");
     }
 
     private FacilityActionExecutionResult advanceReturn() {
@@ -323,16 +342,41 @@ public final class FacilityActionExecutor {
     }
 
     private FacilityActionExecutionResult transferSupply(Player player) {
-        ResourceStore personal = plugin.resourceLedger()
-                .personal(PlayerId.of(player.getUniqueId()));
-
-        if (shared().transferTo(personal, ResourceType.MEDICAL_SUPPLIES, 1)) {
-            return result("개인 보급으로 의료 물자 1개를 수령했습니다.");
+        if (shared().remove(ResourceType.MEDICAL_SUPPLIES, 1)) {
+            plugin.resourcePhysicalItemService().give(
+                    player,
+                    ResourceType.MEDICAL_SUPPLIES,
+                    1
+            );
+            return result("공용 창고에서 의료 물자 1개를 꺼냈습니다.");
         }
-        if (shared().transferTo(personal, ResourceType.REPAIR_PARTS, 1)) {
-            return result("개인 보급으로 수리 부품 1개를 수령했습니다.");
+        if (shared().remove(ResourceType.REPAIR_PARTS, 1)) {
+            plugin.resourcePhysicalItemService().give(
+                    player,
+                    ResourceType.REPAIR_PARTS,
+                    1
+            );
+            return result("공용 창고에서 수리 부품 1개를 꺼냈습니다.");
         }
         return failure("수령 가능한 공용 보급품이 없습니다.");
+    }
+
+    private FacilityActionExecutionResult depositCarriedResources(Player player) {
+        Map<ResourceType, Integer> removed =
+                plugin.resourcePhysicalItemService().removeAllFrom(player);
+
+        if (removed.isEmpty()) {
+            return failure("입고할 물리 자원 아이템이 없습니다.");
+        }
+
+        int total = 0;
+        for (Map.Entry<ResourceType, Integer> entry : removed.entrySet()) {
+            shared().add(entry.getKey(), entry.getValue());
+            total += entry.getValue();
+        }
+
+        plugin.telemetryService().recordResourceDeposit(total);
+        return result("공용 창고에 자원 " + total + "개를 입고했습니다: " + removed);
     }
 
     private ResourceStore shared() {
@@ -347,6 +391,38 @@ public final class FacilityActionExecutor {
                 .orElse(Set.of());
     }
 
+    private static FunctionalItemType requiredEquipment(String actionId) {
+        if (actionId.startsWith("engineering.")
+                && (actionId.equals("engineering.diagnose")
+                || actionId.equals("engineering.redistribute")
+                || actionId.equals("engineering.advanced_repair"))) {
+            return FunctionalItemType.ENGINEERING_MULTITOOL;
+        }
+        if (actionId.startsWith("medical.")
+                && (actionId.equals("medical.precise_test")
+                || actionId.equals("medical.advanced_treatment")
+                || actionId.equals("medical.suppress_infection"))) {
+            return FunctionalItemType.MEDICAL_SCANNER;
+        }
+        if (actionId.startsWith("research.")
+                && (actionId.equals("research.precise_bio")
+                || actionId.equals("research.alien_life")
+                || actionId.equals("research.event_cause"))) {
+            return FunctionalItemType.RESEARCH_SCANNER;
+        }
+        if (actionId.startsWith("cargo.")
+                && (actionId.equals("cargo.inventory")
+                || actionId.equals("cargo.rare")
+                || actionId.equals("cargo.efficient_process"))) {
+            return FunctionalItemType.CARGO_SCANNER;
+        }
+        if (actionId.equals("bridge.destination")
+                || actionId.equals("bridge.long_range_comms")) {
+            return FunctionalItemType.RADIO;
+        }
+        return null;
+    }
+
     private static com.hushkisses.spacesurvival.facility.FacilityId actionFacility(String id) {
         return new com.hushkisses.spacesurvival.facility.FacilityId(id);
     }
@@ -357,6 +433,7 @@ public final class FacilityActionExecutor {
             case FACILITY_QUARANTINED -> "시설이 격리되어 사용할 수 없습니다.";
             case FACILITY_DAMAGED_ADVANCED_UNAVAILABLE -> "시설이 손상되어 고급 기능을 사용할 수 없습니다.";
             case MISSING_ROLE_CAPABILITY -> "현재 직업에는 이 고급 기능을 사용할 권한이 없습니다.";
+            case MISSING_REQUIRED_EQUIPMENT -> "필요한 직업 장비를 소지하고 있지 않습니다.";
         };
     }
 

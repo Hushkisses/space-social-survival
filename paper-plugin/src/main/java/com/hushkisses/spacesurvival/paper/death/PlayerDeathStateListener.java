@@ -50,6 +50,8 @@ public final class PlayerDeathStateListener implements Listener {
                 plugin.scenarioEngine().active().orElse(null)
         );
 
+        plugin.telemetryService().recordDeath(player.getName(), cause.name());
+
         plugin.getLogger().info(
                 "Player death registered: "
                         + player.getName()

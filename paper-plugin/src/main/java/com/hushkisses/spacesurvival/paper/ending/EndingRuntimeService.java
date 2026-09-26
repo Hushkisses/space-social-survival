@@ -70,6 +70,7 @@ public final class EndingRuntimeService {
                 session.transitionTo(GamePhase.FINISHED);
             }
         });
+        plugin.telemetryService().finish("return_failed");
     }
 
     public void refresh() {
@@ -88,6 +89,7 @@ public final class EndingRuntimeService {
             });
 
             plugin.getServer().broadcastMessage("§a[귀환 성공] §f최종 버티기 단계가 완료되었습니다.");
+            plugin.telemetryService().finish("return_success");
         }
     }
 

@@ -13,6 +13,7 @@ public record FacilityActionAccessDecision(boolean allowed, DenialReason denialR
         FACILITY_OFFLINE,
         FACILITY_QUARANTINED,
         FACILITY_DAMAGED_ADVANCED_UNAVAILABLE,
-        MISSING_ROLE_CAPABILITY
+        MISSING_ROLE_CAPABILITY,
+        MISSING_REQUIRED_EQUIPMENT
     }
 }

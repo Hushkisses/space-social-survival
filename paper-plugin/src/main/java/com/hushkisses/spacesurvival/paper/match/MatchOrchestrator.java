@@ -103,6 +103,15 @@ public final class MatchOrchestrator {
                 seed,
                 config
         );
+        var resourcePopulation = plugin.resourceWorldService().populate(ship, seed);
+        plugin.getLogger().info(
+                "Physical resource caches placed: "
+                        + resourcePopulation.caches()
+                        + ", stacks="
+                        + resourcePopulation.stacks()
+                        + ", units="
+                        + resourcePopulation.units()
+        );
 
         int initialEventCount = config.initialSmallEventsMin()
                 + random.nextInt(
@@ -134,10 +143,22 @@ public final class MatchOrchestrator {
                 initialEventCount
         );
 
+        plugin.telemetryService().start(
+                seed,
+                players.size(),
+                scenarioDefinition.type().name()
+        );
+        plugin.telemetryService().add("resource.cache.count", resourcePopulation.caches());
+        plugin.telemetryService().add("resource.cache.stacks", resourcePopulation.stacks());
+        plugin.telemetryService().add("resource.cache.units", resourcePopulation.units());
+        plugin.telemetryService().add("initial.incident.count", initialEventCount);
+        plugin.telemetryService().event("match", "briefing");
+
         for (PlayerId playerId : players) {
             Player online = plugin.getServer().getPlayer(playerId.value());
             if (online == null) continue;
 
+            online.getInventory().clear();
             online.setGameMode(GameMode.SURVIVAL);
             online.teleportAsync(ship.bridgeSpawn());
             plugin.openingBriefingUi().open(
@@ -167,8 +188,10 @@ public final class MatchOrchestrator {
         }
 
         session.transitionTo(GamePhase.ACTIVE);
+        plugin.starterKitService().giveRoleKits();
         plugin.gameRuntimeService().start();
         plugin.incidentDirector().start(setupSnapshot.seed());
+        plugin.telemetryService().event("match", "active");
         status = MatchLifecycleStatus.ACTIVE;
 
         plugin.getServer().broadcastMessage(
@@ -191,6 +214,7 @@ public final class MatchOrchestrator {
 
     public void reset() {
         plugin.incidentDirector().stop();
+        plugin.telemetryService().finish("reset");
         if (plugin.gameRuntimeService().isRunning()) {
             plugin.gameRuntimeService().stop();
         }

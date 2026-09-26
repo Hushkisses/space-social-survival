@@ -42,6 +42,9 @@ import com.hushkisses.spacesurvival.paper.facility.FacilityInteractionListener;
 import com.hushkisses.spacesurvival.paper.facility.FacilityMenuService;
 import com.hushkisses.spacesurvival.paper.facility.FacilityTerminalRegistry;
 import com.hushkisses.spacesurvival.paper.item.DefaultResourceItemProvider;
+import com.hushkisses.spacesurvival.paper.item.FunctionalItemListener;
+import com.hushkisses.spacesurvival.paper.item.FunctionalItemService;
+import com.hushkisses.spacesurvival.paper.item.StarterKitService;
 import com.hushkisses.spacesurvival.paper.item.ResourceItemProvider;
 import com.hushkisses.spacesurvival.paper.lobby.LobbyConnectionListener;
 import com.hushkisses.spacesurvival.paper.map.physical.PaperShipWorldService;
@@ -51,8 +54,12 @@ import com.hushkisses.spacesurvival.paper.match.MatchOrchestrator;
 import com.hushkisses.spacesurvival.paper.pve.DefaultPveMobSpawner;
 import com.hushkisses.spacesurvival.paper.pve.PveMobSpawner;
 import com.hushkisses.spacesurvival.paper.pvp.ConditionalPvpListener;
+import com.hushkisses.spacesurvival.paper.resource.ResourcePhysicalItemService;
+import com.hushkisses.spacesurvival.paper.resource.ResourceWorldService;
 import com.hushkisses.spacesurvival.paper.runtime.GameRuntimeService;
+import com.hushkisses.spacesurvival.paper.social.MeetingGuiService;
 import com.hushkisses.spacesurvival.paper.social.SanctionEnforcementListener;
+import com.hushkisses.spacesurvival.paper.telemetry.MatchTelemetryService;
 import com.hushkisses.spacesurvival.paper.ui.OpeningBriefingUi;
 import com.hushkisses.spacesurvival.paper.ui.OpeningUiListener;
 import com.hushkisses.spacesurvival.paper.ui.MatchHudService;
@@ -99,6 +106,10 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private ProcessingRegistry processingRegistry;
     private ProcessingService processingService;
     private ResourceItemProvider resourceItemProvider;
+    private FunctionalItemService functionalItemService;
+    private StarterKitService starterKitService;
+    private ResourcePhysicalItemService resourcePhysicalItemService;
+    private ResourceWorldService resourceWorldService;
 
     private ObjectiveRegistry objectiveRegistry;
     private ObjectiveEngine objectiveEngine;
@@ -112,6 +123,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private MeetingService meetingService;
     private SanctionStateRegistry sanctionStateRegistry;
     private SanctionExecutor sanctionExecutor;
+    private MeetingGuiService meetingGuiService;
     private PvpRuntimeState pvpRuntimeState;
     private ConditionalPvpPolicy conditionalPvpPolicy;
 
@@ -146,6 +158,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private MatchOrchestrator matchOrchestrator;
     private MatchHudService matchHudService;
     private IncidentDirector incidentDirector;
+    private MatchTelemetryService telemetryService;
 
     @Override
     public void onEnable() {
@@ -167,7 +180,15 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         resourceLedger = new ResourceLedger();
         processingRegistry = DefaultProcessingCatalog.createRegistry();
         processingService = new ProcessingService();
-        resourceItemProvider = new DefaultResourceItemProvider(new ItemsAdderBridge());
+        ItemsAdderBridge itemsAdderBridge = new ItemsAdderBridge();
+        resourceItemProvider = new DefaultResourceItemProvider(itemsAdderBridge);
+        functionalItemService = new FunctionalItemService(this, itemsAdderBridge);
+        starterKitService = new StarterKitService(this, functionalItemService);
+        resourcePhysicalItemService = new ResourcePhysicalItemService(
+                this,
+                resourceItemProvider
+        );
+        resourceWorldService = new ResourceWorldService(resourcePhysicalItemService);
 
         objectiveRegistry = DefaultObjectiveCatalog.createRegistry();
         resetObjectiveRuntime();
@@ -237,6 +258,8 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                 this,
                 physicalConnectionController
         );
+        telemetryService = new MatchTelemetryService(this);
+        meetingGuiService = new MeetingGuiService(this);
 
         registerCommands();
         getServer().getPluginManager().registerEvents(
@@ -284,6 +307,14 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                 facilityMenuService,
                 this
         );
+        getServer().getPluginManager().registerEvents(
+                new FunctionalItemListener(this, functionalItemService),
+                this
+        );
+        getServer().getPluginManager().registerEvents(
+                meetingGuiService,
+                this
+        );
 
         matchHudService.start();
 
@@ -320,6 +351,9 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         if (incidentDirector != null) {
             incidentDirector.stop();
         }
+        if (telemetryService != null && telemetryService.snapshot().active()) {
+            telemetryService.finish("server_shutdown");
+        }
         getLogger().info("SpaceSurvival disabled.");
     }
 
@@ -339,6 +373,10 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public ProcessingRegistry processingRegistry() { return require(processingRegistry, "Processing registry"); }
     public ProcessingService processingService() { return require(processingService, "Processing service"); }
     public ResourceItemProvider resourceItemProvider() { return require(resourceItemProvider, "Resource item provider"); }
+    public FunctionalItemService functionalItemService() { return require(functionalItemService, "Functional item service"); }
+    public StarterKitService starterKitService() { return require(starterKitService, "Starter kit service"); }
+    public ResourcePhysicalItemService resourcePhysicalItemService() { return require(resourcePhysicalItemService, "Physical resource item service"); }
+    public ResourceWorldService resourceWorldService() { return require(resourceWorldService, "Resource world service"); }
     public ObjectiveRegistry objectiveRegistry() { return require(objectiveRegistry, "Objective registry"); }
     public ObjectiveEngine objectiveEngine() { return require(objectiveEngine, "Objective engine"); }
     public SecretMissionService secretMissionService() { return require(secretMissionService, "Secret mission service"); }
@@ -349,6 +387,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public MeetingService meetingService() { return require(meetingService, "Meeting service"); }
     public SanctionStateRegistry sanctionStateRegistry() { return require(sanctionStateRegistry, "Sanction state registry"); }
     public SanctionExecutor sanctionExecutor() { return require(sanctionExecutor, "Sanction executor"); }
+    public MeetingGuiService meetingGuiService() { return require(meetingGuiService, "Meeting GUI service"); }
     public PvpRuntimeState pvpRuntimeState() { return require(pvpRuntimeState, "PvP runtime state"); }
     public ConditionalPvpPolicy conditionalPvpPolicy() { return require(conditionalPvpPolicy, "Conditional PvP policy"); }
     public RadioRuntimeState radioRuntimeState() { return require(radioRuntimeState, "Radio runtime state"); }
@@ -376,6 +415,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public FacilityActionExecutor facilityActionExecutor() { return require(facilityActionExecutor, "Facility action executor"); }
     public FacilityMenuService facilityMenuService() { return require(facilityMenuService, "Facility menu service"); }
     public IncidentDirector incidentDirector() { return require(incidentDirector, "Incident director"); }
+    public MatchTelemetryService telemetryService() { return require(telemetryService, "Telemetry service"); }
 
     public void resetScenarioRuntime() {
         scenarioEngine.clear();
@@ -392,6 +432,9 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         }
 
         roleSelectionService.reset();
+        if (meetingGuiService != null) {
+            meetingGuiService.resetRuntime();
+        }
         shipState.reset();
         facilityRegistry.resetAll();
         resourceLedger.clear();
