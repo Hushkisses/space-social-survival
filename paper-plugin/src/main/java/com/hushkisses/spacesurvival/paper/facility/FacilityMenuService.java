@@ -341,7 +341,8 @@ public final class FacilityMenuService implements Listener {
         return switch (id) {
             case "engineering.power" -> List.of(new Requirement(ResourceType.POWER_CELLS, 1));
             case "engineering.engine" -> List.of(new Requirement(ResourceType.FUEL, 1));
-            case "engineering.repair" -> List.of(new Requirement(ResourceType.REPAIR_PARTS, 1));
+            case "engineering.repair", "engineering.oxygen" ->
+                    List.of(new Requirement(ResourceType.REPAIR_PARTS, 1));
             case "engineering.advanced_repair" -> List.of(new Requirement(ResourceType.REPAIR_PARTS, 2));
             case "medical.treat", "medical.clear_status", "medical.decontaminate",
                     "medical.advanced_treatment", "medical.suppress_infection" ->
@@ -368,6 +369,7 @@ public final class FacilityMenuService implements Listener {
             case "engineering.power" -> "전력 +15";
             case "engineering.engine" -> "원자로/엔진 안정도 +10";
             case "engineering.repair" -> "선체 안정도 +12, 기관실 손상 복구 가능";
+            case "engineering.oxygen" -> "수리 부품 1개를 사용해 산소 +15";
             case "engineering.diagnose" -> "정밀 함선 상태 진단";
             case "engineering.redistribute" -> "전력 +8";
             case "engineering.advanced_repair" -> "선체 +25, 원자로 +15, 고장 통로 복구";
