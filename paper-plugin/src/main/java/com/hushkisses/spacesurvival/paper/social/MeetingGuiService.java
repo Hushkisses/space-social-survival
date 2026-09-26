@@ -12,6 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -122,7 +123,7 @@ public final class MeetingGuiService implements Listener {
         plugin.getServer().broadcastMessage("§6[회의] §f회의가 종료되었습니다.");
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
     public void onClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
@@ -149,7 +150,14 @@ public final class MeetingGuiService implements Listener {
             }
 
             pendingSanction.put(player.getUniqueId(), type);
-            openTargets(player);
+            plugin.getServer().getScheduler().runTask(
+                    plugin,
+                    () -> {
+                        if (player.isOnline() && hasActiveVote()) {
+                            openTargets(player);
+                        }
+                    }
+            );
             return;
         }
 
