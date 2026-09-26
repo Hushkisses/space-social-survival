@@ -3,6 +3,7 @@ package com.hushkisses.spacesurvival.paper.facility;
 import com.hushkisses.spacesurvival.facility.FacilityId;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
@@ -21,7 +22,7 @@ public final class FacilityInteractionListener implements Listener {
         this.menus = Objects.requireNonNull(menus, "menus");
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
     public void onInteract(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null) {
             return;
