@@ -47,7 +47,7 @@ import com.hushkisses.spacesurvival.paper.item.FunctionalItemListener;
 import com.hushkisses.spacesurvival.paper.item.FunctionalItemService;
 import com.hushkisses.spacesurvival.paper.item.StarterKitService;
 import com.hushkisses.spacesurvival.paper.item.ResourceItemProvider;
-import com.hushkisses.spacesurvival.paper.lobby.LobbyConnectionListener;
+import com.hushkisses.spacesurvival.paper.lobby.LobbyReadyService;
 import com.hushkisses.spacesurvival.paper.map.physical.PaperShipWorldService;
 import com.hushkisses.spacesurvival.paper.map.physical.PhysicalConnectionController;
 import com.hushkisses.spacesurvival.paper.map.physical.ShipPortalListener;
@@ -163,6 +163,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
 
     private PaperShipWorldService shipWorldService;
     private MatchOrchestrator matchOrchestrator;
+    private LobbyReadyService lobbyReadyService;
     private MatchHudService matchHudService;
     private CrewPdaService crewPdaService;
     private IncidentDirector incidentDirector;
@@ -263,6 +264,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                 physicalConnectionController
         );
         matchOrchestrator = new MatchOrchestrator(this, shipWorldService);
+        lobbyReadyService = new LobbyReadyService(this);
         matchHudService = new MatchHudService(this, shipWorldService);
         crewPdaService = new CrewPdaService(this, shipWorldService);
         incidentDirector = new IncidentDirector(
@@ -275,7 +277,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
 
         registerCommands();
         getServer().getPluginManager().registerEvents(
-                new LobbyConnectionListener(lobbyService),
+                lobbyReadyService,
                 this
         );
         getServer().getPluginManager().registerEvents(
@@ -334,6 +336,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                 this
         );
 
+        lobbyReadyService.start();
         matchHudService.start();
 
         getLogger().info("SpaceSurvival enabled. core=" + BootstrapMarker.moduleName());
@@ -363,6 +366,9 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (lobbyReadyService != null) {
+            lobbyReadyService.stop();
+        }
         if (matchHudService != null) {
             matchHudService.stop();
         }
@@ -430,6 +436,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public MatchResultGuiService matchResultGuiService() { return require(matchResultGuiService, "Match result GUI service"); }
     public PaperShipWorldService shipWorldService() { return require(shipWorldService, "Ship world service"); }
     public MatchOrchestrator matchOrchestrator() { return require(matchOrchestrator, "Match orchestrator"); }
+    public LobbyReadyService lobbyReadyService() { return require(lobbyReadyService, "Lobby ready service"); }
     public MatchHudService matchHudService() { return require(matchHudService, "Match HUD service"); }
     public CrewPdaService crewPdaService() { return require(crewPdaService, "Crew PDA service"); }
     public FacilityTerminalRegistry facilityTerminalRegistry() { return require(facilityTerminalRegistry, "Facility terminal registry"); }
