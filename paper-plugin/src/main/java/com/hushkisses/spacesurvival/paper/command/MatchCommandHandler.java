@@ -94,18 +94,7 @@ public final class MatchCommandHandler {
         }
 
         plugin.matchOrchestrator().reset();
-
-        for (Player player : plugin.getServer().getOnlinePlayers()) {
-            if (plugin.lobbyService().contains(
-                    com.hushkisses.spacesurvival.player.PlayerId.of(player.getUniqueId())
-            )) {
-                player.setGameMode(org.bukkit.GameMode.SURVIVAL);
-                player.setHealth(player.getMaxHealth());
-                player.setFoodLevel(20);
-            }
-        }
-
-        sender.sendMessage("§a매치 런타임을 초기화했습니다. 대기실 참가자는 유지됩니다.");
+        sender.sendMessage("§a매치 런타임을 초기화하고 참가자를 대기실로 복귀시켰습니다.");
         return true;
     }
 
