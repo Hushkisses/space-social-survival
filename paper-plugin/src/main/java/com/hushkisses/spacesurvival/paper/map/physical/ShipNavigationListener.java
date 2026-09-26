@@ -1,7 +1,5 @@
 package com.hushkisses.spacesurvival.paper.map.physical;
 
-import com.hushkisses.spacesurvival.guidance.PlayerGuidanceResolver;
-import com.hushkisses.spacesurvival.guidance.PublicProblem;
 import com.hushkisses.spacesurvival.map.tile.TileId;
 import com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin;
 import com.hushkisses.spacesurvival.player.PlayerId;
@@ -21,18 +19,14 @@ public final class ShipNavigationListener implements Listener {
 
     private final SpaceSurvivalPlugin plugin;
     private final PaperShipWorldService shipWorldService;
-    private final ShipRouteService routeService;
-    private final PlayerGuidanceResolver guidanceResolver = new PlayerGuidanceResolver();
     private final Map<UUID, TileId> lastTile = new HashMap<>();
 
     public ShipNavigationListener(
             SpaceSurvivalPlugin plugin,
-            PaperShipWorldService shipWorldService,
-            ShipRouteService routeService
+            PaperShipWorldService shipWorldService
     ) {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
         this.shipWorldService = Objects.requireNonNull(shipWorldService, "shipWorldService");
-        this.routeService = Objects.requireNonNull(routeService, "routeService");
     }
 
     @EventHandler
@@ -70,33 +64,8 @@ public final class ShipNavigationListener implements Listener {
                     case AUXILIARY -> "보조 구역";
                 };
 
-        PublicProblem problem = guidanceResolver.resolve(
-                plugin.returnObjectiveService().stage(),
-                plugin.shipState().snapshot(),
-                plugin.facilityRegistry().snapshots()
-        );
-        String target = plugin.facilityRegistry()
-                .require(problem.targetFacility())
-                .definition()
-                .displayName();
-
-        String route = routeService.routeToFacility(player, problem.targetFacility())
-                .map(plan -> {
-                    if (plan.arrived()) {
-                        return "목표 시설 도착";
-                    }
-                    String next = plan.nextTile()
-                            .map(snapshot::tileDisplayName)
-                            .orElse("PDA 지도 확인");
-                    return (plan.nextConnectionUsable() ? "다음 · " : "경로 차단 · ")
-                            + next;
-                })
-                .orElse("PDA 지도 확인");
-
         player.sendActionBar(Component.text(
-                "현재 · " + name
-                        + " | 목표 · " + target
-                        + " | " + route
+                "현재 구역 · " + name + " · " + category
         ));
         player.playSound(
                 player.getLocation(),
