@@ -38,6 +38,7 @@ import com.hushkisses.spacesurvival.paper.ending.EndingRuntimeService;
 import com.hushkisses.spacesurvival.paper.ending.MatchResultRuntimeService;
 import com.hushkisses.spacesurvival.paper.ending.MatchResultGuiService;
 import com.hushkisses.spacesurvival.paper.event.IncidentDirector;
+import com.hushkisses.spacesurvival.paper.event.IncidentPresentationService;
 import com.hushkisses.spacesurvival.paper.facility.FacilityActionExecutor;
 import com.hushkisses.spacesurvival.paper.facility.FacilityInteractionListener;
 import com.hushkisses.spacesurvival.paper.facility.FacilityMenuService;
@@ -167,6 +168,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private MatchHudService matchHudService;
     private CrewPdaService crewPdaService;
     private IncidentDirector incidentDirector;
+    private IncidentPresentationService incidentPresentationService;
     private MatchTelemetryService telemetryService;
 
     @Override
@@ -267,6 +269,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         lobbyReadyService = new LobbyReadyService(this);
         matchHudService = new MatchHudService(this, shipWorldService);
         crewPdaService = new CrewPdaService(this, shipWorldService);
+        incidentPresentationService = new IncidentPresentationService(this);
         incidentDirector = new IncidentDirector(
                 this,
                 physicalConnectionController
@@ -375,6 +378,9 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         if (incidentDirector != null) {
             incidentDirector.stop();
         }
+        if (incidentPresentationService != null) {
+            incidentPresentationService.stop();
+        }
         if (telemetryService != null && telemetryService.snapshot().active()) {
             telemetryService.finish("server_shutdown");
         }
@@ -444,6 +450,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public FacilityActionExecutor facilityActionExecutor() { return require(facilityActionExecutor, "Facility action executor"); }
     public FacilityMenuService facilityMenuService() { return require(facilityMenuService, "Facility menu service"); }
     public IncidentDirector incidentDirector() { return require(incidentDirector, "Incident director"); }
+    public IncidentPresentationService incidentPresentationService() { return require(incidentPresentationService, "Incident presentation service"); }
     public MatchTelemetryService telemetryService() { return require(telemetryService, "Telemetry service"); }
 
     public void resetScenarioRuntime() {
@@ -455,6 +462,9 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public void resetForNewMatch() {
         if (incidentDirector != null) {
             incidentDirector.stop();
+        }
+        if (incidentPresentationService != null) {
+            incidentPresentationService.stop();
         }
         if (gameRuntimeService != null && gameRuntimeService.isRunning()) {
             gameRuntimeService.stop();
