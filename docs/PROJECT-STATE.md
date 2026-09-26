@@ -16,7 +16,7 @@ Playtest Integration
 
 ## Current batch
 - PT-001 through PT-005 Playtest Integration
-- Status: VALIDATION_PENDING
+- Status: COMPLETE
 - Development branch: dev/PT-001-005-playtest-integration
 
 ## Included
@@ -106,18 +106,12 @@ New incident keys are added to legacy balance.yml automatically while preserving
 
 ## Verified
 - DEV-001 through DEV-059 automated and Windows/Paper validation SUCCESS
+- PT-001 through PT-005 GitHub Actions full test/build SUCCESS (Build #507)
+- PT-001 through PT-005 Windows/Paper integrated validation SUCCESS
 - PT-001 through PT-005 GitHub Actions full test/build SUCCESS (Build run #507)
 
 ## Pending validation
-- Windows full test/build
-- Paper startup
-- /space match devstart
-- right-click all six facility consoles
-- role-gated advanced facility action
-- NBT fallback / structure status
-- door state blocking and repair
-- Incident Director force small/large
-- match reset and second devstart
+- None for PT-001 through PT-005
 
 ## Next batch
 - PT-006 Functional Item Layer
