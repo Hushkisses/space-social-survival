@@ -5,7 +5,6 @@ import com.hushkisses.spacesurvival.guidance.PlayerGuidanceResolver;
 import com.hushkisses.spacesurvival.guidance.PublicProblem;
 import com.hushkisses.spacesurvival.map.tile.TileId;
 import com.hushkisses.spacesurvival.objective.ObjectiveSlot;
-import com.hushkisses.spacesurvival.objective.ObjectiveStatus;
 import com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin;
 import com.hushkisses.spacesurvival.paper.map.physical.PaperShipWorldService;
 import com.hushkisses.spacesurvival.paper.map.physical.PhysicalShipSnapshot;
@@ -154,7 +153,7 @@ public final class MatchHudService {
             lines.add("§d비밀 임무 있음 §8· PDA 확인");
         }
 
-        lines.add("§8────────────");
+        lines.add("§8────────────§r");
         lines.add("§e§l긴급 목표");
         lines.add(priorityColor(crisis) + compact(problem.title(), 26));
         lines.add("§7목표 §f" + compact(targetFacility, 20));
