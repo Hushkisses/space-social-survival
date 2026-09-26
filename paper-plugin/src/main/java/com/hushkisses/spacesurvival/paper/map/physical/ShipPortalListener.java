@@ -49,6 +49,13 @@ public final class ShipPortalListener implements Listener {
         }
 
         Player player = event.getPlayer();
+
+        if (plugin.physicalSanctionService().accessRestricted(player)
+                || plugin.physicalSanctionService().ejected(player)) {
+            player.sendMessage("§c[출입 제한] §f현재 모듈 간 통로를 사용할 수 없습니다.");
+            return;
+        }
+
         long now = System.currentTimeMillis();
         if (cooldownUntil.getOrDefault(player.getUniqueId(), 0L) > now) {
             return;

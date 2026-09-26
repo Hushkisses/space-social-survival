@@ -42,10 +42,14 @@ public final class PlaytestBuildCommandHandler {
         return switch (args[1].toLowerCase(Locale.ROOT)) {
             case "start" -> playtestStart(sender, args);
             case "reset" -> playtestReset(sender);
+            case "preflight" -> playtestPreflight(sender);
+            case "postmatch" -> playtestPostmatch(sender);
             default -> {
                 sender.sendMessage("§c사용법: /space playtest status");
                 sender.sendMessage("§c사용법: /space playtest start [seed]");
                 sender.sendMessage("§c사용법: /space playtest reset");
+                sender.sendMessage("§c사용법: /space playtest preflight");
+                sender.sendMessage("§c사용법: /space playtest postmatch");
                 yield true;
             }
         };
@@ -110,6 +114,67 @@ public final class PlaytestBuildCommandHandler {
                             + " §8(나머지는 폴백)"
             );
         }
+        return true;
+    }
+
+    private boolean playtestPreflight(CommandSender sender) {
+        var lobby = plugin.lobbyService().snapshot();
+        long onlineParticipants = lobby.players().stream()
+                .map(com.hushkisses.spacesurvival.player.PlayerId::value)
+                .map(plugin.getServer()::getPlayer)
+                .filter(Objects::nonNull)
+                .count();
+
+        boolean countReady = lobby.playerCount() >= lobby.minPlayers()
+                && lobby.playerCount() <= lobby.maxPlayers();
+        boolean allOnline = onlineParticipants == lobby.playerCount();
+        boolean idle = !lobby.started()
+                && plugin.matchOrchestrator().status()
+                == com.hushkisses.spacesurvival.paper.match.MatchLifecycleStatus.IDLE;
+
+        sender.sendMessage("§6========== 플레이테스트 Preflight ==========");
+        sender.sendMessage("§7인원 규칙: " + (countReady ? "§a통과" : "§c실패")
+                + " §f(" + lobby.playerCount() + "/" + lobby.minPlayers() + "~" + lobby.maxPlayers() + ")");
+        sender.sendMessage("§7참가자 접속: " + (allOnline ? "§a통과" : "§c실패")
+                + " §f(" + onlineParticipants + "/" + lobby.playerCount() + ")");
+        sender.sendMessage("§7매치 상태: " + (idle ? "§a대기" : "§c진행/준비 중"));
+        sender.sendMessage("§7ItemsAdder: §f"
+                + (plugin.resourceItemProvider().customItemsAvailable() ? "연결됨" : "바닐라 폴백"));
+        sender.sendMessage("§7Voice: §f" + plugin.simpleVoiceChatBridge().status());
+        sender.sendMessage("§7PvE: §f" + plugin.pveMobSpawner().backendStatus());
+        sender.sendMessage("§7NBT: §f"
+                + plugin.shipWorldService().structureLoader().structuresDirectory().getAbsolutePath());
+        sender.sendMessage("§7Telemetry: §f"
+                + plugin.telemetryService().directory().getAbsolutePath());
+        sender.sendMessage("§7최종 판정: "
+                + (countReady && allOnline && idle ? "§a시작 가능" : "§e점검 필요"));
+        return true;
+    }
+
+    private boolean playtestPostmatch(CommandSender sender) {
+        sender.sendMessage("§6========== 플레이테스트 Postmatch ==========");
+
+        var result = plugin.matchResultRuntimeService().lastResult().orElse(null);
+        if (result == null) {
+            sender.sendMessage("§e아직 최종 경기 결과가 없습니다.");
+        } else {
+            sender.sendMessage("§7공통 귀환: "
+                    + (result.commonMissionCompleted() ? "§a성공" : "§c실패"));
+            sender.sendMessage("§7승리자 수: §f" + result.winners().size());
+            sender.sendMessage("§7MVP 수: §f" + result.mvps().size());
+            sender.sendMessage("§7점수: §f" + result.players().stream()
+                    .map(player -> player.score().total())
+                    .toList());
+        }
+
+        var telemetry = plugin.telemetryService().snapshot();
+        sender.sendMessage("§7시드: §f" + telemetry.seed());
+        sender.sendMessage("§7인원: §f" + telemetry.playerCount());
+        sender.sendMessage("§7시나리오: §f" + telemetry.scenario());
+        sender.sendMessage("§7기록 이벤트 수: §f" + telemetry.eventCount());
+        sender.sendMessage("§7카운터: §f" + telemetry.counters());
+        sender.sendMessage("§7텔레메트리 파일: §f"
+                + (telemetry.lastSavedFile() == null ? "없음" : telemetry.lastSavedFile()));
         return true;
     }
 

@@ -36,6 +36,7 @@ import com.hushkisses.spacesurvival.paper.config.PluginConfigurationLoader;
 import com.hushkisses.spacesurvival.paper.death.PlayerDeathStateListener;
 import com.hushkisses.spacesurvival.paper.ending.EndingRuntimeService;
 import com.hushkisses.spacesurvival.paper.ending.MatchResultRuntimeService;
+import com.hushkisses.spacesurvival.paper.ending.MatchResultGuiService;
 import com.hushkisses.spacesurvival.paper.event.IncidentDirector;
 import com.hushkisses.spacesurvival.paper.facility.FacilityActionExecutor;
 import com.hushkisses.spacesurvival.paper.facility.FacilityInteractionListener;
@@ -50,6 +51,7 @@ import com.hushkisses.spacesurvival.paper.lobby.LobbyConnectionListener;
 import com.hushkisses.spacesurvival.paper.map.physical.PaperShipWorldService;
 import com.hushkisses.spacesurvival.paper.map.physical.PhysicalConnectionController;
 import com.hushkisses.spacesurvival.paper.map.physical.ShipPortalListener;
+import com.hushkisses.spacesurvival.paper.objective.ObjectiveGameplayProgressService;
 import com.hushkisses.spacesurvival.paper.match.MatchOrchestrator;
 import com.hushkisses.spacesurvival.paper.pve.DefaultPveMobSpawner;
 import com.hushkisses.spacesurvival.paper.pve.PveMobSpawner;
@@ -58,6 +60,7 @@ import com.hushkisses.spacesurvival.paper.resource.ResourcePhysicalItemService;
 import com.hushkisses.spacesurvival.paper.resource.ResourceWorldService;
 import com.hushkisses.spacesurvival.paper.runtime.GameRuntimeService;
 import com.hushkisses.spacesurvival.paper.social.MeetingGuiService;
+import com.hushkisses.spacesurvival.paper.social.PhysicalSanctionService;
 import com.hushkisses.spacesurvival.paper.social.SanctionEnforcementListener;
 import com.hushkisses.spacesurvival.paper.telemetry.MatchTelemetryService;
 import com.hushkisses.spacesurvival.paper.ui.OpeningBriefingUi;
@@ -114,6 +117,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private ObjectiveRegistry objectiveRegistry;
     private ObjectiveEngine objectiveEngine;
     private SecretMissionService secretMissionService;
+    private ObjectiveGameplayProgressService objectiveGameplayProgressService;
 
     private GameEventRegistry gameEventRegistry;
     private GameEventEngine gameEventEngine;
@@ -124,6 +128,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private SanctionStateRegistry sanctionStateRegistry;
     private SanctionExecutor sanctionExecutor;
     private MeetingGuiService meetingGuiService;
+    private PhysicalSanctionService physicalSanctionService;
     private PvpRuntimeState pvpRuntimeState;
     private ConditionalPvpPolicy conditionalPvpPolicy;
 
@@ -148,6 +153,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private CommonContributionLedger commonContributionLedger;
     private ResultEvaluator resultEvaluator;
     private MatchResultRuntimeService matchResultRuntimeService;
+    private MatchResultGuiService matchResultGuiService;
 
     private FacilityTerminalRegistry facilityTerminalRegistry;
     private PhysicalConnectionController physicalConnectionController;
@@ -192,6 +198,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
 
         objectiveRegistry = DefaultObjectiveCatalog.createRegistry();
         resetObjectiveRuntime();
+        objectiveGameplayProgressService = new ObjectiveGameplayProgressService(this);
 
         gameEventRegistry = DefaultGameEventCatalog.createRegistry();
         gameEventEngine = new GameEventEngine();
@@ -235,6 +242,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         pveMobSpawner = new DefaultPveMobSpawner(mythicMobsBridge, modelEngineBridge);
 
         resetEndingRuntime();
+        matchResultGuiService = new MatchResultGuiService(this);
 
         facilityTerminalRegistry = new FacilityTerminalRegistry();
         physicalConnectionController = new PhysicalConnectionController();
@@ -259,6 +267,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                 physicalConnectionController
         );
         telemetryService = new MatchTelemetryService(this);
+        physicalSanctionService = new PhysicalSanctionService(this);
         meetingGuiService = new MeetingGuiService(this);
 
         registerCommands();
@@ -298,6 +307,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         );
         getServer().getPluginManager().registerEvents(
                 new FacilityInteractionListener(
+                        this,
                         facilityTerminalRegistry,
                         facilityMenuService
                 ),
@@ -380,6 +390,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public ObjectiveRegistry objectiveRegistry() { return require(objectiveRegistry, "Objective registry"); }
     public ObjectiveEngine objectiveEngine() { return require(objectiveEngine, "Objective engine"); }
     public SecretMissionService secretMissionService() { return require(secretMissionService, "Secret mission service"); }
+    public ObjectiveGameplayProgressService objectiveGameplayProgressService() { return require(objectiveGameplayProgressService, "Objective gameplay progress service"); }
     public GameEventRegistry gameEventRegistry() { return require(gameEventRegistry, "Game event registry"); }
     public GameEventEngine gameEventEngine() { return require(gameEventEngine, "Game event engine"); }
     public GameEventRuntimeState gameEventRuntimeState() { return require(gameEventRuntimeState, "Game event runtime state"); }
@@ -388,6 +399,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public SanctionStateRegistry sanctionStateRegistry() { return require(sanctionStateRegistry, "Sanction state registry"); }
     public SanctionExecutor sanctionExecutor() { return require(sanctionExecutor, "Sanction executor"); }
     public MeetingGuiService meetingGuiService() { return require(meetingGuiService, "Meeting GUI service"); }
+    public PhysicalSanctionService physicalSanctionService() { return require(physicalSanctionService, "Physical sanction service"); }
     public PvpRuntimeState pvpRuntimeState() { return require(pvpRuntimeState, "PvP runtime state"); }
     public ConditionalPvpPolicy conditionalPvpPolicy() { return require(conditionalPvpPolicy, "Conditional PvP policy"); }
     public RadioRuntimeState radioRuntimeState() { return require(radioRuntimeState, "Radio runtime state"); }
@@ -407,6 +419,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public CommonContributionLedger commonContributionLedger() { return require(commonContributionLedger, "Common contribution ledger"); }
     public ResultEvaluator resultEvaluator() { return require(resultEvaluator, "Result evaluator"); }
     public MatchResultRuntimeService matchResultRuntimeService() { return require(matchResultRuntimeService, "Match result runtime service"); }
+    public MatchResultGuiService matchResultGuiService() { return require(matchResultGuiService, "Match result GUI service"); }
     public PaperShipWorldService shipWorldService() { return require(shipWorldService, "Ship world service"); }
     public MatchOrchestrator matchOrchestrator() { return require(matchOrchestrator, "Match orchestrator"); }
     public MatchHudService matchHudService() { return require(matchHudService, "Match HUD service"); }

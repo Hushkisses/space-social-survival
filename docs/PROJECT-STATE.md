@@ -4,200 +4,105 @@
 - Hushkisses/space-social-survival
 - Default branch: main
 
-## Current HEAD
-- Resolve the latest GitHub main HEAD at the start of every development session.
-- Do not embed a self-referential HEAD value in this file.
-
 ## Current milestone
-First Multiplayer Playtest Build
+Playtest Hardening
 
 ## Last completed
 - DEV-001 through DEV-059 gameplay + vertical slice — COMPLETE
-
-## Completed integration batch
 - PT-001 through PT-005 Playtest Integration — COMPLETE
-- PR #21 merged to main
-- GitHub Actions Build #507 SUCCESS
-- Windows/Paper integrated validation SUCCESS
+- PT-006 through PT-010 First Multiplayer Playtest Build — COMPLETE_FOR_PLAYTEST
+- PR #21 and PR #22 merged to main
 
 ## Current batch
-- PT-006 through PT-010 First Multiplayer Playtest Build
-- Status: COMPLETE_FOR_PLAYTEST
-- Development branch: dev/PT-006-010-playtest-build
+- PT-011 through PT-015 Playtest Hardening
+- Status: IMPLEMENTED / VALIDATION_PENDING
+- Development branch: dev/PT-011-015-playtest-hardening
 
-## Included
+## PT-011 Physical Gameplay -> Objective Progress
+- existing objective assignments now progress from real gameplay actions.
+- facility actions can advance matching objectives.
+- Cargo deposits advance collection objectives by deposited amount.
+- end-state objectives are finalized from actual survival/facility/infection/equipment state.
+- final result evaluation runs objective finalization before scoring.
+- objective progress is recorded to telemetry.
 
-### PT-006 Functional Item Layer
-- role starter equipment:
-  - Engineer: engineering multitool
-  - Medic: medical scanner
-  - Security: security keycard
-  - Researcher: research scanner
-  - Nav/Comms: long-range radio
-  - Cargo/Maintenance: cargo scanner
-- ItemsAdder custom IDs are preferred when available.
-- Vanilla fallback items remain fully functional.
-- all functional items carry plugin PDC identity.
-- selected advanced facility actions require both:
-  - the correct role capability
-  - the physical role equipment in the player's inventory
-- SECURITY_KEYCARD satisfies KEYCARD_REQUIRED physical connections.
-- RADIO possession synchronizes with RadioRuntimeState.
-- starter equipment is given automatically when all roles are selected and ACTIVE begins.
-- /space item list
-- /space item give <player> <type>
+## PT-012 Physical Sanction Consequences
+- successful meeting sanctions now produce in-world consequences.
+- medical check performs a precise infection test.
+- disarm drops carried weapons.
+- detain teleports to Habitation and existing movement enforcement prevents movement.
+- access restrict blocks module portal traversal and facility console use.
+- eject moves to an airlock when available and changes the player to spectator.
+- physical sanction actions are recorded to telemetry.
 
-### PT-007 Resource Pickup / Physical Inventory Flow
-- generated ship modules receive deterministic emergency supply barrels.
-- physical resource items use the existing ItemsAdder-or-vanilla ResourceItemProvider plus PDC resource identity.
-- players physically carry looted resources in Minecraft inventory.
-- Cargo facility adds:
-  - carried resource deposit to shared ResourceLedger.
-- Habitation supply withdrawal gives a physical resource item.
-- deposited physical resources are counted by telemetry.
-- resource caches are regenerated per match seed.
+## PT-013 Death Loot / Recovery
+- participants no longer keep inventory on death.
+- functional role equipment and physical resource items remain in normal death drops.
+- other players can recover those dropped items through normal Minecraft pickup.
+- recoverable plugin-tagged stack/unit counts are recorded to telemetry.
+- radio ownership remains inventory-driven and re-syncs after inventory changes.
 
-### PT-008 Meeting & Sanction GUI
-- bridge meeting action opens a sanction GUI for all online participants.
-- vote flow:
-  - choose sanction type
-  - choose target when required
-  - cast vote
-  - auto-resolve when all online participants have voted
-- available sanctions:
-  - no action
-  - medical check
-  - disarm
-  - detain
-  - access restrict
-  - eject
-- execution still uses existing core SanctionExecutor and real prerequisites.
-- security-authority sanctions require a living selected Security role.
-- eject requires an airlock tile.
-- existing /space meeting and /space sanction command paths delegate to the same GUI runtime.
-- runtime is reset between matches.
+## PT-014 Match Result GUI
+- return success and failure automatically evaluate the match.
+- objective end-state completion is finalized before scoring.
+- all online participants receive a final results GUI.
+- GUI displays:
+  - common mission success/failure
+  - winners
+  - MVP(s)
+  - each player's total score
+  - score component breakdown
+  - revealed base objective and secret mission
+- tied winners/MVP remain supported.
 
-### PT-009 Match Telemetry
-- telemetry begins during match setup.
-- tracked examples:
-  - match start / activation / finish reason
-  - initial incident count
-  - resource cache count
-  - automatic incidents by ID
-  - facility action attempts/success/failure by ID
-  - resource deposits
-  - meetings and sanctions
-  - player deaths and death causes
-- JSON output directory:
-  - plugins/SpaceSurvival/telemetry/
-- telemetry is written on:
-  - return success
-  - return failure
-  - match reset
-  - server shutdown
-  - manual save
-- /space telemetry status
-- /space telemetry save
-
-### PT-010 First 6-10 Player Playtest Build
-- /space playtest status
-  - lobby readiness
-  - player count
-  - ItemsAdder status
-  - voice bridge status
+## PT-015 Operator Preflight / Postmatch
+- /space playtest preflight
+  - configured player-count rule
+  - participant online state
+  - match idle state
+  - ItemsAdder status/fallback
+  - voice bridge
   - PvE backend
   - NBT directory
   - telemetry directory
-  - current NBT/fallback count after generation
-- /space playtest start [seed]
-  - uses production minimum-player rule
-  - no one-player bypass
-- /space playtest reset
-- one-player smoke testing remains available separately through:
-  - /space match devstart [seed]
-- /space status reports:
-  - PT-006~010 First Multiplayer Playtest Build
-
-## Playtest loop
-1. 6~10 players join lobby.
-2. operator checks /space playtest status.
-3. operator runs /space playtest start [seed].
-4. players choose roles.
-5. starter role equipment is granted.
-6. players loot physical supply caches.
-7. players move resources to Cargo and deposit them.
-8. facility actions require roles/equipment/resources.
-9. automatic incidents pressure the ship.
-10. meetings and sanctions run through GUI.
-11. match results and playtest telemetry are saved.
-
-## Verified
-- DEV-001 through DEV-059 automated and Windows/Paper validation SUCCESS
-- PT-001 through PT-005 GitHub Actions full test/build SUCCESS (Build #507)
-- PT-006 through PT-010 GitHub Actions full test/build SUCCESS (Build #535)
-- PT-002.1/PT-007.1 runtime hotfix GitHub Actions full test/build SUCCESS (Build #553)
-
-## Runtime hotfixes
-- PT-002.1 Facility GUI click reliability
-  - facility menus now use a custom InventoryHolder carrying FacilityId/action bindings.
-  - title-string/session-map dispatch removed.
-  - click listener handles already-cancelled events at HIGHEST priority.
-  - facility action execution is deferred to the next server tick so inventory transitions are Bukkit-safe.
-  - meeting GUI target transitions are also deferred to the next tick.
-- PT-007.1 Resource cache population reliability
-  - barrel block metadata is applied before live inventory edits.
-  - no stale BlockState update occurs after filling the live inventory.
-  - deterministic slot writes replace addItem-only population.
-  - every generated cache has a non-empty fallback guarantee.
-  - physical resource fallback items now have Korean display names.
-  - match startup logs cache count, stack count and total resource units.
+  - final start-ready verdict
+- /space playtest postmatch
+  - common mission result
+  - winner/MVP counts
+  - score list
+  - seed / player count / scenario
+  - telemetry counters
+  - telemetry file path
 
 ## Validation status
-- PT-001 through PT-005 Windows/Paper integrated validation SUCCESS
-- PT-006 through PT-010 GitHub Actions full test/build SUCCESS
-- PT-002.1/PT-007.1 runtime hotfix Windows/Paper validation SUCCESS
-- single-player vertical-slice smoke validation SUCCESS
-- remaining empirical validation:
-  - real 6~10 player session
-  - multiplayer role distribution
-  - meeting voting with multiple participants
-  - resource economy pacing
-  - incident pacing
-  - telemetry review after a full match
+- PT-011 through PT-015 GitHub Actions full test/build SUCCESS (Build #585).
+- Windows/Paper integrated validation pending.
+- empirical 6~10 player balance validation remains separate from code completion.
 
-## Next batch
-- PT-011 through PT-015 Playtest Hardening
-- focus:
-  - objective progress from physical gameplay
-  - physical sanction consequences
-  - resource/equipment drop and recovery
-  - match result GUI
-  - operator preflight / postmatch summary
+## Product readiness assessment
+- Current code is a technically connected vertical slice, but not yet ready for a blind 6~10-player full match.
+- The next milestone is player comprehension/playability rather than more backend feature expansion.
+- A 1~3 player, 20-minute no-explanation playability gate must pass before the first real 6~10-player balance test.
 
-## Reserved extension ranges
-- DEV-060+ Objectives
-- DEV-070+ Roles
-- DEV-080+ Events
-- DEV-090+ Map Tiles
-- DEV-100+ Scenarios
-- DEV-110+ Endings
-- DEV-120+ Meta Progression
-
-## Scope notes
-- balance values remain development/playtest defaults.
-- ItemsAdder, Simple Voice Chat, MythicMobs and ModelEngine remain adapter-based optional integrations.
-- missing custom content uses functional fallbacks instead of blocking startup.
-- meeting sanctions now have UI, but physical detention cells/ejection cinematics are later content polish.
-- telemetry is local JSON for first playtests; database aggregation is intentionally deferred.
-- Paper remains intentionally pinned to 26.2 build 123.
+## Next phase
+- PX-001 through PX-010 Player Experience / Playability Roadmap
+- Roadmap: docs/PX/PX-001-010-player-experience-roadmap.md
+- First implementation batch: PX-001~004 Player Comprehension Core
+- Do not expand roles/objectives/events/scenarios until the PX exit gate unless a blocker requires it.
+- reserved ranges remain:
+  - DEV-060+ Objectives
+  - DEV-070+ Roles
+  - DEV-080+ Events
+  - DEV-090+ Map Tiles
+  - DEV-100+ Scenarios
+  - DEV-110+ Endings
+  - DEV-120+ Meta Progression
 
 ## Environment
 - Java 25.0.4.1
 - Gradle 9.7.1 Wrapper
 - Paper 26.2 build 123
-- Language: Java
-- Build scripts: Gradle Kotlin DSL
-- Tests: JUnit 5
+- PostgreSQL available later if aggregate telemetry becomes necessary
 
 ## Source of Truth
 1. GitHub main latest source

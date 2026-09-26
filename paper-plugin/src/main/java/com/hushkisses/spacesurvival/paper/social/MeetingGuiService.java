@@ -103,6 +103,7 @@ public final class MeetingGuiService implements Listener {
                 result.winningChoice(),
                 executionContext()
         );
+        plugin.physicalSanctionService().apply(result.winningChoice(), execution);
 
         plugin.meetingService().resolveActive();
         activeVote = null;

@@ -11,13 +11,16 @@ import java.util.Objects;
 
 public final class FacilityInteractionListener implements Listener {
 
+    private final com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin plugin;
     private final FacilityTerminalRegistry terminals;
     private final FacilityMenuService menus;
 
     public FacilityInteractionListener(
+            com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin plugin,
             FacilityTerminalRegistry terminals,
             FacilityMenuService menus
     ) {
+        this.plugin = Objects.requireNonNull(plugin, "plugin");
         this.terminals = Objects.requireNonNull(terminals, "terminals");
         this.menus = Objects.requireNonNull(menus, "menus");
     }
@@ -37,6 +40,13 @@ public final class FacilityInteractionListener implements Listener {
         }
 
         event.setCancelled(true);
+
+        if (plugin.physicalSanctionService().accessRestricted(event.getPlayer())
+                || plugin.physicalSanctionService().ejected(event.getPlayer())) {
+            event.getPlayer().sendMessage("§c[출입 제한] §f현재 시설 콘솔을 사용할 수 없습니다.");
+            return;
+        }
+
         menus.open(event.getPlayer(), facilityId);
     }
 }
