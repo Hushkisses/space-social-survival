@@ -31,9 +31,16 @@ Player Comprehension / Playability
 - Detail: docs/PX/PX-001-004-player-comprehension.md
 
 ## PX-001 Game Start / Onboarding
-- staged public accident/shared-mission/first-action briefing
-- role selection remains the existing production flow
-- role selection immediately opens private player information
+- normal player flow no longer requires a start command:
+  - online players are automatically enrolled into a physical waiting lobby
+  - a visible green ready zone is provided in the ship world away from the generated ship area
+  - when the configured minimum player count is met and every lobby player stands in the ready zone, a 10-second countdown starts
+  - leaving the ready zone cancels the countdown
+  - successful countdown automatically prepares the match with a random seed
+- match setup now opens the role-selection GUI immediately instead of requiring an opening-briefing click-through
+- public accident/shared-mission context is delivered by title/chat while the role GUI is opened
+- an unselected player receives a protected hotbar Nether Star that reopens the role-selection GUI on right-click
+- selecting a role removes the temporary selector and immediately opens private player information
 - persistent right-click Crew PDA granted on activation
 - PDA restored on participant respawn/reconnect and protected from normal dropping
 - no hidden scenario truth or other-player private data exposed
@@ -78,6 +85,7 @@ Player Comprehension / Playability
 ## Validation status
 - PX-001~004 GitHub Actions full test/build: SUCCESS (Build #595, Build #597)
 - PX-003.1 HUD presentation polish CI: SUCCESS (Build #599)
+- PX-001.1 automatic lobby / immediate role-selection flow CI: SUCCESS (Build #613)
 - PX-001~004 Windows/Paper integrated validation: pending
 - PT-011~015 Windows/Paper integrated validation: still pending
 - first blind 1~3 player 20-minute playability gate: not yet attempted
