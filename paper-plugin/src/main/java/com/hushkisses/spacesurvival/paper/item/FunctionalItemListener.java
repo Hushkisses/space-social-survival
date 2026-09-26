@@ -2,6 +2,7 @@ package com.hushkisses.spacesurvival.paper.item;
 
 import com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin;
 import com.hushkisses.spacesurvival.player.PlayerId;
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -49,12 +50,27 @@ public final class FunctionalItemListener implements Listener {
     @EventHandler
     public void onPickup(EntityPickupItemEvent event) {
         if (event.getEntity() instanceof Player player) {
+            items.typeOf(event.getItem().getItemStack()).ifPresent(type ->
+                    player.sendActionBar(Component.text(
+                            "장비 회수 · "
+                                    + type.displayName().replaceAll("§.", "")
+                                    + " | "
+                                    + type.useLocation()
+                    ))
+            );
             scheduleSync(player);
         }
     }
 
     @EventHandler
     public void onDrop(PlayerDropItemEvent event) {
+        items.typeOf(event.getItemDrop().getItemStack()).ifPresent(type ->
+                event.getPlayer().sendActionBar(Component.text(
+                        "장비 이탈 · "
+                                + type.displayName().replaceAll("§.", "")
+                                + " | 다른 플레이어가 회수할 수 있습니다."
+                ))
+        );
         scheduleSync(event.getPlayer());
     }
 
