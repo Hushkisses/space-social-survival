@@ -307,6 +307,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         );
         getServer().getPluginManager().registerEvents(
                 new FacilityInteractionListener(
+                        this,
                         facilityTerminalRegistry,
                         facilityMenuService
                 ),
