@@ -10,6 +10,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -36,6 +37,13 @@ public final class ResourcePhysicalItemService {
         if (!meta.hasDisplayName()) {
             meta.setDisplayName(displayName(type));
         }
+        meta.setLore(List.of(
+                "§7" + purpose(type),
+                "§7주 사용처: §f" + usedAt(type),
+                "",
+                "§6물리 소지 자원",
+                "§8화물실에 입고하면 공용 자원으로 전환됩니다."
+        ));
         meta.getPersistentDataContainer().set(
                 resourceKey,
                 PersistentDataType.STRING,
@@ -45,7 +53,7 @@ public final class ResourcePhysicalItemService {
         return item;
     }
 
-    private static String displayName(ResourceType type) {
+    public static String displayName(ResourceType type) {
         return switch (type) {
             case REPAIR_PARTS -> "§f수리 부품";
             case CIRCUITS -> "§c회로";
@@ -54,6 +62,27 @@ public final class ResourcePhysicalItemService {
             case MEDICAL_SUPPLIES -> "§a의료 물자";
             case BIO_SAMPLES -> "§d생체 샘플";
             case DATA_CORES -> "§b데이터 코어";
+        };
+    }
+
+    public static String purpose(ResourceType type) {
+        return switch (type) {
+            case REPAIR_PARTS -> "선체·시설 수리와 가공에 사용하는 기계 부품입니다.";
+            case CIRCUITS -> "고효율 가공과 전자 계통 정비에 사용하는 회로 부품입니다.";
+            case POWER_CELLS -> "함선 전력 복구에 투입하는 에너지 셀입니다.";
+            case FUEL -> "원자로/엔진 출력을 안정화하는 연료입니다.";
+            case MEDICAL_SUPPLIES -> "치료·상태이상 제거·감염 억제에 사용하는 의료 물자입니다.";
+            case BIO_SAMPLES -> "연구실 분석에 사용하는 생체 표본입니다.";
+            case DATA_CORES -> "연구 결과와 특수 목표에 사용하는 데이터 저장 장치입니다.";
+        };
+    }
+
+    public static String usedAt(ResourceType type) {
+        return switch (type) {
+            case REPAIR_PARTS, POWER_CELLS, FUEL -> "기관실";
+            case MEDICAL_SUPPLIES -> "의료실";
+            case BIO_SAMPLES, DATA_CORES -> "연구실";
+            case CIRCUITS -> "화물실 가공";
         };
     }
 

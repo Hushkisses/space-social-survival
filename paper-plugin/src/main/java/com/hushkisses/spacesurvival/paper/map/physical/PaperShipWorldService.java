@@ -11,7 +11,11 @@ import com.hushkisses.spacesurvival.map.tile.TileDefinition;
 import com.hushkisses.spacesurvival.map.tile.TileId;
 import com.hushkisses.spacesurvival.paper.config.MatchSetupConfig;
 import com.hushkisses.spacesurvival.paper.facility.FacilityTerminalRegistry;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.*;
+import org.bukkit.entity.Display;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
@@ -34,6 +38,8 @@ public final class PaperShipWorldService {
 
     private PhysicalShipSnapshot activeSnapshot;
     private Map<TileId, StructurePlacementResult> structurePlacements = Map.of();
+    private final Map<RouteDirection, TextDisplay> portalLabels = new LinkedHashMap<>();
+    private TileId highlightedRouteTarget;
 
     public PaperShipWorldService(
             JavaPlugin plugin,
@@ -67,10 +73,13 @@ public final class PaperShipWorldService {
         );
 
         World world = resolveWorld();
+        clearNavigationDisplays(world);
         clearBuildArea(world);
 
         terminals.clear();
         connections.reset();
+        portalLabels.clear();
+        highlightedRouteTarget = null;
 
         LinkedHashMap<TileId, PhysicalTilePlacement> placements = new LinkedHashMap<>();
         LinkedHashMap<TileId, StructurePlacementResult> placementResults = new LinkedHashMap<>();
@@ -99,6 +108,12 @@ public final class PaperShipWorldService {
                 renderModule(world, placement, definitions.get(tileId));
             }
 
+            renderRoomLabel(
+                    world,
+                    placement,
+                    definitions.get(tileId)
+            );
+
             FacilityId facilityId = coreFacility(tileId);
             if (facilityId != null) {
                 renderFacilityTerminal(world, placement, facilityId);
@@ -119,6 +134,32 @@ public final class PaperShipWorldService {
 
             renderPortalPad(firstPad);
             renderPortalPad(secondPad);
+            TextDisplay firstLabel = renderPortalDestinationLabel(
+                    firstPad,
+                    definitions.get(connection.second().tileId())
+            );
+            TextDisplay secondLabel = renderPortalDestinationLabel(
+                    secondPad,
+                    definitions.get(connection.first().tileId())
+            );
+            if (firstLabel != null) {
+                portalLabels.put(
+                        new RouteDirection(
+                                connection.first().tileId(),
+                                connection.second().tileId()
+                        ),
+                        firstLabel
+                );
+            }
+            if (secondLabel != null) {
+                portalLabels.put(
+                        new RouteDirection(
+                                connection.second().tileId(),
+                                connection.first().tileId()
+                        ),
+                        secondLabel
+                );
+            }
 
             portals.put(PortalBlockKey.of(firstPad), second.center(world));
             portals.put(PortalBlockKey.of(secondPad), first.center(world));
@@ -154,6 +195,137 @@ public final class PaperShipWorldService {
 
     public ShipModuleStructureLoader structureLoader() {
         return structureLoader;
+    }
+
+    public void updatePriorityRoute(FacilityId facilityId) {
+        Objects.requireNonNull(facilityId, "facilityId");
+
+        PhysicalShipSnapshot ship = activeSnapshot;
+        if (ship == null) {
+            return;
+        }
+
+        TileId target = new TileId(facilityId.value());
+        if (!ship.generatedMap().tileIds().contains(target)) {
+            clearPriorityRoute();
+            return;
+        }
+
+        if (target.equals(highlightedRouteTarget)) {
+            return;
+        }
+
+        highlightedRouteTarget = target;
+
+        for (Map.Entry<RouteDirection, TextDisplay> entry : portalLabels.entrySet()) {
+            RouteDirection direction = entry.getKey();
+            TextDisplay display = entry.getValue();
+
+            if (!display.isValid()) {
+                continue;
+            }
+
+            int fromDistance = ship.generatedMap().distance(direction.from(), target);
+            int toDistance = ship.generatedMap().distance(direction.to(), target);
+            boolean towardTarget = !direction.from().equals(target)
+                    && toDistance < fromDistance;
+
+            renderPortalDestinationText(
+                    display,
+                    ship.definitions().get(direction.to()),
+                    towardTarget
+            );
+        }
+    }
+
+    public void clearPriorityRoute() {
+        PhysicalShipSnapshot ship = activeSnapshot;
+        highlightedRouteTarget = null;
+
+        if (ship == null) {
+            return;
+        }
+
+        for (Map.Entry<RouteDirection, TextDisplay> entry : portalLabels.entrySet()) {
+            TextDisplay display = entry.getValue();
+            if (!display.isValid()) {
+                continue;
+            }
+            renderPortalDestinationText(
+                    display,
+                    ship.definitions().get(entry.getKey().to()),
+                    false
+            );
+        }
+    }
+
+    private static void clearNavigationDisplays(World world) {
+        world.getEntitiesByClass(TextDisplay.class).stream()
+                .filter(entity -> entity.getScoreboardTags().contains("spacesurvival_nav"))
+                .forEach(TextDisplay::remove);
+    }
+
+    private static void renderRoomLabel(
+            World world,
+            PhysicalTilePlacement placement,
+            TileDefinition definition
+    ) {
+        if (definition == null) return;
+
+        Location location = placement.center(world).add(0.0, 3.1, 0.0);
+        TextDisplay display = world.spawn(location, TextDisplay.class);
+        display.addScoreboardTag("spacesurvival_nav");
+        display.setBillboard(Display.Billboard.CENTER);
+        display.text(
+                Component.text("◆ ", accentColor(definition.category()))
+                        .append(Component.text(definition.displayName(), NamedTextColor.WHITE))
+        );
+    }
+
+    private static TextDisplay renderPortalDestinationLabel(
+            Location pad,
+            TileDefinition destination
+    ) {
+        if (pad.getWorld() == null || destination == null) return null;
+
+        Location labelLocation = pad.clone().add(0.0, 1.65, 0.0);
+        TextDisplay display = pad.getWorld().spawn(labelLocation, TextDisplay.class);
+        display.addScoreboardTag("spacesurvival_nav");
+        display.addScoreboardTag("spacesurvival_portal_label");
+        display.setBillboard(Display.Billboard.CENTER);
+        renderPortalDestinationText(display, destination, false);
+        return display;
+    }
+
+    private static void renderPortalDestinationText(
+            TextDisplay display,
+            TileDefinition destination,
+            boolean priority
+    ) {
+        if (destination == null) return;
+
+        if (priority) {
+            display.text(
+                    Component.text("◆ ", NamedTextColor.RED)
+                            .append(Component.text(destination.displayName(), NamedTextColor.RED))
+            );
+            return;
+        }
+
+        display.text(
+                Component.text("→ ", NamedTextColor.YELLOW)
+                        .append(Component.text(destination.displayName(), NamedTextColor.WHITE))
+        );
+    }
+
+    private static NamedTextColor accentColor(TileCategory category) {
+        return switch (category) {
+            case CORE -> NamedTextColor.AQUA;
+            case CORRIDOR -> NamedTextColor.WHITE;
+            case JUNCTION -> NamedTextColor.YELLOW;
+            case AIRLOCK -> NamedTextColor.GOLD;
+            case AUXILIARY -> NamedTextColor.GREEN;
+        };
     }
 
     private static World resolveWorld() {
@@ -260,6 +432,13 @@ public final class PaperShipWorldService {
                     new FacilityId(tileId.value());
             default -> null;
         };
+    }
+
+    private record RouteDirection(TileId from, TileId to) {
+        private RouteDirection {
+            Objects.requireNonNull(from, "from");
+            Objects.requireNonNull(to, "to");
+        }
     }
 
     private static Material accent(TileCategory category) {

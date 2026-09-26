@@ -46,11 +46,36 @@ public final class FunctionalItemService {
         }
 
         meta.setLore(List.of(
-                "§7우주 생존 기능성 장비",
+                "§7" + purpose(type),
+                "§7주 사용처: §f" + usedAt(type),
+                "",
+                "§b기능성 직업 장비",
                 "§8분실하거나 빼앗길 수 있습니다."
         ));
         item.setItemMeta(meta);
         return item;
+    }
+
+    public static String purpose(FunctionalItemType type) {
+        return switch (type) {
+            case ENGINEERING_MULTITOOL -> "정밀 진단·전력 재배분·고급 수리에 필요합니다.";
+            case MEDICAL_SCANNER -> "정밀 감염 검사·고급 치료·감염 억제에 필요합니다.";
+            case SECURITY_KEYCARD -> "보안 시스템과 제한 통로 접근에 사용하는 인증 장비입니다.";
+            case RESEARCH_SCANNER -> "정밀 생체 분석·외계 생명체 연구·사건 원인 분석에 필요합니다.";
+            case RADIO -> "항법 목적지 설정·장거리 통신·구조 신호 운용에 필요합니다.";
+            case CARGO_SCANNER -> "정밀 재고·희귀 자원 판별·고효율 가공에 필요합니다.";
+        };
+    }
+
+    public static String usedAt(FunctionalItemType type) {
+        return switch (type) {
+            case ENGINEERING_MULTITOOL -> "기관실";
+            case MEDICAL_SCANNER -> "의료실";
+            case SECURITY_KEYCARD -> "보안 통로 / 보안 집행";
+            case RESEARCH_SCANNER -> "연구실";
+            case RADIO -> "함교";
+            case CARGO_SCANNER -> "화물실";
+        };
     }
 
     public Optional<FunctionalItemType> typeOf(ItemStack item) {

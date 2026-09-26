@@ -1,5 +1,6 @@
 package com.hushkisses.spacesurvival.paper.command;
 
+import com.hushkisses.spacesurvival.lobby.LobbyJoinResult;
 import com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin;
 import com.hushkisses.spacesurvival.paper.match.MatchSetupSnapshot;
 import org.bukkit.command.CommandSender;
@@ -42,6 +43,23 @@ public final class MatchCommandHandler {
             return true;
         }
 
+        if (development
+                && sender instanceof Player player
+                && plugin.lobbyService().gameSession().isEmpty()) {
+            LobbyJoinResult joinResult = plugin.lobbyService().join(
+                    com.hushkisses.spacesurvival.player.PlayerId.of(player.getUniqueId())
+            );
+
+            if (joinResult == LobbyJoinResult.FULL) {
+                sender.sendMessage("§c테스트 대기실 정원이 가득 차 강제 시작할 수 없습니다.");
+                return true;
+            }
+            if (joinResult == LobbyJoinResult.MATCH_ALREADY_STARTED) {
+                sender.sendMessage("§c이미 매치가 시작되어 강제 시작할 수 없습니다.");
+                return true;
+            }
+        }
+
         long seed = parseSeed(sender, args, 2);
         if (seed == Long.MIN_VALUE) return true;
 
@@ -49,7 +67,11 @@ public final class MatchCommandHandler {
             MatchSetupSnapshot snapshot = plugin.matchOrchestrator()
                     .prepare(seed, development);
 
-            sender.sendMessage("§a매치 준비가 완료되었습니다.");
+            sender.sendMessage(
+                    development
+                            ? "§a1인 테스트 강제 시작 준비가 완료되었습니다."
+                            : "§a매치 준비가 완료되었습니다."
+            );
             sender.sendMessage("§7시드: §f" + seed);
             sender.sendMessage("§7함선 모듈: §f" + snapshot.generatedMap().tileIds().size());
             sender.sendMessage("§7초기 사건: §f" + snapshot.initialEventCount());
@@ -94,18 +116,7 @@ public final class MatchCommandHandler {
         }
 
         plugin.matchOrchestrator().reset();
-
-        for (Player player : plugin.getServer().getOnlinePlayers()) {
-            if (plugin.lobbyService().contains(
-                    com.hushkisses.spacesurvival.player.PlayerId.of(player.getUniqueId())
-            )) {
-                player.setGameMode(org.bukkit.GameMode.SURVIVAL);
-                player.setHealth(player.getMaxHealth());
-                player.setFoodLevel(20);
-            }
-        }
-
-        sender.sendMessage("§a매치 런타임을 초기화했습니다. 대기실 참가자는 유지됩니다.");
+        sender.sendMessage("§a매치 런타임을 초기화하고 참가자를 대기실로 복귀시켰습니다.");
         return true;
     }
 
@@ -140,7 +151,7 @@ public final class MatchCommandHandler {
 
     private static void sendUsage(CommandSender sender) {
         sender.sendMessage("§c사용법: /space match start [seed]");
-        sender.sendMessage("§c사용법: /space match devstart [seed]");
+        sender.sendMessage("§c사용법: /space match devstart [seed] §7- 최소 인원 무시 테스트 강제 시작");
         sender.sendMessage("§c사용법: /space match status");
         sender.sendMessage("§c사용법: /space match reset");
         sender.sendMessage("§c사용법: /space match bridge");

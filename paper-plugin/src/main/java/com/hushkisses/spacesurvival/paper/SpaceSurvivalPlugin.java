@@ -38,6 +38,7 @@ import com.hushkisses.spacesurvival.paper.ending.EndingRuntimeService;
 import com.hushkisses.spacesurvival.paper.ending.MatchResultRuntimeService;
 import com.hushkisses.spacesurvival.paper.ending.MatchResultGuiService;
 import com.hushkisses.spacesurvival.paper.event.IncidentDirector;
+import com.hushkisses.spacesurvival.paper.event.IncidentPresentationService;
 import com.hushkisses.spacesurvival.paper.facility.FacilityActionExecutor;
 import com.hushkisses.spacesurvival.paper.facility.FacilityInteractionListener;
 import com.hushkisses.spacesurvival.paper.facility.FacilityMenuService;
@@ -47,10 +48,12 @@ import com.hushkisses.spacesurvival.paper.item.FunctionalItemListener;
 import com.hushkisses.spacesurvival.paper.item.FunctionalItemService;
 import com.hushkisses.spacesurvival.paper.item.StarterKitService;
 import com.hushkisses.spacesurvival.paper.item.ResourceItemProvider;
-import com.hushkisses.spacesurvival.paper.lobby.LobbyConnectionListener;
+import com.hushkisses.spacesurvival.paper.lobby.LobbyReadyService;
 import com.hushkisses.spacesurvival.paper.map.physical.PaperShipWorldService;
 import com.hushkisses.spacesurvival.paper.map.physical.PhysicalConnectionController;
 import com.hushkisses.spacesurvival.paper.map.physical.ShipPortalListener;
+import com.hushkisses.spacesurvival.paper.map.physical.ShipNavigationListener;
+import com.hushkisses.spacesurvival.paper.map.physical.ShipRouteService;
 import com.hushkisses.spacesurvival.paper.objective.ObjectiveGameplayProgressService;
 import com.hushkisses.spacesurvival.paper.match.MatchOrchestrator;
 import com.hushkisses.spacesurvival.paper.pve.DefaultPveMobSpawner;
@@ -63,6 +66,7 @@ import com.hushkisses.spacesurvival.paper.social.MeetingGuiService;
 import com.hushkisses.spacesurvival.paper.social.PhysicalSanctionService;
 import com.hushkisses.spacesurvival.paper.social.SanctionEnforcementListener;
 import com.hushkisses.spacesurvival.paper.telemetry.MatchTelemetryService;
+import com.hushkisses.spacesurvival.paper.ui.CrewPdaService;
 import com.hushkisses.spacesurvival.paper.ui.OpeningBriefingUi;
 import com.hushkisses.spacesurvival.paper.ui.OpeningUiListener;
 import com.hushkisses.spacesurvival.paper.ui.MatchHudService;
@@ -162,8 +166,12 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
 
     private PaperShipWorldService shipWorldService;
     private MatchOrchestrator matchOrchestrator;
+    private ShipRouteService shipRouteService;
+    private LobbyReadyService lobbyReadyService;
     private MatchHudService matchHudService;
+    private CrewPdaService crewPdaService;
     private IncidentDirector incidentDirector;
+    private IncidentPresentationService incidentPresentationService;
     private MatchTelemetryService telemetryService;
 
     @Override
@@ -261,7 +269,11 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                 physicalConnectionController
         );
         matchOrchestrator = new MatchOrchestrator(this, shipWorldService);
+        shipRouteService = new ShipRouteService(this, shipWorldService);
+        lobbyReadyService = new LobbyReadyService(this);
         matchHudService = new MatchHudService(this, shipWorldService);
+        crewPdaService = new CrewPdaService(this, shipWorldService);
+        incidentPresentationService = new IncidentPresentationService(this);
         incidentDirector = new IncidentDirector(
                 this,
                 physicalConnectionController
@@ -272,7 +284,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
 
         registerCommands();
         getServer().getPluginManager().registerEvents(
-                new LobbyConnectionListener(lobbyService),
+                lobbyReadyService,
                 this
         );
         getServer().getPluginManager().registerEvents(
@@ -281,8 +293,13 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                         roleSelectionUi,
                         roleSelectionService,
                         roleRegistry,
+                        crewPdaService,
                         matchOrchestrator::tryActivateIfReady
                 ),
+                this
+        );
+        getServer().getPluginManager().registerEvents(
+                crewPdaService,
                 this
         );
         getServer().getPluginManager().registerEvents(
@@ -306,6 +323,10 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                 this
         );
         getServer().getPluginManager().registerEvents(
+                new ShipNavigationListener(this, shipWorldService),
+                this
+        );
+        getServer().getPluginManager().registerEvents(
                 new FacilityInteractionListener(
                         this,
                         facilityTerminalRegistry,
@@ -326,6 +347,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                 this
         );
 
+        lobbyReadyService.start();
         matchHudService.start();
 
         getLogger().info("SpaceSurvival enabled. core=" + BootstrapMarker.moduleName());
@@ -355,11 +377,17 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (lobbyReadyService != null) {
+            lobbyReadyService.stop();
+        }
         if (matchHudService != null) {
             matchHudService.stop();
         }
         if (incidentDirector != null) {
             incidentDirector.stop();
+        }
+        if (incidentPresentationService != null) {
+            incidentPresentationService.stop();
         }
         if (telemetryService != null && telemetryService.snapshot().active()) {
             telemetryService.finish("server_shutdown");
@@ -422,12 +450,16 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public MatchResultGuiService matchResultGuiService() { return require(matchResultGuiService, "Match result GUI service"); }
     public PaperShipWorldService shipWorldService() { return require(shipWorldService, "Ship world service"); }
     public MatchOrchestrator matchOrchestrator() { return require(matchOrchestrator, "Match orchestrator"); }
+    public ShipRouteService shipRouteService() { return require(shipRouteService, "Ship route service"); }
+    public LobbyReadyService lobbyReadyService() { return require(lobbyReadyService, "Lobby ready service"); }
     public MatchHudService matchHudService() { return require(matchHudService, "Match HUD service"); }
+    public CrewPdaService crewPdaService() { return require(crewPdaService, "Crew PDA service"); }
     public FacilityTerminalRegistry facilityTerminalRegistry() { return require(facilityTerminalRegistry, "Facility terminal registry"); }
     public PhysicalConnectionController physicalConnectionController() { return require(physicalConnectionController, "Physical connection controller"); }
     public FacilityActionExecutor facilityActionExecutor() { return require(facilityActionExecutor, "Facility action executor"); }
     public FacilityMenuService facilityMenuService() { return require(facilityMenuService, "Facility menu service"); }
     public IncidentDirector incidentDirector() { return require(incidentDirector, "Incident director"); }
+    public IncidentPresentationService incidentPresentationService() { return require(incidentPresentationService, "Incident presentation service"); }
     public MatchTelemetryService telemetryService() { return require(telemetryService, "Telemetry service"); }
 
     public void resetScenarioRuntime() {
@@ -439,6 +471,9 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public void resetForNewMatch() {
         if (incidentDirector != null) {
             incidentDirector.stop();
+        }
+        if (incidentPresentationService != null) {
+            incidentPresentationService.stop();
         }
         if (gameRuntimeService != null && gameRuntimeService.isRunning()) {
             gameRuntimeService.stop();

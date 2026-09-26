@@ -18,6 +18,8 @@ import com.hushkisses.spacesurvival.scenario.DefaultScenarioCatalog;
 import com.hushkisses.spacesurvival.scenario.ScenarioDefinition;
 import com.hushkisses.spacesurvival.scenario.ScenarioRuntime;
 import com.hushkisses.spacesurvival.scenario.ScenarioType;
+import com.hushkisses.spacesurvival.resource.ResourceType;
+import com.hushkisses.spacesurvival.ship.ShipMetric;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
@@ -57,6 +59,7 @@ public final class MatchOrchestrator {
                 : plugin.lobbyService().start();
 
         MatchSetupConfig config = plugin.configuration().matchSetup();
+        applyStartingRecoveryState(config);
         Random random = new Random(seed);
 
         plugin.roleSelectionService().prepareCandidates(
@@ -152,6 +155,11 @@ public final class MatchOrchestrator {
         plugin.telemetryService().add("resource.cache.stacks", resourcePopulation.stacks());
         plugin.telemetryService().add("resource.cache.units", resourcePopulation.units());
         plugin.telemetryService().add("initial.incident.count", initialEventCount);
+        var openingShip = plugin.shipState().snapshot();
+        plugin.telemetryService().add("initial.ship.power", openingShip.power());
+        plugin.telemetryService().add("initial.ship.oxygen", openingShip.oxygen());
+        plugin.telemetryService().add("initial.ship.hull", openingShip.hull());
+        plugin.telemetryService().add("initial.ship.reactor", openingShip.reactor());
         plugin.telemetryService().event("match", "briefing");
 
         for (PlayerId playerId : players) {
@@ -159,14 +167,32 @@ public final class MatchOrchestrator {
             if (online == null) continue;
 
             online.getInventory().clear();
-            online.setGameMode(GameMode.SURVIVAL);
+            online.setGameMode(GameMode.ADVENTURE);
             online.teleportAsync(ship.bridgeSpawn());
-            plugin.openingBriefingUi().open(
-                    online,
-                    scenarioDefinition.publicBriefing(),
-                    initialEventCount,
-                    ship.generatedMap().tileIds().size()
+            plugin.roleSelectionUi().giveMenuItem(online);
+
+            online.sendTitle(
+                    "§c긴급 귀환 임무",
+                    "§f직업을 선택하십시오",
+                    5,
+                    50,
+                    10
             );
+            online.sendMessage("§6[상황] §f" + scenarioDefinition.publicBriefing());
+            online.sendMessage("§6[공통 목표] §f함선을 복구하고 귀환하십시오.");
+            online.sendMessage(
+                    "§7공개된 초기 문제 "
+                            + initialEventCount
+                            + "건 · 함선 모듈 "
+                            + ship.generatedMap().tileIds().size()
+                            + "개"
+            );
+            online.sendMessage(
+                    "§e직업 후보 3개 중 하나를 선택하십시오. "
+                            + "창을 닫아도 핫바의 네더별을 우클릭하면 다시 열립니다."
+            );
+
+            plugin.roleSelectionUi().open(online);
         }
 
         return setupSnapshot;
@@ -188,7 +214,17 @@ public final class MatchOrchestrator {
         }
 
         session.transitionTo(GamePhase.ACTIVE);
+
+        for (PlayerId playerId : plugin.lobbyService().snapshot().players()) {
+            Player online = plugin.getServer().getPlayer(playerId.value());
+            if (online == null) continue;
+
+            plugin.roleSelectionUi().removeMenuItem(online);
+            online.setGameMode(GameMode.SURVIVAL);
+        }
+
         plugin.starterKitService().giveRoleKits();
+        plugin.crewPdaService().giveToParticipants();
         plugin.gameRuntimeService().start();
         plugin.incidentDirector().start(setupSnapshot.seed());
         plugin.telemetryService().event("match", "active");
@@ -222,6 +258,7 @@ public final class MatchOrchestrator {
         plugin.lobbyService().resetForNextMatch();
         setupSnapshot = null;
         status = MatchLifecycleStatus.IDLE;
+        plugin.lobbyReadyService().resetOnlinePlayersToLobby();
     }
 
     public MatchLifecycleStatus status() {
@@ -231,6 +268,39 @@ public final class MatchOrchestrator {
 
     public Optional<MatchSetupSnapshot> setupSnapshot() {
         return Optional.ofNullable(setupSnapshot);
+    }
+
+
+    private void applyStartingRecoveryState(MatchSetupConfig config) {
+        plugin.shipState().set(ShipMetric.POWER, config.startingPower());
+        plugin.shipState().set(ShipMetric.OXYGEN, config.startingOxygen());
+        plugin.shipState().set(ShipMetric.HULL, config.startingHull());
+        plugin.shipState().set(ShipMetric.REACTOR, config.startingReactor());
+
+        var shared = plugin.resourceLedger().shared();
+        if (config.startingRepairParts() > 0) {
+            shared.add(ResourceType.REPAIR_PARTS, config.startingRepairParts());
+        }
+        if (config.startingPowerCells() > 0) {
+            shared.add(ResourceType.POWER_CELLS, config.startingPowerCells());
+        }
+        if (config.startingFuel() > 0) {
+            shared.add(ResourceType.FUEL, config.startingFuel());
+        }
+        if (config.startingMedicalSupplies() > 0) {
+            shared.add(ResourceType.MEDICAL_SUPPLIES, config.startingMedicalSupplies());
+        }
+
+        plugin.getLogger().info(
+                "Opening recovery state: power="
+                        + config.startingPower()
+                        + ", oxygen="
+                        + config.startingOxygen()
+                        + ", hull="
+                        + config.startingHull()
+                        + ", reactor="
+                        + config.startingReactor()
+        );
     }
 
     private static ScenarioDefinition selectScenario(

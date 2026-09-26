@@ -157,11 +157,7 @@ public final class IncidentDirector {
         plugin.telemetryService().recordIncident(lastEventId);
 
         applyWorldConsequences(event);
-
-        plugin.getServer().broadcastMessage(
-                "§c[함선 사건] §f" + event.displayName()
-        );
-        plugin.getServer().broadcastMessage("§7" + event.description());
+        plugin.incidentPresentationService().present(event);
     }
 
     private void applyWorldConsequences(GameEventDefinition event) {

@@ -50,6 +50,14 @@ public final class PluginConfigurationLoader {
                 yaml.getInt("map.max-core-distance"),
                 yaml.getInt("map.max-attempts"),
                 yaml.getInt("objectives.secret-mission-chance-percent"),
+                yaml.getInt("starting-ship.power"),
+                yaml.getInt("starting-ship.oxygen"),
+                yaml.getInt("starting-ship.hull"),
+                yaml.getInt("starting-ship.reactor"),
+                yaml.getInt("starting-shared-resources.repair-parts"),
+                yaml.getInt("starting-shared-resources.power-cells"),
+                yaml.getInt("starting-shared-resources.fuel"),
+                yaml.getInt("starting-shared-resources.medical-supplies"),
                 yaml.getInt("events.initial-small-min"),
                 yaml.getInt("events.initial-small-max"),
                 yaml.getInt("scenario.accident-weight"),
@@ -107,6 +115,18 @@ public final class PluginConfigurationLoader {
         defaults.put("map.max-core-distance", 6);
         defaults.put("map.max-attempts", 500);
         defaults.put("objectives.secret-mission-chance-percent", 50);
+        // Playability-phase defaults: intentionally damaged enough to require
+        // real recovery work before the first return-stage transition.
+        defaults.put("starting-ship.power", 35);
+        defaults.put("starting-ship.oxygen", 40);
+        defaults.put("starting-ship.hull", 38);
+        defaults.put("starting-ship.reactor", 30);
+        // Small shared emergency reserve prevents an unlucky initial event roll
+        // from making the mandatory opening recovery impossible.
+        defaults.put("starting-shared-resources.repair-parts", 4);
+        defaults.put("starting-shared-resources.power-cells", 2);
+        defaults.put("starting-shared-resources.fuel", 2);
+        defaults.put("starting-shared-resources.medical-supplies", 2);
         defaults.put("events.initial-small-min", 2);
         defaults.put("events.initial-small-max", 3);
         defaults.put("scenario.accident-weight", 45);

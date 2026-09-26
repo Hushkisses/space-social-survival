@@ -7,6 +7,14 @@ public record MatchSetupConfig(
         int mapMaxCoreDistance,
         int mapMaxAttempts,
         int secretMissionChancePercent,
+        int startingPower,
+        int startingOxygen,
+        int startingHull,
+        int startingReactor,
+        int startingRepairParts,
+        int startingPowerCells,
+        int startingFuel,
+        int startingMedicalSupplies,
         int initialSmallEventsMin,
         int initialSmallEventsMax,
         int accidentWeight,
@@ -29,6 +37,14 @@ public record MatchSetupConfig(
         if (secretMissionChancePercent < 0 || secretMissionChancePercent > 100) {
             throw new IllegalArgumentException("secretMissionChancePercent");
         }
+        validatePercent(startingPower, "startingPower");
+        validatePercent(startingOxygen, "startingOxygen");
+        validatePercent(startingHull, "startingHull");
+        validatePercent(startingReactor, "startingReactor");
+        validateNonNegative(startingRepairParts, "startingRepairParts");
+        validateNonNegative(startingPowerCells, "startingPowerCells");
+        validateNonNegative(startingFuel, "startingFuel");
+        validateNonNegative(startingMedicalSupplies, "startingMedicalSupplies");
         if (initialSmallEventsMin < 0 || initialSmallEventsMax < initialSmallEventsMin) {
             throw new IllegalArgumentException("invalid initialSmallEvents range");
         }
@@ -49,6 +65,18 @@ public record MatchSetupConfig(
         );
         if (incidentMajorSecondMinSeconds <= incidentMajorFirstMinSeconds) {
             throw new IllegalArgumentException("second major incident must occur after first");
+        }
+    }
+
+    private static void validatePercent(int value, String name) {
+        if (value < 0 || value > 100) {
+            throw new IllegalArgumentException(name + " must be between 0 and 100");
+        }
+    }
+
+    private static void validateNonNegative(int value, String name) {
+        if (value < 0) {
+            throw new IllegalArgumentException(name + " must not be negative");
         }
     }
 
