@@ -7,6 +7,7 @@ import com.hushkisses.spacesurvival.facility.DefaultFacilityCatalog;
 import com.hushkisses.spacesurvival.facility.FacilityStatus;
 import com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin;
 import com.hushkisses.spacesurvival.player.PlayerId;
+import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
@@ -34,7 +35,7 @@ public final class IncidentPresentationService {
     public void start() {
         if (task != null) return;
 
-        majorBar = plugin.getServer().createBossBar(
+        majorBar = Bukkit.createBossBar(
                 "§c함선 사건",
                 org.bukkit.boss.BarColor.RED,
                 BarStyle.SOLID
