@@ -1,7 +1,9 @@
 package com.hushkisses.spacesurvival.paper.item;
 
 import com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin;
+import com.hushkisses.spacesurvival.paper.resource.ResourcePhysicalItemService;
 import com.hushkisses.spacesurvival.player.PlayerId;
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -48,14 +50,48 @@ public final class FunctionalItemListener implements Listener {
 
     @EventHandler
     public void onPickup(EntityPickupItemEvent event) {
-        if (event.getEntity() instanceof Player player) {
-            scheduleSync(player);
+        if (!(event.getEntity() instanceof Player player)) {
+            return;
         }
+
+        var stack = event.getItem().getItemStack();
+
+        items.typeOf(stack).ifPresent(type ->
+                player.sendActionBar(Component.text(
+                        "직업 장비 획득 · "
+                                + stripColor(type.displayName())
+                                + " · "
+                                + FunctionalItemService.usedAt(type)
+                ))
+        );
+
+        plugin.resourcePhysicalItemService().typeOf(stack).ifPresent(type ->
+                player.sendActionBar(Component.text(
+                        "자원 획득 · "
+                                + stripColor(ResourcePhysicalItemService.displayName(type))
+                                + " · 사용처 "
+                                + ResourcePhysicalItemService.usedAt(type)
+                ))
+        );
+
+        scheduleSync(player);
     }
 
     @EventHandler
     public void onDrop(PlayerDropItemEvent event) {
+        items.typeOf(event.getItemDrop().getItemStack()).ifPresent(type ->
+                event.getPlayer().sendMessage(
+                        "§e[장비 분실 주의] §f"
+                                + type.displayName()
+                                + " §7— "
+                                + FunctionalItemService.purpose(type)
+                )
+        );
         scheduleSync(event.getPlayer());
+    }
+
+    private static String stripColor(String value) {
+        return value.replaceAll("§.", "");
     }
 
     private void scheduleSync(Player player) {
