@@ -146,6 +146,14 @@ public final class FacilityActionExecutor {
                 }
                 yield result("핵심 수리를 완료했습니다. 선체 안정도: " + value + "%");
             }
+            case "engineering.oxygen" -> {
+                if (!shared().remove(ResourceType.REPAIR_PARTS, 1)) {
+                    yield failure("산소 계통 복구에 필요한 공용 수리 부품 1개가 부족합니다.");
+                }
+                int value = plugin.engineeringFacilityService().adjust(ShipMetric.OXYGEN, 15);
+                plugin.gameEventRuntimeState().setFlag("local_oxygen_drop", false);
+                yield result("산소 계통을 복구했습니다. 산소: " + value + "%");
+            }
             case "engineering.diagnose" -> {
                 var diagnosis = plugin.engineeringFacilityService().diagnose();
                 yield result(
