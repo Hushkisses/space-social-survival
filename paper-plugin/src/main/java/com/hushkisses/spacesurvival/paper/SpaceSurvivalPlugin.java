@@ -323,7 +323,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                 this
         );
         getServer().getPluginManager().registerEvents(
-                new ShipNavigationListener(this, shipWorldService, shipRouteService),
+                new ShipNavigationListener(this, shipWorldService),
                 this
         );
         getServer().getPluginManager().registerEvents(
