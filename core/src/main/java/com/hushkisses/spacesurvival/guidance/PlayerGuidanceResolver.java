@@ -79,8 +79,8 @@ public final class PlayerGuidanceResolver {
             return new PublicProblem(
                     "산소 수준 저하 " + ship.oxygen() + "%",
                     DefaultFacilityCatalog.ENGINEERING,
-                    "관련 시설 상태 점검",
-                    "기관실과 함선 상태를 확인해 산소 저하 원인을 대응하십시오"
+                    "수리 부품 1개",
+                    "기관실 콘솔에서 [산소 계통 복구]를 실행하십시오"
             );
         }
 
@@ -102,12 +102,7 @@ public final class PlayerGuidanceResolver {
                 .findFirst()
                 .orElse(null);
         if (damaged != null) {
-            return new PublicProblem(
-                    damaged.displayName() + " 손상",
-                    damaged.id(),
-                    "시설 점검",
-                    damaged.displayName() + " 콘솔에서 사용 가능한 복구 행동을 확인하십시오"
-            );
+            return damagedProblem(damaged);
         }
 
         return switch (stage) {
@@ -148,6 +143,40 @@ public final class PlayerGuidanceResolver {
                     "최종 결과 화면을 확인하십시오"
             );
         };
+    }
+
+
+    private PublicProblem damagedProblem(FacilityStateSnapshot damaged) {
+        if (damaged.id().equals(DefaultFacilityCatalog.ENGINEERING)) {
+            return new PublicProblem(
+                    damaged.displayName() + " 손상",
+                    damaged.id(),
+                    "수리 부품 1개",
+                    "기관실 콘솔에서 [핵심 수리]를 실행하십시오"
+            );
+        }
+        if (damaged.id().equals(DefaultFacilityCatalog.MEDICAL)) {
+            return new PublicProblem(
+                    damaged.displayName() + " 오염/손상",
+                    damaged.id(),
+                    "의료 물자 1개",
+                    "의료실 콘솔에서 [의료실 오염 제거]를 실행하십시오"
+            );
+        }
+        if (damaged.id().equals(DefaultFacilityCatalog.CARGO)) {
+            return new PublicProblem(
+                    damaged.displayName() + " 손상",
+                    damaged.id(),
+                    "수리 부품 1개",
+                    "화물실 콘솔에서 [화물실 설비 복구]를 실행하십시오"
+            );
+        }
+        return new PublicProblem(
+                damaged.displayName() + " 손상",
+                damaged.id(),
+                "시설 복구",
+                damaged.displayName() + " 콘솔에서 기본 복구 행동을 실행하십시오"
+        );
     }
 
     private FacilityStateSnapshot find(
