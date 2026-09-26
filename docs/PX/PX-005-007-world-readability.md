@@ -39,6 +39,26 @@ Representative response mapping covers:
 - small fire
 - power-cell depletion
 
+## PX-005.1 Playtest correction — concrete recovery actions
+
+First Paper validation exposed two comprehension/blocker issues:
+
+- guidance used vague phrases such as `시설 점검` even when no such GUI action existed.
+- oxygen loss had no explicit normal-play recovery action.
+
+Corrections:
+
+- damaged Cargo now exposes `화물실 설비 복구` in its facility GUI.
+  - cost: shared Repair Parts x1
+  - success returns Cargo to NORMAL.
+- damaged/contaminated Medical now exposes `의료실 오염 제거`.
+  - cost: shared Medical Supplies x1
+  - success returns Medical to NORMAL and clears the contamination flag.
+- Engineering now exposes `산소 계통 복구`.
+  - cost: shared Repair Parts x1
+  - success restores oxygen by 15.
+- Player guidance and incident hints now name the exact action button and exact required resource instead of telling the player to merely inspect a facility.
+
 ## PX-006 Ship Navigation / Signage / Map
 
 Implemented:
@@ -55,7 +75,11 @@ Implemented:
   - gold/open
   - yellow/conditional
   - red/blocked
-- Entering a different module gives short current-room/category ActionBar feedback and a subtle sound.
+- Entering a different module gives current-room navigation feedback and a subtle sound.
+- A shared route-guidance service calculates a player-usable shortest path toward the current public target facility.
+- The right-side HUD continuously shows the next room on that route.
+- Room-entry feedback shows current room, target facility and immediate next room.
+- If no fully traversable route exists, the route can still show the topological path while clearly flagging blocked segments.
 - Crew PDA now includes a ship-map page.
 - PDA map shows:
   - all generated rooms
@@ -64,6 +88,8 @@ Implemented:
   - graph distance from Bridge
   - directly connected rooms
   - current connection state for each edge
+  - recommended full route from the player's current room to the current public target facility
+  - warning when that route contains a currently unavailable connection
 - PDA map does not show live player positions.
 
 ## PX-007 Item / Resource Usability
@@ -97,6 +123,7 @@ Implemented:
 ## Automated validation
 
 - GitHub Actions Build #667: SUCCESS
+- Playtest correction Build #707: SUCCESS
 - Test: SUCCESS
 - Build: SUCCESS
 
@@ -121,7 +148,11 @@ Do not mark this batch COMPLETE until representative integrated validation is re
    - temporary boss bar
    - HUD remains readable
 6. Resolve a supported incident such as door fault or communications noise and confirm `안정화 완료` feedback.
-7. Confirm no hidden scenario actor/identity is revealed.
+7. Force Cargo damage and confirm the HUD/incident text says `화물실 설비 복구`, not vague facility inspection.
+8. Confirm Cargo GUI exposes that action and requires Repair Parts x1.
+9. Force Medical contamination and confirm `의료실 오염 제거` is available with Medical Supplies x1.
+10. Lower oxygen and confirm Engineering exposes `산소 계통 복구` with Repair Parts x1.
+11. Confirm no hidden scenario actor/identity is revealed.
 
 ### PX-006
 
@@ -137,6 +168,9 @@ Do not mark this batch COMPLETE until representative integrated validation is re
    - adjacency
    - open/conditional/blocked connection state
 7. Starting at Bridge, locate Engineering and Cargo using only in-game guidance.
+8. While standing in a corridor/junction, confirm the HUD displays the next room toward the current target facility.
+9. Open PDA -> 함선 지도 and confirm the recommended route lists the room sequence.
+10. Lock or disable a route connection and confirm blocked-route feedback is understandable.
 
 ### PX-007
 
