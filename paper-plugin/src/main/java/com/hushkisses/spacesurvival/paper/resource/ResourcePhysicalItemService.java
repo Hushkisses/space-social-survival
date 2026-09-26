@@ -33,6 +33,9 @@ public final class ResourcePhysicalItemService {
     public ItemStack create(ResourceType type, int amount) {
         ItemStack item = provider.create(type, amount);
         ItemMeta meta = item.getItemMeta();
+        if (!meta.hasDisplayName()) {
+            meta.setDisplayName(displayName(type));
+        }
         meta.getPersistentDataContainer().set(
                 resourceKey,
                 PersistentDataType.STRING,
@@ -40,6 +43,18 @@ public final class ResourcePhysicalItemService {
         );
         item.setItemMeta(meta);
         return item;
+    }
+
+    private static String displayName(ResourceType type) {
+        return switch (type) {
+            case REPAIR_PARTS -> "§f수리 부품";
+            case CIRCUITS -> "§c회로";
+            case POWER_CELLS -> "§e전력 셀";
+            case FUEL -> "§6연료";
+            case MEDICAL_SUPPLIES -> "§a의료 물자";
+            case BIO_SAMPLES -> "§d생체 샘플";
+            case DATA_CORES -> "§b데이터 코어";
+        };
     }
 
     public Optional<ResourceType> typeOf(ItemStack item) {
