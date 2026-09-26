@@ -47,7 +47,8 @@ public final class ShipRouteService {
                     current,
                     target,
                     usable,
-                    nextConnectionState(current, usable)
+                    nextConnectionState(current, usable),
+                    true
             ));
         }
 
@@ -60,7 +61,8 @@ public final class ShipRouteService {
                 current,
                 target,
                 topology,
-                nextConnectionState(current, topology)
+                nextConnectionState(current, topology),
+                false
         ));
     }
 
@@ -165,7 +167,8 @@ public final class ShipRouteService {
             TileId current,
             TileId target,
             List<TileId> path,
-            ConnectionState nextConnectionState
+            ConnectionState nextConnectionState,
+            boolean routeUsable
     ) {
         public RoutePlan {
             path = List.copyOf(path);
@@ -182,9 +185,7 @@ public final class ShipRouteService {
         }
 
         public boolean nextConnectionUsable() {
-            return nextConnectionState == ConnectionState.OPEN
-                    || nextConnectionState == ConnectionState.POWER_REQUIRED
-                    || nextConnectionState == ConnectionState.KEYCARD_REQUIRED;
+            return arrived() || routeUsable;
         }
     }
 }
