@@ -52,6 +52,7 @@ import com.hushkisses.spacesurvival.paper.lobby.LobbyReadyService;
 import com.hushkisses.spacesurvival.paper.map.physical.PaperShipWorldService;
 import com.hushkisses.spacesurvival.paper.map.physical.PhysicalConnectionController;
 import com.hushkisses.spacesurvival.paper.map.physical.ShipPortalListener;
+import com.hushkisses.spacesurvival.paper.map.physical.ShipNavigationListener;
 import com.hushkisses.spacesurvival.paper.objective.ObjectiveGameplayProgressService;
 import com.hushkisses.spacesurvival.paper.match.MatchOrchestrator;
 import com.hushkisses.spacesurvival.paper.pve.DefaultPveMobSpawner;
@@ -316,6 +317,10 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                         shipWorldService,
                         physicalConnectionController
                 ),
+                this
+        );
+        getServer().getPluginManager().registerEvents(
+                new ShipNavigationListener(this, shipWorldService),
                 this
         );
         getServer().getPluginManager().registerEvents(
