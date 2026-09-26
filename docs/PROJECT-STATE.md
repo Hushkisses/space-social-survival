@@ -53,13 +53,12 @@ Player Comprehension / Playability
 
 ## PX-003 Common Objective HUD / Next Action Guidance
 - added core PlayerGuidanceResolver
-- HUD now communicates:
-  - current return stage
-  - crisis stage
-  - current room
-  - one highest-priority public problem
-  - target facility
-  - publicly knowable required resource/action
+- PX-003.1 presentation polish:
+  - persistent guidance moved from center ActionBar to a compact right-side scoreboard
+  - scoreboard shows return stage, crisis, current room, one public priority, target facility and need
+  - CRISIS/COLLAPSE uses a top boss bar for urgent ship-wide attention
+  - ActionBar is reserved for short action-result feedback instead of permanent HUD text
+  - scoreboard/bossbar are removed when the match runtime is absent
 - public status GUI exposes broader ship/facility state without hidden actor/cause data
 
 ## PX-004 Facility Work UX
@@ -77,7 +76,8 @@ Player Comprehension / Playability
   - safe predicted effects
 
 ## Validation status
-- PX-001~004 GitHub Actions full test/build: SUCCESS (Build #595)
+- PX-001~004 GitHub Actions full test/build: SUCCESS (Build #595, Build #597)
+- PX-003.1 HUD presentation polish CI: pending
 - PX-001~004 Windows/Paper integrated validation: pending
 - PT-011~015 Windows/Paper integrated validation: still pending
 - first blind 1~3 player 20-minute playability gate: not yet attempted

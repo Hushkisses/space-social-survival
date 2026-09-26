@@ -69,16 +69,30 @@ The resolver derives one truthful public priority from authoritative core state:
 3. other unusable/damaged facility
 4. current return-stage action
 
-The action bar now communicates:
+### PX-003.1 HUD presentation polish
 
-- current return stage
-- crisis stage
-- current room
-- highest-priority public problem
-- target facility
-- publicly knowable requirement
+The first Paper validation showed that a permanent center ActionBar was technically functional but not sufficiently readable during normal play.
 
-It does not expose hidden actor/cause information.
+The presentation layer is therefore split by information lifetime:
+
+- **Right-side scoreboard — persistent navigation/status**
+  - current return stage
+  - crisis stage
+  - current room
+  - one highest-priority public problem
+  - target facility
+  - publicly knowable requirement
+- **Top boss bar — urgent ship-wide crisis only**
+  - shown only during CRISIS/COLLAPSE
+  - communicates the public priority and target facility
+  - does not invent a countdown when no authoritative timed-event state exists
+- **ActionBar — transient action feedback**
+  - no longer carries the permanent HUD
+  - representative facility action success/failure is shown briefly
+- **PDA — detailed state**
+  - retains the full public and private detail pages
+
+The HUD does not expose hidden actor/cause information.
 
 The PDA public-status page shows the broader state:
 
@@ -128,10 +142,11 @@ Do not mark COMPLETE until the representative Windows/Paper flow is verified:
 4. verify base objective and secret mission visibility is private and correct
 5. verify starter equipment purpose/possession updates after activation
 6. right-click PDA to reopen it
-7. verify HUD shows stage/crisis/current room/one public priority/target facility/need
-8. force or create a low-power or damaged-facility condition
-9. verify HUD and PDA public state update without hidden-info leakage
-10. open each facility console and verify:
+7. verify the right-side scoreboard shows stage/crisis/current room/one public priority/target facility/need
+8. confirm the center ActionBar is no longer permanently occupied by the HUD
+9. force or create a low-power or damaged-facility condition and verify the scoreboard/PDA update
+10. force enough crisis pressure to reach CRISIS/COLLAPSE and verify a top boss bar appears without exposing hidden cause information
+11. open each facility console and verify:
     - status
     - relevant metrics
     - shared/carried resources
@@ -139,10 +154,12 @@ Do not mark COMPLETE until the representative Windows/Paper flow is verified:
     - resource requirement
     - denial reason
     - effect preview
-11. execute representative basic and advanced actions and confirm existing behavior still works
-12. die/respawn and verify PDA is not a recoverable loot item and is restored
-13. reconnect and verify PDA remains available
-14. verify PT-011~015 physical objective progress, sanctions, death loot, result GUI and operator tools still function
+12. execute representative basic and advanced actions and confirm:
+    - existing behavior still works
+    - the action result appears as short-lived ActionBar feedback
+13. die/respawn and verify PDA is not a recoverable loot item and is restored
+14. reconnect and verify PDA remains available
+15. verify PT-011~015 physical objective progress, sanctions, death loot, result GUI and operator tools still function
 
 ## Completion state
 

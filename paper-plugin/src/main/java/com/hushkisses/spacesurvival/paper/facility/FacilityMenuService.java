@@ -124,6 +124,11 @@ public final class FacilityMenuService implements Listener {
                     (result.success() ? "§a[시설] §f" : "§c[시설] §f")
                             + result.message()
             );
+            plugin.matchHudService().flashAction(
+                    player,
+                    result.success(),
+                    result.message()
+            );
 
             if (!plugin.meetingGuiService().hasActiveVote()) {
                 open(player, facilityId);
