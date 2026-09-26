@@ -90,17 +90,25 @@ Player Comprehension / Playability
 - persistent next action remains in the existing HUD
 - detectable resolution conditions announce stabilization
 - hidden actor/identity/scenario truth remains hidden
+- playtest correction:
+  - removed vague `시설 점검` guidance for supported damaged-facility cases
+  - Cargo damage -> `화물실 설비 복구` / Repair Parts x1
+  - Medical contamination -> `의료실 오염 제거` / Medical Supplies x1
+  - low oxygen -> Engineering `산소 계통 복구` / Repair Parts x1
 
 ## PX-006 Ship Navigation / Signage / Map
 - generated rooms have floating room-name/category labels
 - portal pads have destination labels
-- room-entry feedback reports current room/category
+- shared player-aware route guidance computes the current target-facility path
+- right-side HUD persistently shows the next room toward the target
+- room-entry feedback reports current room, target facility and immediate next room
 - PDA includes a graph-style ship map with:
   - room categories
   - current room
   - Bridge distance
   - adjacency
   - connection state
+  - recommended current-target route and blocked-route warning
 - no live player-position map
 
 ## PX-007 Item / Resource Usability
@@ -117,6 +125,7 @@ Player Comprehension / Playability
 - PX-003.1 HUD presentation polish CI: SUCCESS (Build #599)
 - PX-001.1 automatic lobby / immediate role-selection flow CI: SUCCESS (Build #613)
 - PX-005~007 World Readability CI: SUCCESS (Build #667)
+- PX-005/006 playtest correction CI: SUCCESS (Build #707)
 - PX-001~004 Windows/Paper integrated validation: pending
 - PT-011~015 Windows/Paper integrated validation: still pending
 - first blind 1~3 player 20-minute playability gate: not yet attempted
