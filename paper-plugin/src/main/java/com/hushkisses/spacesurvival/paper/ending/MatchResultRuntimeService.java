@@ -42,6 +42,14 @@ public final class MatchResultRuntimeService {
     }
 
     public MatchResult evaluate(boolean commonMissionCompleted) {
+        for (PlayerId playerId : plugin.lobbyService().snapshot().players()) {
+            var online = plugin.getServer().getPlayer(playerId.value());
+            if (online != null) {
+                plugin.objectiveGameplayProgressService()
+                        .finalizeEndState(online, commonMissionCompleted);
+            }
+        }
+
         List<PlayerResultInput> inputs = plugin.lobbyService().snapshot().players().stream()
                 .map(this::input)
                 .toList();
