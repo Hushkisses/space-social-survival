@@ -377,10 +377,13 @@ public final class CrewPdaService implements Listener {
                 step++;
             }
 
-            if (!plan.nextConnectionUsable()) {
+            if (!plan.routeUsable()) {
                 lore.add("");
-                lore.add("§c다음 통로가 현재 차단되어 있습니다.");
-                lore.add("§7다른 경로 또는 통로 복구가 필요합니다.");
+                lore.add("§e추천 경로 중 현재 통과할 수 없는 통로가 있습니다.");
+                if (!plan.nextConnectionUsable()) {
+                    lore.add("§c바로 다음 통로가 차단되어 있습니다.");
+                }
+                lore.add("§7통로 복구 또는 조건 충족 후 계속 이동하십시오.");
             }
         }
 
