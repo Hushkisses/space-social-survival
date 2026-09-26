@@ -4,6 +4,8 @@ import com.hushkisses.spacesurvival.ending.ReturnStage;
 import com.hushkisses.spacesurvival.guidance.PlayerGuidanceResolver;
 import com.hushkisses.spacesurvival.guidance.PublicProblem;
 import com.hushkisses.spacesurvival.map.tile.TileId;
+import com.hushkisses.spacesurvival.objective.ObjectiveSlot;
+import com.hushkisses.spacesurvival.objective.ObjectiveStatus;
 import com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin;
 import com.hushkisses.spacesurvival.paper.map.physical.PaperShipWorldService;
 import com.hushkisses.spacesurvival.paper.map.physical.PhysicalShipSnapshot;
@@ -119,7 +121,7 @@ public final class MatchHudService {
             activePlayers.add(player.getUniqueId());
             renderScoreboard(
                     player,
-                    returnStage,
+                    playerId,
                     crisis,
                     problem,
                     targetFacility
@@ -132,7 +134,7 @@ public final class MatchHudService {
 
     private void renderScoreboard(
             Player player,
-            ReturnStage returnStage,
+            PlayerId playerId,
             CrisisStage crisis,
             PublicProblem problem,
             String targetFacility
@@ -142,17 +144,22 @@ public final class MatchHudService {
                 ignored -> createHudBoard()
         );
 
-        List<String> lines = List.of(
-                "§7단계 §f" + compact(stageName(returnStage), 20),
-                "§7위기 " + crisisColor(crisis) + crisisName(crisis),
-                "§7위치 §f" + compact(currentArea(player), 20),
-                "§8────────────",
-                "§e§l우선 목표",
-                priorityColor(crisis) + compact(problem.title(), 26),
-                "§7목표 §f" + compact(targetFacility, 20),
-                "§7필요 §f" + compact(problem.need(), 24),
-                "§8PDA 우클릭 · 상세"
-        );
+        ArrayList<String> lines = new ArrayList<>();
+        lines.add("§7위치 §f" + compact(currentArea(player), 20));
+        lines.add("§8────────────");
+        lines.add("§b§l개인 목표");
+        lines.addAll(personalObjectiveLines(playerId));
+
+        if (plugin.objectiveEngine().objective(playerId, ObjectiveSlot.SECRET).isPresent()) {
+            lines.add("§d비밀 임무 있음 §8· PDA 확인");
+        }
+
+        lines.add("§8────────────");
+        lines.add("§e§l긴급 목표");
+        lines.add(priorityColor(crisis) + compact(problem.title(), 26));
+        lines.add("§7목표 §f" + compact(targetFacility, 20));
+        lines.add("§7필요 §f" + compact(problem.need(), 24));
+        lines.add("§8PDA 우클릭 · 상세");
 
         if (!lines.equals(hud.lines)) {
             for (String oldLine : hud.lines) {
@@ -275,6 +282,29 @@ public final class MatchHudService {
         ).getMainScoreboard();
     }
 
+
+
+    private List<String> personalObjectiveLines(PlayerId playerId) {
+        var objective = plugin.objectiveEngine()
+                .objective(playerId, ObjectiveSlot.BASE)
+                .orElse(null);
+
+        if (objective == null) {
+            return List.of("§7아직 배정되지 않았습니다.");
+        }
+
+        String title = "§f" + compact(objective.definition().title(), 24);
+        String progress = switch (objective.status()) {
+            case ACTIVE -> "§7진행 §f"
+                    + objective.progress()
+                    + "/"
+                    + objective.definition().targetProgress();
+            case COMPLETED -> "§a완료";
+            case FAILED -> "§c실패";
+        };
+
+        return List.of(title, progress);
+    }
 
     private String currentArea(Player player) {
         PhysicalShipSnapshot snapshot = shipWorldService.activeSnapshot().orElse(null);
