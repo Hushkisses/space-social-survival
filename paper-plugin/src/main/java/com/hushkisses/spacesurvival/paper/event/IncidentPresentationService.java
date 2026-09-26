@@ -7,7 +7,6 @@ import com.hushkisses.spacesurvival.facility.DefaultFacilityCatalog;
 import com.hushkisses.spacesurvival.facility.FacilityStatus;
 import com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin;
 import com.hushkisses.spacesurvival.player.PlayerId;
-import org.bukkit.BarColor;
 import org.bukkit.Sound;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
