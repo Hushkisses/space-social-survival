@@ -75,7 +75,7 @@ Playtest Hardening
   - telemetry file path
 
 ## Validation status
-- GitHub Actions pending for PT-011 through PT-015.
+- PT-011 through PT-015 GitHub Actions full test/build SUCCESS (Build #585).
 - Windows/Paper integrated validation pending.
 - empirical 6~10 player balance validation remains separate from code completion.
 
