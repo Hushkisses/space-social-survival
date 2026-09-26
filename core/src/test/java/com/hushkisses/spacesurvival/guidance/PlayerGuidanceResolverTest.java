@@ -112,6 +112,21 @@ class PlayerGuidanceResolverTest {
         assertTrue(problem.nextAction().contains("화물실 설비 복구"));
     }
 
+
+    @Test
+    void stableSurvivalStageNamesBridgeAdvanceAction() {
+        PublicProblem problem = resolver.resolve(
+                ReturnStage.SURVIVAL_SYSTEMS,
+                new ShipStateSnapshot(80, 80, 80, 80),
+                normalFacilities()
+        );
+
+        assertEquals(DefaultFacilityCatalog.BRIDGE, problem.targetFacility());
+        assertTrue(problem.title().contains("완료"));
+        assertTrue(problem.need().contains("함교"));
+        assertTrue(problem.nextAction().contains("귀환 절차 시작"));
+    }
+
     private static List<FacilityStateSnapshot> normalFacilities() {
         return List.of(
                 new FacilityStateSnapshot(
