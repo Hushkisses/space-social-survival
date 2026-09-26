@@ -42,6 +42,7 @@ public final class CrewPdaService implements Listener {
     public static final String PERSONAL_TITLE = "§8승무원 PDA — 개인 정보";
     public static final String PUBLIC_TITLE = "§8승무원 PDA — 공용 상태";
     public static final String HELP_TITLE = "§8승무원 PDA — 초보 도움말";
+    public static final String MAP_TITLE = "§8승무원 PDA — 함선 지도";
 
     private final SpaceSurvivalPlugin plugin;
     private final PaperShipWorldService shipWorldService;
@@ -127,6 +128,16 @@ public final class CrewPdaService implements Listener {
                 "§b공용 상태 상세",
                 "public",
                 List.of("§7함선 수치·귀환 단계·시설 상태를 확인합니다.", "§a클릭")
+        ));
+        inventory.setItem(38, actionItem(
+                Material.FILLED_MAP,
+                "§b함선 지도",
+                "map",
+                List.of(
+                        "§7발견된 함선 모듈과 연결 상태를 확인합니다.",
+                        "§7실시간 플레이어 위치는 표시하지 않습니다.",
+                        "§a클릭"
+                )
         ));
         inventory.setItem(40, actionItem(
                 Material.KNOWLEDGE_BOOK,
@@ -272,6 +283,126 @@ public final class CrewPdaService implements Listener {
         player.openInventory(inventory);
     }
 
+    private void openMap(Player player) {
+        var ship = shipWorldService.activeSnapshot().orElse(null);
+        if (ship == null) {
+            player.sendMessage("§c아직 생성된 함선 지도가 없습니다.");
+            return;
+        }
+
+        Inventory inventory = Bukkit.createInventory(null, 54, MAP_TITLE);
+        var current = ship.tileAt(player.getLocation()).orElse(null);
+        var bridge = new com.hushkisses.spacesurvival.map.tile.TileId("bridge");
+
+        int slot = 0;
+        for (var tileId : ship.generatedMap().tileIds()) {
+            if (slot >= 45) break;
+
+            var definition = ship.definitions().get(tileId);
+            if (definition == null) continue;
+
+            ArrayList<String> lore = new ArrayList<>();
+            lore.add("§7분류: §f" + tileCategoryName(definition.category()));
+            lore.add("§7함교 거리: §f" + ship.generatedMap().distance(tileId, bridge) + "칸");
+            if (tileId.equals(current)) {
+                lore.add("§a현재 위치");
+            }
+            lore.add("");
+            lore.add("§7연결:");
+
+            for (var adjacent : ship.generatedMap().adjacent(tileId)) {
+                lore.add(
+                        connectionColor(connectionState(tileId, adjacent))
+                                + "- "
+                                + ship.tileDisplayName(adjacent)
+                                + " §8["
+                                + connectionStateName(connectionState(tileId, adjacent))
+                                + "]"
+                );
+            }
+
+            inventory.setItem(
+                    slot++,
+                    item(
+                            tileMaterial(definition.category()),
+                            (tileId.equals(current) ? "§a▶ " : "§f")
+                                    + definition.displayName(),
+                            lore
+                    )
+            );
+        }
+
+        inventory.setItem(49, actionItem(
+                Material.ARROW,
+                "§a개인 정보로 돌아가기",
+                "personal",
+                List.of("§a클릭")
+        ));
+        player.openInventory(inventory);
+    }
+
+    private com.hushkisses.spacesurvival.map.connection.ConnectionState connectionState(
+            com.hushkisses.spacesurvival.map.tile.TileId first,
+            com.hushkisses.spacesurvival.map.tile.TileId second
+    ) {
+        for (var snapshot : plugin.physicalConnectionController().snapshots()) {
+            var connection = snapshot.connection();
+            var a = connection.first().tileId();
+            var b = connection.second().tileId();
+            if ((a.equals(first) && b.equals(second))
+                    || (a.equals(second) && b.equals(first))) {
+                return snapshot.state();
+            }
+        }
+        return com.hushkisses.spacesurvival.map.connection.ConnectionState.DISABLED;
+    }
+
+    private static Material tileMaterial(
+            com.hushkisses.spacesurvival.map.tile.TileCategory category
+    ) {
+        return switch (category) {
+            case CORE -> Material.LIGHT_BLUE_CONCRETE;
+            case CORRIDOR -> Material.WHITE_CONCRETE;
+            case JUNCTION -> Material.YELLOW_CONCRETE;
+            case AIRLOCK -> Material.ORANGE_CONCRETE;
+            case AUXILIARY -> Material.LIME_CONCRETE;
+        };
+    }
+
+    private static String tileCategoryName(
+            com.hushkisses.spacesurvival.map.tile.TileCategory category
+    ) {
+        return switch (category) {
+            case CORE -> "핵심 시설";
+            case CORRIDOR -> "연결 통로";
+            case JUNCTION -> "교차 구역";
+            case AIRLOCK -> "에어록";
+            case AUXILIARY -> "보조 구역";
+        };
+    }
+
+    private static String connectionStateName(
+            com.hushkisses.spacesurvival.map.connection.ConnectionState state
+    ) {
+        return switch (state) {
+            case OPEN -> "개방";
+            case POWER_REQUIRED -> "전력 필요";
+            case KEYCARD_REQUIRED -> "키카드 필요";
+            case LOCKED -> "잠김";
+            case DISABLED -> "차단";
+        };
+    }
+
+    private static String connectionColor(
+            com.hushkisses.spacesurvival.map.connection.ConnectionState state
+    ) {
+        return switch (state) {
+            case OPEN -> "§a";
+            case POWER_REQUIRED, KEYCARD_REQUIRED -> "§e";
+            case LOCKED, DISABLED -> "§c";
+        };
+    }
+
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         if (event.getHand() != EquipmentSlot.HAND || !isPda(event.getItem())) {
@@ -323,7 +454,8 @@ public final class CrewPdaService implements Listener {
         String title = event.getView().getTitle();
         if (!PERSONAL_TITLE.equals(title)
                 && !PUBLIC_TITLE.equals(title)
-                && !HELP_TITLE.equals(title)) {
+                && !HELP_TITLE.equals(title)
+                && !MAP_TITLE.equals(title)) {
             return;
         }
 
@@ -335,6 +467,7 @@ public final class CrewPdaService implements Listener {
             case "personal" -> open(player);
             case "public" -> openPublic(player);
             case "help" -> openHelp(player);
+            case "map" -> openMap(player);
             default -> {
             }
         }
