@@ -29,6 +29,7 @@ public final class DefaultFacilityActionCatalog {
                 basic("engineering.power", DefaultFacilityCatalog.ENGINEERING, "전력 관리"),
                 basic("engineering.engine", DefaultFacilityCatalog.ENGINEERING, "엔진 관리"),
                 basic("engineering.repair", DefaultFacilityCatalog.ENGINEERING, "핵심 수리"),
+                basic("engineering.oxygen", DefaultFacilityCatalog.ENGINEERING, "산소 계통 복구"),
                 advanced("engineering.diagnose", DefaultFacilityCatalog.ENGINEERING, "정밀 고장 진단", RoleCapability.DIAGNOSE_FAULT),
                 advanced("engineering.redistribute", DefaultFacilityCatalog.ENGINEERING, "전력 재배분", RoleCapability.REDISTRIBUTE_POWER),
                 advanced("engineering.advanced_repair", DefaultFacilityCatalog.ENGINEERING, "고급 수리", RoleCapability.ADVANCED_REPAIR),
