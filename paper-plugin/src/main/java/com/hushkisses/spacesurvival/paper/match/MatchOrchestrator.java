@@ -103,8 +103,15 @@ public final class MatchOrchestrator {
                 seed,
                 config
         );
-        int resourceCaches = plugin.resourceWorldService().populate(ship, seed);
-        plugin.getLogger().info("Physical resource caches placed: " + resourceCaches);
+        var resourcePopulation = plugin.resourceWorldService().populate(ship, seed);
+        plugin.getLogger().info(
+                "Physical resource caches placed: "
+                        + resourcePopulation.caches()
+                        + ", stacks="
+                        + resourcePopulation.stacks()
+                        + ", units="
+                        + resourcePopulation.units()
+        );
 
         int initialEventCount = config.initialSmallEventsMin()
                 + random.nextInt(
@@ -141,7 +148,9 @@ public final class MatchOrchestrator {
                 players.size(),
                 scenarioDefinition.type().name()
         );
-        plugin.telemetryService().add("resource.cache.count", resourceCaches);
+        plugin.telemetryService().add("resource.cache.count", resourcePopulation.caches());
+        plugin.telemetryService().add("resource.cache.stacks", resourcePopulation.stacks());
+        plugin.telemetryService().add("resource.cache.units", resourcePopulation.units());
         plugin.telemetryService().add("initial.incident.count", initialEventCount);
         plugin.telemetryService().event("match", "briefing");
 
