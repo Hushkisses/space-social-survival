@@ -68,6 +68,7 @@ public final class MatchHudService {
             task = null;
         }
 
+        shipWorldService.clearPriorityRoute();
         clearDisplays();
 
         if (crisisBar != null) {
