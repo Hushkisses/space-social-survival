@@ -178,6 +178,16 @@ public final class FacilityActionExecutor {
             case "medical.treat" -> medicalTreat(player, 25, 1);
             case "medical.clear_status" -> clearMedicalCondition(player);
             case "medical.infection_test" -> infectionTest(player, false);
+            case "medical.decontaminate" -> {
+                if (!shared().remove(ResourceType.MEDICAL_SUPPLIES, 1)) {
+                    yield failure("의료실 오염 제거에 필요한 공용 의료 물자 1개가 부족합니다.");
+                }
+                plugin.facilityRegistry()
+                        .require(actionFacility("medical"))
+                        .setStatus(FacilityStatus.NORMAL);
+                plugin.gameEventRuntimeState().setFlag("medical_contamination", false);
+                yield result("의료 물자 1개를 사용해 의료실 오염 제거를 완료했습니다.");
+            }
             case "medical.precise_test" -> infectionTest(player, true);
             case "medical.advanced_treatment" -> medicalTreat(player, 50, 1);
             case "medical.suppress_infection" -> suppressInfection(player);
@@ -215,6 +225,15 @@ public final class FacilityActionExecutor {
             );
             case "cargo.deposit" -> depositCarriedResources(player);
             case "cargo.process" -> process("circuit_salvage");
+            case "cargo.repair" -> {
+                if (!shared().remove(ResourceType.REPAIR_PARTS, 1)) {
+                    yield failure("화물실 설비 복구에 필요한 공용 수리 부품 1개가 부족합니다.");
+                }
+                plugin.facilityRegistry()
+                        .require(actionFacility("cargo"))
+                        .setStatus(FacilityStatus.NORMAL);
+                yield result("수리 부품 1개를 사용해 화물실 설비를 복구했습니다.");
+            }
             case "cargo.rare" -> result(
                     "희귀 자원 — 생체 샘플 "
                             + shared().quantity(ResourceType.BIO_SAMPLES)
