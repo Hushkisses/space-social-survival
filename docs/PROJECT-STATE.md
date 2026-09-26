@@ -137,6 +137,22 @@ First Multiplayer Playtest Build
 - DEV-001 through DEV-059 automated and Windows/Paper validation SUCCESS
 - PT-001 through PT-005 GitHub Actions full test/build SUCCESS (Build #507)
 - PT-006 through PT-010 GitHub Actions full test/build SUCCESS (Build #535)
+- PT-002.1/PT-007.1 runtime hotfix GitHub Actions full test/build SUCCESS (Build #553)
+
+## Runtime hotfixes
+- PT-002.1 Facility GUI click reliability
+  - facility menus now use a custom InventoryHolder carrying FacilityId/action bindings.
+  - title-string/session-map dispatch removed.
+  - click listener handles already-cancelled events at HIGHEST priority.
+  - facility action execution is deferred to the next server tick so inventory transitions are Bukkit-safe.
+  - meeting GUI target transitions are also deferred to the next tick.
+- PT-007.1 Resource cache population reliability
+  - barrel block metadata is applied before live inventory edits.
+  - no stale BlockState update occurs after filling the live inventory.
+  - deterministic slot writes replace addItem-only population.
+  - every generated cache has a non-empty fallback guarantee.
+  - physical resource fallback items now have Korean display names.
+  - match startup logs cache count, stack count and total resource units.
 
 ## Pending validation
 ### PT-001 through PT-005 prerequisite
