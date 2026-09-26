@@ -64,6 +64,54 @@ class PlayerGuidanceResolverTest {
         assertTrue(problem.title().contains("항법"));
     }
 
+
+    @Test
+    void lowOxygenNamesConcreteEngineeringRecoveryAction() {
+        PublicProblem problem = resolver.resolve(
+                ReturnStage.SURVIVAL_SYSTEMS,
+                new ShipStateSnapshot(80, 35, 80, 80),
+                normalFacilities()
+        );
+
+        assertEquals(DefaultFacilityCatalog.ENGINEERING, problem.targetFacility());
+        assertTrue(problem.need().contains("수리 부품"));
+        assertTrue(problem.nextAction().contains("산소 계통 복구"));
+    }
+
+    @Test
+    void damagedCargoNamesConcreteRepairAction() {
+        List<FacilityStateSnapshot> facilities = List.of(
+                new FacilityStateSnapshot(
+                        DefaultFacilityCatalog.BRIDGE,
+                        FacilityType.BRIDGE,
+                        "함교",
+                        FacilityStatus.NORMAL
+                ),
+                new FacilityStateSnapshot(
+                        DefaultFacilityCatalog.ENGINEERING,
+                        FacilityType.ENGINEERING,
+                        "기관실",
+                        FacilityStatus.NORMAL
+                ),
+                new FacilityStateSnapshot(
+                        DefaultFacilityCatalog.CARGO,
+                        FacilityType.CARGO,
+                        "화물실",
+                        FacilityStatus.DAMAGED
+                )
+        );
+
+        PublicProblem problem = resolver.resolve(
+                ReturnStage.SURVIVAL_SYSTEMS,
+                new ShipStateSnapshot(80, 80, 80, 80),
+                facilities
+        );
+
+        assertEquals(DefaultFacilityCatalog.CARGO, problem.targetFacility());
+        assertTrue(problem.need().contains("수리 부품"));
+        assertTrue(problem.nextAction().contains("화물실 설비 복구"));
+    }
+
     private static List<FacilityStateSnapshot> normalFacilities() {
         return List.of(
                 new FacilityStateSnapshot(
