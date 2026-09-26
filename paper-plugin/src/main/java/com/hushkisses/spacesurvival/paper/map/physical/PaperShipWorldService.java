@@ -11,7 +11,11 @@ import com.hushkisses.spacesurvival.map.tile.TileDefinition;
 import com.hushkisses.spacesurvival.map.tile.TileId;
 import com.hushkisses.spacesurvival.paper.config.MatchSetupConfig;
 import com.hushkisses.spacesurvival.paper.facility.FacilityTerminalRegistry;
+import net.kyori.adventure.text.Component;
 import org.bukkit.*;
+import org.bukkit.entity.Display;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
@@ -26,6 +30,7 @@ public final class PaperShipWorldService {
     private static final int MODULE_SIZE = 15;
     private static final int MODULE_SPACING = 24;
     private static final int COLUMNS = 4;
+    private static final String NAV_LABEL_TAG = "space_survival_nav_label";
 
     private final ConstrainedRandomMapGenerator generator = new ConstrainedRandomMapGenerator();
     private final ShipModuleStructureLoader structureLoader;
@@ -67,6 +72,7 @@ public final class PaperShipWorldService {
         );
 
         World world = resolveWorld();
+        cleanupNavigationLabels(world);
         clearBuildArea(world);
 
         terminals.clear();
@@ -99,6 +105,8 @@ public final class PaperShipWorldService {
                 renderModule(world, placement, definitions.get(tileId));
             }
 
+            renderRoomIdentity(world, placement, definitions.get(tileId));
+
             FacilityId facilityId = coreFacility(tileId);
             if (facilityId != null) {
                 renderFacilityTerminal(world, placement, facilityId);
@@ -128,6 +136,15 @@ public final class PaperShipWorldService {
                     connection,
                     firstPad,
                     secondPad
+            );
+
+            renderDestinationLabel(
+                    firstPad,
+                    definitions.get(connection.second().tileId()).displayName()
+            );
+            renderDestinationLabel(
+                    secondPad,
+                    definitions.get(connection.first().tileId()).displayName()
             );
         }
 
@@ -201,7 +218,7 @@ public final class PaperShipWorldService {
         int maxZ = minZ + placement.size() - 1;
         int floor = placement.floorY();
 
-        Material accent = accent(definition.category());
+        Material accent = accent(definition.id(), definition.category());
 
         for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {
@@ -254,6 +271,54 @@ public final class PaperShipWorldService {
         world.getBlockAt(x, y, z).setType(Material.LIGHT_WEIGHTED_PRESSURE_PLATE, false);
     }
 
+    private static void cleanupNavigationLabels(World world) {
+        for (Entity entity : world.getEntities()) {
+            if (entity.getScoreboardTags().contains(NAV_LABEL_TAG)) {
+                entity.remove();
+            }
+        }
+    }
+
+    private static void renderRoomIdentity(
+            World world,
+            PhysicalTilePlacement placement,
+            TileDefinition definition
+    ) {
+        Location center = placement.center(world);
+        int x = center.getBlockX();
+        int z = center.getBlockZ();
+        int floor = placement.floorY();
+        Material accent = accent(definition.id(), definition.category());
+
+        world.getBlockAt(x, floor, z).setType(accent, false);
+        world.getBlockAt(x + 1, floor, z).setType(accent, false);
+        world.getBlockAt(x - 1, floor, z).setType(accent, false);
+        world.getBlockAt(x, floor, z + 1).setType(accent, false);
+        world.getBlockAt(x, floor, z - 1).setType(accent, false);
+
+        Location labelLocation = center.clone().add(0.0, 2.8, 0.0);
+        TextDisplay label = world.spawn(labelLocation, TextDisplay.class);
+        label.text(Component.text(definition.displayName()));
+        label.setBillboard(Display.Billboard.CENTER);
+        label.setSeeThrough(true);
+        label.setShadowed(true);
+        label.setGlowing(true);
+        label.addScoreboardTag(NAV_LABEL_TAG);
+    }
+
+    private static void renderDestinationLabel(Location pad, String destination) {
+        World world = pad.getWorld();
+        if (world == null) return;
+
+        Location labelLocation = pad.clone().add(0.0, 2.0, 0.0);
+        TextDisplay label = world.spawn(labelLocation, TextDisplay.class);
+        label.text(Component.text("→ " + destination));
+        label.setBillboard(Display.Billboard.CENTER);
+        label.setSeeThrough(true);
+        label.setShadowed(true);
+        label.addScoreboardTag(NAV_LABEL_TAG);
+    }
+
     private static FacilityId coreFacility(TileId tileId) {
         return switch (tileId.value()) {
             case "bridge", "engineering", "medical", "research", "cargo", "habitation" ->
@@ -262,13 +327,21 @@ public final class PaperShipWorldService {
         };
     }
 
-    private static Material accent(TileCategory category) {
-        return switch (category) {
-            case CORE -> Material.LIGHT_BLUE_CONCRETE;
-            case CORRIDOR -> Material.WHITE_CONCRETE;
-            case JUNCTION -> Material.YELLOW_CONCRETE;
-            case AIRLOCK -> Material.ORANGE_CONCRETE;
-            case AUXILIARY -> Material.LIME_CONCRETE;
+    private static Material accent(TileId tileId, TileCategory category) {
+        return switch (tileId.value()) {
+            case "bridge" -> Material.BLUE_CONCRETE;
+            case "engineering" -> Material.ORANGE_CONCRETE;
+            case "medical" -> Material.WHITE_CONCRETE;
+            case "research" -> Material.PURPLE_CONCRETE;
+            case "cargo" -> Material.YELLOW_CONCRETE;
+            case "habitation" -> Material.LIME_CONCRETE;
+            default -> switch (category) {
+                case CORE -> Material.LIGHT_BLUE_CONCRETE;
+                case CORRIDOR -> Material.LIGHT_GRAY_CONCRETE;
+                case JUNCTION -> Material.CYAN_CONCRETE;
+                case AIRLOCK -> Material.RED_CONCRETE;
+                case AUXILIARY -> Material.GRAY_CONCRETE;
+            };
         };
     }
 }
