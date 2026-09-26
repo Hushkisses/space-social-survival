@@ -99,9 +99,12 @@ Player Comprehension / Playability
 ## PX-006 Ship Navigation / Signage / Map
 - generated rooms have floating room-name/category labels
 - portal pads have destination labels
-- shared player-aware route guidance computes the current target-facility path
-- right-side HUD persistently shows the next room toward the target
-- room-entry feedback reports current room, target facility and immediate next room
+- shared route guidance computes the current public target-facility path
+- directional navigation is now embedded in portal destination holograms:
+  - exits that move closer to the public priority target are highlighted red
+  - unrelated exits retain the normal yellow-arrow/white label
+  - HUD keeps target/need information without a separate next-room line
+- room-entry feedback remains compact to avoid duplicating the world-space guidance
 - PDA includes a graph-style ship map with:
   - room categories
   - current room
@@ -126,6 +129,7 @@ Player Comprehension / Playability
 - PX-001.1 automatic lobby / immediate role-selection flow CI: SUCCESS (Build #613)
 - PX-005~007 World Readability CI: SUCCESS (Build #667)
 - PX-005/006 playtest correction CI: SUCCESS (Build #707)
+- PX-006 priority-route hologram CI: SUCCESS (Build #719)
 - PX-001~004 Windows/Paper integrated validation: pending
 - PT-011~015 Windows/Paper integrated validation: still pending
 - first blind 1~3 player 20-minute playability gate: not yet attempted
