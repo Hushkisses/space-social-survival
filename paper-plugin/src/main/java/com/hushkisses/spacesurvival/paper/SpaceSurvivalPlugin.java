@@ -36,6 +36,7 @@ import com.hushkisses.spacesurvival.paper.config.PluginConfigurationLoader;
 import com.hushkisses.spacesurvival.paper.death.PlayerDeathStateListener;
 import com.hushkisses.spacesurvival.paper.ending.EndingRuntimeService;
 import com.hushkisses.spacesurvival.paper.ending.MatchResultRuntimeService;
+import com.hushkisses.spacesurvival.paper.ending.MatchResultGuiService;
 import com.hushkisses.spacesurvival.paper.event.IncidentDirector;
 import com.hushkisses.spacesurvival.paper.facility.FacilityActionExecutor;
 import com.hushkisses.spacesurvival.paper.facility.FacilityInteractionListener;
@@ -152,6 +153,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private CommonContributionLedger commonContributionLedger;
     private ResultEvaluator resultEvaluator;
     private MatchResultRuntimeService matchResultRuntimeService;
+    private MatchResultGuiService matchResultGuiService;
 
     private FacilityTerminalRegistry facilityTerminalRegistry;
     private PhysicalConnectionController physicalConnectionController;
@@ -240,6 +242,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         pveMobSpawner = new DefaultPveMobSpawner(mythicMobsBridge, modelEngineBridge);
 
         resetEndingRuntime();
+        matchResultGuiService = new MatchResultGuiService(this);
 
         facilityTerminalRegistry = new FacilityTerminalRegistry();
         physicalConnectionController = new PhysicalConnectionController();
@@ -415,6 +418,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public CommonContributionLedger commonContributionLedger() { return require(commonContributionLedger, "Common contribution ledger"); }
     public ResultEvaluator resultEvaluator() { return require(resultEvaluator, "Result evaluator"); }
     public MatchResultRuntimeService matchResultRuntimeService() { return require(matchResultRuntimeService, "Match result runtime service"); }
+    public MatchResultGuiService matchResultGuiService() { return require(matchResultGuiService, "Match result GUI service"); }
     public PaperShipWorldService shipWorldService() { return require(shipWorldService, "Ship world service"); }
     public MatchOrchestrator matchOrchestrator() { return require(matchOrchestrator, "Match orchestrator"); }
     public MatchHudService matchHudService() { return require(matchHudService, "Match HUD service"); }
