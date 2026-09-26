@@ -41,13 +41,15 @@ public final class FunctionalItemService {
                 type.name()
         );
 
-        if (!meta.hasDisplayName()) {
-            meta.setDisplayName(type.displayName());
-        }
-
+        meta.setDisplayName(type.displayName());
         meta.setLore(List.of(
-                "§7우주 생존 기능성 장비",
-                "§8분실하거나 빼앗길 수 있습니다."
+                "§7기능성 직업 장비",
+                "§f" + type.purpose(),
+                "",
+                "§7담당 직업: §f" + type.roleName(),
+                "§7주 사용 위치: §f" + type.useLocation(),
+                "§8실제 장비 소지가 필요한 고급 행동이 있습니다.",
+                "§c분실하거나 다른 플레이어가 회수할 수 있습니다."
         ));
         item.setItemMeta(meta);
         return item;
@@ -96,6 +98,8 @@ public final class FunctionalItemService {
         );
 
         player.sendMessage("§a[시작 장비] §f" + itemType.displayName());
+        player.sendMessage("§7용도: §f" + itemType.purpose());
+        player.sendMessage("§7주 사용 위치: §e" + itemType.useLocation());
     }
 
     public void syncRadio(Player player) {
