@@ -159,14 +159,32 @@ public final class MatchOrchestrator {
             if (online == null) continue;
 
             online.getInventory().clear();
-            online.setGameMode(GameMode.SURVIVAL);
+            online.setGameMode(GameMode.ADVENTURE);
             online.teleportAsync(ship.bridgeSpawn());
-            plugin.openingBriefingUi().open(
-                    online,
-                    scenarioDefinition.publicBriefing(),
-                    initialEventCount,
-                    ship.generatedMap().tileIds().size()
+            plugin.roleSelectionUi().giveMenuItem(online);
+
+            online.sendTitle(
+                    "§c긴급 귀환 임무",
+                    "§f직업을 선택하십시오",
+                    5,
+                    50,
+                    10
             );
+            online.sendMessage("§6[상황] §f" + scenarioDefinition.publicBriefing());
+            online.sendMessage("§6[공통 목표] §f함선을 복구하고 귀환하십시오.");
+            online.sendMessage(
+                    "§7공개된 초기 문제 "
+                            + initialEventCount
+                            + "건 · 함선 모듈 "
+                            + ship.generatedMap().tileIds().size()
+                            + "개"
+            );
+            online.sendMessage(
+                    "§e직업 후보 3개 중 하나를 선택하십시오. "
+                            + "창을 닫아도 핫바의 네더별을 우클릭하면 다시 열립니다."
+            );
+
+            plugin.roleSelectionUi().open(online);
         }
 
         return setupSnapshot;
@@ -188,6 +206,15 @@ public final class MatchOrchestrator {
         }
 
         session.transitionTo(GamePhase.ACTIVE);
+
+        for (PlayerId playerId : plugin.lobbyService().snapshot().players()) {
+            Player online = plugin.getServer().getPlayer(playerId.value());
+            if (online == null) continue;
+
+            plugin.roleSelectionUi().removeMenuItem(online);
+            online.setGameMode(GameMode.SURVIVAL);
+        }
+
         plugin.starterKitService().giveRoleKits();
         plugin.crewPdaService().giveToParticipants();
         plugin.gameRuntimeService().start();
@@ -223,6 +250,7 @@ public final class MatchOrchestrator {
         plugin.lobbyService().resetForNextMatch();
         setupSnapshot = null;
         status = MatchLifecycleStatus.IDLE;
+        plugin.lobbyReadyService().resetOnlinePlayersToLobby();
     }
 
     public MatchLifecycleStatus status() {
