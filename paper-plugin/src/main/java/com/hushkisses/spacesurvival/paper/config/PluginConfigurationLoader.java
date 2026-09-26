@@ -54,7 +54,13 @@ public final class PluginConfigurationLoader {
                 yaml.getInt("events.initial-small-max"),
                 yaml.getInt("scenario.accident-weight"),
                 yaml.getInt("scenario.sabotage-weight"),
-                yaml.getInt("scenario.infection-weight")
+                yaml.getInt("scenario.infection-weight"),
+                yaml.getInt("incident.small-min-seconds"),
+                yaml.getInt("incident.small-max-seconds"),
+                yaml.getInt("incident.major-first-min-seconds"),
+                yaml.getInt("incident.major-first-max-seconds"),
+                yaml.getInt("incident.major-second-min-seconds"),
+                yaml.getInt("incident.major-second-max-seconds")
         );
 
         return new PluginConfiguration(game, balance, matchSetup);
@@ -106,6 +112,12 @@ public final class PluginConfigurationLoader {
         defaults.put("scenario.accident-weight", 45);
         defaults.put("scenario.sabotage-weight", 35);
         defaults.put("scenario.infection-weight", 20);
+        defaults.put("incident.small-min-seconds", 180);
+        defaults.put("incident.small-max-seconds", 360);
+        defaults.put("incident.major-first-min-seconds", 1080);
+        defaults.put("incident.major-first-max-seconds", 1440);
+        defaults.put("incident.major-second-min-seconds", 1920);
+        defaults.put("incident.major-second-max-seconds", 2280);
         return Map.copyOf(defaults);
     }
 }

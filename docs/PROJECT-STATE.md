@@ -9,120 +9,132 @@
 - Do not embed a self-referential HEAD value in this file.
 
 ## Current milestone
-Post-MVP Vertical Slice Integration
+Playtest Integration
 
-## Last completed DEV
-- DEV-001 through DEV-052 MVP gameplay roadmap — COMPLETE
-
-## Current DEV
+## Last completed
 - DEV-001 through DEV-059 gameplay + vertical slice — COMPLETE
 
-## Next DEV
-- playtest-driven content, UX, and balance tickets
-- reserved extension ranges remain:
-  - DEV-060+ Objectives
-  - DEV-070+ Roles
-  - DEV-080+ Events
-  - DEV-090+ Map Tiles
-  - DEV-100+ Scenarios
-  - DEV-110+ Endings
-  - DEV-120+ Meta Progression
+## Current batch
+- PT-001 through PT-005 Playtest Integration
+- Status: COMPLETE
+- Development branch: dev/PT-001-005-playtest-integration
 
-## Batch implementation
+## Included
 
-### DEV-053 Match Setup Pipeline
-- /space match start [seed]
-- OP-only /space match devstart [seed] for one-player smoke tests
-- lobby -> PREPARING -> BRIEFING integration
-- seeded role candidate preparation
-- seeded objective conflict-set selection and base-objective assignment
-- configurable secret-mission chance
-- configurable scenario weights
-- configurable initial small-event count
-- all setup balance values loaded from balance.yml
+### PT-001 Facility Interaction Layer
+- six core facility modules receive an in-world LODESTONE console
+- right-clicking a console resolves the logical FacilityId
+- facility status and selected role capability are authoritative for access
+- facility functions execute through existing core services rather than debug commands
+- representative live actions include:
+  - bridge status / meeting / return flow
+  - engineering power, reactor, hull repair and diagnosis
+  - medical treatment, condition removal, infection tests and suppression
+  - research analysis
+  - cargo inventory and processing
+  - habitation supply / maintenance / locker
 
-### DEV-054 Automatic Match Activation
-- all participants receive the briefing GUI
-- role selection remains a player choice
-- after the final participant confirms a role:
-  - GameSession BRIEFING -> ACTIVE
-  - GameRuntime timer starts automatically
-  - server broadcasts match activation
+### PT-002 Facility GUI
+- per-facility inventory GUI
+- basic vs advanced action presentation
+- unavailable actions show the concrete reason:
+  - facility offline
+  - quarantine
+  - damaged advanced function
+  - missing role capability
+- action results are player-facing Korean messages
+- GUI refreshes after execution
 
-### DEV-055 Production MVP Tile Catalog
-- 20-tile initial pool from design:
-  - six named core facilities
-  - five corridors
-  - three junctions
-  - two airlocks
-  - four auxiliary rooms
-- core facilities: bridge / engineering / medical / research / cargo / habitation
+### PT-003 Structure/NBT Ship Module Loader
+- expected directory:
+  - plugins/SpaceSurvival/structures/
+- file convention:
+  - bridge.nbt
+  - engineering.nbt
+  - medical.nbt
+  - research.nbt
+  - cargo.nbt
+  - habitation.nbt
+  - corridor_1.nbt etc.
+- Bukkit StructureManager loads raw NBT files
+- NBT is placed before terminals/connection pads
+- missing or failed NBT automatically falls back to the development room shell
+- /space structure status reports NBT vs fallback per generated tile
 
-### DEV-056 Physical Dev Ship
-- dedicated flat world: space_ship_dev
-- logical generated map rendered as independent 15x15 development modules
-- generated connections rendered as gold pressure-plate teleport portals
-- every logical connection is traversable in both directions
-- players spawn in the bridge module
-- final art/build assets can later replace room shells without changing core map logic
+### PT-004 Physical Connections / Doors
+- every generated logical connection now has runtime ConnectionState
+- states:
+  - OPEN
+  - LOCKED
+  - POWER_REQUIRED
+  - KEYCARD_REQUIRED
+  - DISABLED
+- portal-pad indicator:
+  - gold = open
+  - yellow = conditional access
+  - red = blocked
+- traversal checks existing core ConnectionAccessPolicy
+- door_fault incidents can lock an actual generated connection
+- engineering advanced repair or /space door repair restores faulted connections
+- debug:
+  - /space door list
+  - /space door set <id> <state>
+  - /space door repair
+- keycard item binding remains PT-006 Functional Item Layer
 
-### DEV-057 Live HUD
-- action-bar HUD while a match session exists
-- power / oxygen / hull
-- crisis stage
-- current common return stage
-- current physical room name
-- does not reveal other-player locations, hidden objectives, resources, or scenario truth
+### PT-005 Automatic Incident Director
+- begins automatically when BRIEFING -> ACTIVE
+- stops on match reset / plugin shutdown
+- small incidents repeat on configurable random intervals
+- first and second major incident windows are configurable
+- default playtest schedule:
+  - small: every 180-360 seconds
+  - first major: 1080-1440 seconds
+  - second major: 1920-2280 seconds
+- infection scenario first major prefers mass infection
+- sabotage major incidents prefer destructive system failures
+- incident world consequences:
+  - door fault locks physical connection
+  - communication noise disrupts long-range radio
+  - alien intrusion spawns PvE
+  - mass infection can start hidden infection outbreak
+- /space director status
+- /space director force <small|large>
 
-### DEV-058 Live Briefing GUI
-- public scenario briefing
-- initial incident count
-- generated module count
-- role candidate selection
-- explicitly preserves hidden scenario truth
-
-### DEV-059 Playtest Harness / Rematch Reset
-- /space match status
-- /space match reset
-- /space match bridge
-- rematch resets:
-  - lobby life states
-  - role selections
-  - resources
-  - events
-  - radio
-  - death/post-death state
-  - sanctions
-  - objectives
-  - scenario/infection/PvP runtime
-  - timer / ending runtime
-- lobby participants are retained for fast repeated tests
-- production start still enforces 6-player minimum
-- development start bypasses minimum only through explicit admin command
+## Balance migration
+New incident keys are added to legacy balance.yml automatically while preserving existing values.
 
 ## Verified
-- DEV-001 through DEV-052 Windows integrated test/build/Paper validation SUCCESS
-- DEV-053 through DEV-059 GitHub Actions full test/build SUCCESS
-- DEV-053.1 legacy balance.yml migration hotfix GitHub Actions test/build SUCCESS (Build run #483)
-- DEV-053 through DEV-059 Windows integrated vertical-slice validation SUCCESS
+- DEV-001 through DEV-059 automated and Windows/Paper validation SUCCESS
+- PT-001 through PT-005 GitHub Actions full test/build SUCCESS (Build #507)
+- PT-001 through PT-005 Windows/Paper integrated validation SUCCESS
+- PT-001 through PT-005 GitHub Actions full test/build SUCCESS (Build run #507)
 
 ## Pending validation
-- None for DEV-053 through DEV-059
+- None for PT-001 through PT-005
 
-## Hotfixes
-- DEV-053.1 Legacy balance configuration migration
-  - existing server balance.yml files from DEV-052 and earlier do not contain the new map/objective/event/scenario keys.
-  - missing keys are now inserted with current development defaults at startup.
-  - existing user-configured values are preserved.
-  - the migrated file is saved automatically.
-  - manual deletion of balance.yml is not required.
+## Next batch
+- PT-006 Functional Item Layer
+- PT-007 Resource Pickup / Physical Inventory Flow
+- PT-008 Meeting & Sanction GUI
+- PT-009 Match Telemetry
+- PT-010 First 6-10 Player Playtest Build
+
+## Reserved extension ranges
+- DEV-060+ Objectives
+- DEV-070+ Roles
+- DEV-080+ Events
+- DEV-090+ Map Tiles
+- DEV-100+ Scenarios
+- DEV-110+ Endings
+- DEV-120+ Meta Progression
 
 ## Scope notes
-- physical ship rooms are development geometry, not final art.
-- TP connections are intentional and match the modular-map design.
-- scenario weights, map size, secret mission chance, and initial-event count are development defaults in balance.yml.
-- final building/NBT assets can replace development room shells later.
-- HUD intentionally exposes only the minimal public information defined by the design.
+- structure assets are optional; missing assets never block startup.
+- current module cell geometry remains the development layout until final asset dimensions are locked.
+- keycard-required connections are supported by policy but physical keycard item ownership is PT-006.
+- facility resource-consuming actions use the existing ResourceLedger; physical resource acquisition is PT-007.
+- all numeric repair/treatment/event timings remain playtest defaults.
 - Paper remains intentionally pinned to 26.2 build 123.
 
 ## Environment

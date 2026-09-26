@@ -36,10 +36,16 @@ import com.hushkisses.spacesurvival.paper.config.PluginConfigurationLoader;
 import com.hushkisses.spacesurvival.paper.death.PlayerDeathStateListener;
 import com.hushkisses.spacesurvival.paper.ending.EndingRuntimeService;
 import com.hushkisses.spacesurvival.paper.ending.MatchResultRuntimeService;
+import com.hushkisses.spacesurvival.paper.event.IncidentDirector;
+import com.hushkisses.spacesurvival.paper.facility.FacilityActionExecutor;
+import com.hushkisses.spacesurvival.paper.facility.FacilityInteractionListener;
+import com.hushkisses.spacesurvival.paper.facility.FacilityMenuService;
+import com.hushkisses.spacesurvival.paper.facility.FacilityTerminalRegistry;
 import com.hushkisses.spacesurvival.paper.item.DefaultResourceItemProvider;
 import com.hushkisses.spacesurvival.paper.item.ResourceItemProvider;
 import com.hushkisses.spacesurvival.paper.lobby.LobbyConnectionListener;
 import com.hushkisses.spacesurvival.paper.map.physical.PaperShipWorldService;
+import com.hushkisses.spacesurvival.paper.map.physical.PhysicalConnectionController;
 import com.hushkisses.spacesurvival.paper.map.physical.ShipPortalListener;
 import com.hushkisses.spacesurvival.paper.match.MatchOrchestrator;
 import com.hushkisses.spacesurvival.paper.pve.DefaultPveMobSpawner;
@@ -49,7 +55,6 @@ import com.hushkisses.spacesurvival.paper.runtime.GameRuntimeService;
 import com.hushkisses.spacesurvival.paper.social.SanctionEnforcementListener;
 import com.hushkisses.spacesurvival.paper.ui.OpeningBriefingUi;
 import com.hushkisses.spacesurvival.paper.ui.OpeningUiListener;
-import com.hushkisses.spacesurvival.paper.ui.MatchHudService;
 import com.hushkisses.spacesurvival.paper.ui.MatchHudService;
 import com.hushkisses.spacesurvival.paper.ui.RoleSelectionUi;
 import com.hushkisses.spacesurvival.resource.ResourceLedger;
@@ -132,9 +137,15 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private ResultEvaluator resultEvaluator;
     private MatchResultRuntimeService matchResultRuntimeService;
 
+    private FacilityTerminalRegistry facilityTerminalRegistry;
+    private PhysicalConnectionController physicalConnectionController;
+    private FacilityActionExecutor facilityActionExecutor;
+    private FacilityMenuService facilityMenuService;
+
     private PaperShipWorldService shipWorldService;
     private MatchOrchestrator matchOrchestrator;
     private MatchHudService matchHudService;
+    private IncidentDirector incidentDirector;
 
     @Override
     public void onEnable() {
@@ -204,9 +215,28 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
 
         resetEndingRuntime();
 
-        shipWorldService = new PaperShipWorldService();
+        facilityTerminalRegistry = new FacilityTerminalRegistry();
+        physicalConnectionController = new PhysicalConnectionController();
+        facilityActionExecutor = new FacilityActionExecutor(
+                this,
+                physicalConnectionController
+        );
+        facilityMenuService = new FacilityMenuService(
+                this,
+                facilityActionExecutor
+        );
+
+        shipWorldService = new PaperShipWorldService(
+                this,
+                facilityTerminalRegistry,
+                physicalConnectionController
+        );
         matchOrchestrator = new MatchOrchestrator(this, shipWorldService);
         matchHudService = new MatchHudService(this, shipWorldService);
+        incidentDirector = new IncidentDirector(
+                this,
+                physicalConnectionController
+        );
 
         registerCommands();
         getServer().getPluginManager().registerEvents(
@@ -236,7 +266,22 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                 this
         );
         getServer().getPluginManager().registerEvents(
-                new ShipPortalListener(shipWorldService),
+                new ShipPortalListener(
+                        this,
+                        shipWorldService,
+                        physicalConnectionController
+                ),
+                this
+        );
+        getServer().getPluginManager().registerEvents(
+                new FacilityInteractionListener(
+                        facilityTerminalRegistry,
+                        facilityMenuService
+                ),
+                this
+        );
+        getServer().getPluginManager().registerEvents(
+                facilityMenuService,
                 this
         );
 
@@ -271,6 +316,9 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public void onDisable() {
         if (matchHudService != null) {
             matchHudService.stop();
+        }
+        if (incidentDirector != null) {
+            incidentDirector.stop();
         }
         getLogger().info("SpaceSurvival disabled.");
     }
@@ -323,6 +371,11 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public PaperShipWorldService shipWorldService() { return require(shipWorldService, "Ship world service"); }
     public MatchOrchestrator matchOrchestrator() { return require(matchOrchestrator, "Match orchestrator"); }
     public MatchHudService matchHudService() { return require(matchHudService, "Match HUD service"); }
+    public FacilityTerminalRegistry facilityTerminalRegistry() { return require(facilityTerminalRegistry, "Facility terminal registry"); }
+    public PhysicalConnectionController physicalConnectionController() { return require(physicalConnectionController, "Physical connection controller"); }
+    public FacilityActionExecutor facilityActionExecutor() { return require(facilityActionExecutor, "Facility action executor"); }
+    public FacilityMenuService facilityMenuService() { return require(facilityMenuService, "Facility menu service"); }
+    public IncidentDirector incidentDirector() { return require(incidentDirector, "Incident director"); }
 
     public void resetScenarioRuntime() {
         scenarioEngine.clear();
@@ -331,6 +384,9 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     }
 
     public void resetForNewMatch() {
+        if (incidentDirector != null) {
+            incidentDirector.stop();
+        }
         if (gameRuntimeService != null && gameRuntimeService.isRunning()) {
             gameRuntimeService.stop();
         }

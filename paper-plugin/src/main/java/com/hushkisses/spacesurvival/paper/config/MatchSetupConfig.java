@@ -11,7 +11,13 @@ public record MatchSetupConfig(
         int initialSmallEventsMax,
         int accidentWeight,
         int sabotageWeight,
-        int infectionWeight
+        int infectionWeight,
+        int incidentSmallMinSeconds,
+        int incidentSmallMaxSeconds,
+        int incidentMajorFirstMinSeconds,
+        int incidentMajorFirstMaxSeconds,
+        int incidentMajorSecondMinSeconds,
+        int incidentMajorSecondMaxSeconds
 ) {
     public MatchSetupConfig {
         if (mapMinTiles < 2 || mapMaxTiles < mapMinTiles) {
@@ -29,6 +35,26 @@ public record MatchSetupConfig(
         if (accidentWeight < 0 || sabotageWeight < 0 || infectionWeight < 0
                 || accidentWeight + sabotageWeight + infectionWeight < 1) {
             throw new IllegalArgumentException("invalid scenario weights");
+        }
+        validateRange(incidentSmallMinSeconds, incidentSmallMaxSeconds, "small incident");
+        validateRange(
+                incidentMajorFirstMinSeconds,
+                incidentMajorFirstMaxSeconds,
+                "first major incident"
+        );
+        validateRange(
+                incidentMajorSecondMinSeconds,
+                incidentMajorSecondMaxSeconds,
+                "second major incident"
+        );
+        if (incidentMajorSecondMinSeconds <= incidentMajorFirstMinSeconds) {
+            throw new IllegalArgumentException("second major incident must occur after first");
+        }
+    }
+
+    private static void validateRange(int min, int max, String name) {
+        if (min < 1 || max < min) {
+            throw new IllegalArgumentException("invalid " + name + " range");
         }
     }
 }
