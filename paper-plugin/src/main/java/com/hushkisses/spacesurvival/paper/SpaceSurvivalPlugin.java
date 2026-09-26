@@ -59,6 +59,7 @@ import com.hushkisses.spacesurvival.paper.resource.ResourcePhysicalItemService;
 import com.hushkisses.spacesurvival.paper.resource.ResourceWorldService;
 import com.hushkisses.spacesurvival.paper.runtime.GameRuntimeService;
 import com.hushkisses.spacesurvival.paper.social.MeetingGuiService;
+import com.hushkisses.spacesurvival.paper.social.PhysicalSanctionService;
 import com.hushkisses.spacesurvival.paper.social.SanctionEnforcementListener;
 import com.hushkisses.spacesurvival.paper.telemetry.MatchTelemetryService;
 import com.hushkisses.spacesurvival.paper.ui.OpeningBriefingUi;
@@ -126,6 +127,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private SanctionStateRegistry sanctionStateRegistry;
     private SanctionExecutor sanctionExecutor;
     private MeetingGuiService meetingGuiService;
+    private PhysicalSanctionService physicalSanctionService;
     private PvpRuntimeState pvpRuntimeState;
     private ConditionalPvpPolicy conditionalPvpPolicy;
 
@@ -262,6 +264,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                 physicalConnectionController
         );
         telemetryService = new MatchTelemetryService(this);
+        physicalSanctionService = new PhysicalSanctionService(this);
         meetingGuiService = new MeetingGuiService(this);
 
         registerCommands();
@@ -392,6 +395,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public SanctionStateRegistry sanctionStateRegistry() { return require(sanctionStateRegistry, "Sanction state registry"); }
     public SanctionExecutor sanctionExecutor() { return require(sanctionExecutor, "Sanction executor"); }
     public MeetingGuiService meetingGuiService() { return require(meetingGuiService, "Meeting GUI service"); }
+    public PhysicalSanctionService physicalSanctionService() { return require(physicalSanctionService, "Physical sanction service"); }
     public PvpRuntimeState pvpRuntimeState() { return require(pvpRuntimeState, "PvP runtime state"); }
     public ConditionalPvpPolicy conditionalPvpPolicy() { return require(conditionalPvpPolicy, "Conditional PvP policy"); }
     public RadioRuntimeState radioRuntimeState() { return require(radioRuntimeState, "Radio runtime state"); }
