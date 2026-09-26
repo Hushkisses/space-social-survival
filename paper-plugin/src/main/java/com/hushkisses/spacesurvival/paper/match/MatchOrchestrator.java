@@ -18,6 +18,8 @@ import com.hushkisses.spacesurvival.scenario.DefaultScenarioCatalog;
 import com.hushkisses.spacesurvival.scenario.ScenarioDefinition;
 import com.hushkisses.spacesurvival.scenario.ScenarioRuntime;
 import com.hushkisses.spacesurvival.scenario.ScenarioType;
+import com.hushkisses.spacesurvival.resource.ResourceType;
+import com.hushkisses.spacesurvival.ship.ShipMetric;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
@@ -57,6 +59,7 @@ public final class MatchOrchestrator {
                 : plugin.lobbyService().start();
 
         MatchSetupConfig config = plugin.configuration().matchSetup();
+        applyStartingRecoveryState(config);
         Random random = new Random(seed);
 
         plugin.roleSelectionService().prepareCandidates(
@@ -152,6 +155,11 @@ public final class MatchOrchestrator {
         plugin.telemetryService().add("resource.cache.stacks", resourcePopulation.stacks());
         plugin.telemetryService().add("resource.cache.units", resourcePopulation.units());
         plugin.telemetryService().add("initial.incident.count", initialEventCount);
+        var openingShip = plugin.shipState().snapshot();
+        plugin.telemetryService().add("initial.ship.power", openingShip.power());
+        plugin.telemetryService().add("initial.ship.oxygen", openingShip.oxygen());
+        plugin.telemetryService().add("initial.ship.hull", openingShip.hull());
+        plugin.telemetryService().add("initial.ship.reactor", openingShip.reactor());
         plugin.telemetryService().event("match", "briefing");
 
         for (PlayerId playerId : players) {
@@ -260,6 +268,39 @@ public final class MatchOrchestrator {
 
     public Optional<MatchSetupSnapshot> setupSnapshot() {
         return Optional.ofNullable(setupSnapshot);
+    }
+
+
+    private void applyStartingRecoveryState(MatchSetupConfig config) {
+        plugin.shipState().set(ShipMetric.POWER, config.startingPower());
+        plugin.shipState().set(ShipMetric.OXYGEN, config.startingOxygen());
+        plugin.shipState().set(ShipMetric.HULL, config.startingHull());
+        plugin.shipState().set(ShipMetric.REACTOR, config.startingReactor());
+
+        var shared = plugin.resourceLedger().shared();
+        if (config.startingRepairParts() > 0) {
+            shared.add(ResourceType.REPAIR_PARTS, config.startingRepairParts());
+        }
+        if (config.startingPowerCells() > 0) {
+            shared.add(ResourceType.POWER_CELLS, config.startingPowerCells());
+        }
+        if (config.startingFuel() > 0) {
+            shared.add(ResourceType.FUEL, config.startingFuel());
+        }
+        if (config.startingMedicalSupplies() > 0) {
+            shared.add(ResourceType.MEDICAL_SUPPLIES, config.startingMedicalSupplies());
+        }
+
+        plugin.getLogger().info(
+                "Opening recovery state: power="
+                        + config.startingPower()
+                        + ", oxygen="
+                        + config.startingOxygen()
+                        + ", hull="
+                        + config.startingHull()
+                        + ", reactor="
+                        + config.startingReactor()
+        );
     }
 
     private static ScenarioDefinition selectScenario(
