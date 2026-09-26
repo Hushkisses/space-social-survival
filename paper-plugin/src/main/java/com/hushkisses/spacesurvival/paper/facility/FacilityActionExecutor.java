@@ -83,6 +83,12 @@ public final class FacilityActionExecutor {
                 action.id().value(),
                 result.success()
         );
+        if (result.success()) {
+            plugin.objectiveGameplayProgressService().recordAction(
+                    player,
+                    action.id().value()
+            );
+        }
         return result;
     }
 
@@ -376,6 +382,7 @@ public final class FacilityActionExecutor {
         }
 
         plugin.telemetryService().recordResourceDeposit(total);
+        plugin.objectiveGameplayProgressService().recordDeposit(player, removed);
         return result("공용 창고에 자원 " + total + "개를 입고했습니다: " + removed);
     }
 
