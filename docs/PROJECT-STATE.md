@@ -79,9 +79,16 @@ Playtest Hardening
 - Windows/Paper integrated validation pending.
 - empirical 6~10 player balance validation remains separate from code completion.
 
-## Next likely phase
-- real 6~10 player session and telemetry review.
-- then choose expansion tickets based on actual playtest evidence rather than adding content blindly.
+## Product readiness assessment
+- Current code is a technically connected vertical slice, but not yet ready for a blind 6~10-player full match.
+- The next milestone is player comprehension/playability rather than more backend feature expansion.
+- A 1~3 player, 20-minute no-explanation playability gate must pass before the first real 6~10-player balance test.
+
+## Next phase
+- PX-001 through PX-010 Player Experience / Playability Roadmap
+- Roadmap: docs/PX/PX-001-010-player-experience-roadmap.md
+- First implementation batch: PX-001~004 Player Comprehension Core
+- Do not expand roles/objectives/events/scenarios until the PX exit gate unless a blocker requires it.
 - reserved ranges remain:
   - DEV-060+ Objectives
   - DEV-070+ Roles
