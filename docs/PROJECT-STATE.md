@@ -24,11 +24,18 @@ Player Comprehension / Playability
 - PT-006 through PT-010 First Multiplayer Playtest Build — COMPLETE_FOR_PLAYTEST
 
 ## Current batch
-- PX-001 through PX-004 Player Comprehension Core
+- PX-005 through PX-007 World Readability
 - Status: IMPLEMENTED / VALIDATION_PENDING
-- Development branch: dev/PX-001-004-player-comprehension
-- Base branch: dev/PT-011-015-playtest-hardening
-- Detail: docs/PX/PX-001-004-player-comprehension.md
+- Development branch: dev/PX-005-007-world-readability
+- Base branch: dev/PX-001-004-player-comprehension
+- PR #25
+- Detail: docs/PX/PX-005-007-world-readability.md
+
+## Parent PX dependency
+- PR #24: PX-001~004 Player Comprehension Core
+- Branch: dev/PX-001-004-player-comprehension
+- Status: IMPLEMENTED / VALIDATION_PENDING
+- Do not merge PX-005~007 ahead of the PX-001~004 dependency chain.
 
 ## PX-001 Game Start / Onboarding
 - normal player flow no longer requires a start command:
@@ -82,17 +89,43 @@ Player Comprehension / Playability
   - explicit denial reasons
   - safe predicted effects
 
+## PX-005 Incident Presentation / Response Feedback
+- small incidents use Korean chat + ActionBar + short sound
+- large incidents use title/subtitle + alarm + incident BossBar
+- alerts include public target location, need and recommended action
+- forced admin incidents use the same presentation/world-consequence path
+- trackable public consequences announce stabilization when actually resolved
+- hidden actor/infection/scenario truth remains hidden
+
+## PX-006 Ship Navigation / Signage / Map
+- room-specific visual accent markers
+- floating room names
+- portal destination labels
+- existing gold/yellow/red connection-state language preserved
+- Crew PDA ship map shows current room, priority target, route, adjacency and connection state
+- no live player-position map
+
+## PX-007 Item / Resource Usability
+- functional role equipment has Korean purpose/role/use-location/loss lore
+- physical resources have Korean purpose/use-location/Cargo-deposit lore
+- resource pickup and functional-equipment pickup/drop feedback
+- visible resource-cache labels
+- Cargo deposit reports deposited amount, updated shared stock and objective delta when applicable
+- ItemsAdder remains optional; vanilla fallback retains the same gameplay metadata
+
 ## Validation status
 - PX-001~004 GitHub Actions full test/build: SUCCESS (Build #595, Build #597)
 - PX-003.1 HUD presentation polish CI: SUCCESS (Build #599)
 - PX-001.1 automatic lobby / immediate role-selection flow CI: SUCCESS (Build #613)
+- PX-005~007 GitHub Actions Test/Build: SUCCESS (Build #639)
+- PX-005~007 Windows/Paper integrated validation: pending
 - PX-001~004 Windows/Paper integrated validation: pending
 - PT-011~015 Windows/Paper integrated validation: still pending
 - first blind 1~3 player 20-minute playability gate: not yet attempted
 - real 6~10 player balance test remains blocked on the PX playability gate
 
 ## Next batch after validation
-- PX-005 through PX-007 World Readability
+- PX-008 through PX-010 Social / Terminal-State / Playability Gate
 - do not expand roles/objectives/events/scenarios for content volume before the PX exit gate
 
 ## Environment
