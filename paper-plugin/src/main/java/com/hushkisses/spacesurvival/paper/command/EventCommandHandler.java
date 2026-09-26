@@ -70,9 +70,8 @@ public final class EventCommandHandler {
             return true;
         }
 
-        plugin.gameEventEngine().trigger(event, plugin.gameEventContext());
-        sender.sendMessage("§c[사건 발생] §f" + event.displayName());
-        sender.sendMessage("§7" + event.description());
+        plugin.incidentDirector().trigger(event);
+        sender.sendMessage("§a사건을 강제로 발생시켰습니다: §f" + event.displayName());
         return true;
     }
 
@@ -106,9 +105,9 @@ public final class EventCommandHandler {
                 scale,
                 new Random(seed)
         );
-        plugin.gameEventEngine().trigger(event, plugin.gameEventContext());
+        plugin.incidentDirector().trigger(event);
 
-        sender.sendMessage("§c[무작위 사건] §f" + event.displayName() + " §8시드=" + seed);
+        sender.sendMessage("§a무작위 사건을 강제로 발생시켰습니다: §f" + event.displayName() + " §8시드=" + seed);
         return true;
     }
 

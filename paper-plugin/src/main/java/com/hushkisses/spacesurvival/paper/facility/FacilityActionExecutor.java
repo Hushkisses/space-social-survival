@@ -6,6 +6,7 @@ import com.hushkisses.spacesurvival.facility.FacilityStatus;
 import com.hushkisses.spacesurvival.facility.action.*;
 import com.hushkisses.spacesurvival.facility.medical.MedicalCondition;
 import com.hushkisses.spacesurvival.infection.InfectionTestResult;
+import com.hushkisses.spacesurvival.objective.ObjectiveSlot;
 import com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin;
 import com.hushkisses.spacesurvival.paper.item.FunctionalItemType;
 import com.hushkisses.spacesurvival.paper.map.physical.PhysicalConnectionController;
@@ -373,6 +374,9 @@ public final class FacilityActionExecutor {
     }
 
     private FacilityActionExecutionResult depositCarriedResources(Player player) {
+        PlayerId playerId = PlayerId.of(player.getUniqueId());
+        int objectiveBefore = objectiveProgress(playerId);
+
         Map<ResourceType, Integer> removed =
                 plugin.resourcePhysicalItemService().removeAllFrom(player);
 
@@ -388,7 +392,44 @@ public final class FacilityActionExecutor {
 
         plugin.telemetryService().recordResourceDeposit(total);
         plugin.objectiveGameplayProgressService().recordDeposit(player, removed);
-        return result("공용 창고에 자원 " + total + "개를 입고했습니다: " + removed);
+
+        int objectiveAfter = objectiveProgress(playerId);
+        int objectiveDelta = Math.max(0, objectiveAfter - objectiveBefore);
+
+        String deposited = removed.entrySet().stream()
+                .map(entry -> resourceName(entry.getKey()) + " " + entry.getValue())
+                .collect(java.util.stream.Collectors.joining(", "));
+        String sharedNow = removed.keySet().stream()
+                .map(type -> resourceName(type) + " " + shared().quantity(type))
+                .collect(java.util.stream.Collectors.joining(", "));
+
+        return result(
+                "입고 완료 · " + deposited
+                        + " | 공용 재고: " + sharedNow
+                        + (objectiveDelta > 0 ? " | 개인 목표 +" + objectiveDelta : "")
+        );
+    }
+
+    private int objectiveProgress(PlayerId playerId) {
+        int total = 0;
+        for (ObjectiveSlot slot : ObjectiveSlot.values()) {
+            total += plugin.objectiveEngine().objective(playerId, slot)
+                    .map(objective -> objective.progress())
+                    .orElse(0);
+        }
+        return total;
+    }
+
+    private static String resourceName(ResourceType type) {
+        return switch (type) {
+            case REPAIR_PARTS -> "수리 부품";
+            case CIRCUITS -> "회로판";
+            case POWER_CELLS -> "전력 셀";
+            case FUEL -> "연료";
+            case MEDICAL_SUPPLIES -> "의료 물자";
+            case BIO_SAMPLES -> "생체 샘플";
+            case DATA_CORES -> "데이터 코어";
+        };
     }
 
     private ResourceStore shared() {

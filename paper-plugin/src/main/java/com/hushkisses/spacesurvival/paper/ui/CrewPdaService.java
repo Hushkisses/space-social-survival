@@ -128,6 +128,17 @@ public final class CrewPdaService implements Listener {
                 "public",
                 List.of("§7함선 수치·귀환 단계·시설 상태를 확인합니다.", "§a클릭")
         ));
+        inventory.setItem(38, actionItem(
+                Material.MAP,
+                "§b함선 지도",
+                "map",
+                List.of(
+                        "§7현재 위치·시설 연결·통로 상태와",
+                        "§7현재 권장 목적지까지의 경로를 확인합니다.",
+                        "§8다른 플레이어의 실시간 위치는 표시하지 않습니다.",
+                        "§a클릭"
+                )
+        ));
         inventory.setItem(40, actionItem(
                 Material.KNOWLEDGE_BOOK,
                 "§e초보 도움말",
@@ -335,6 +346,7 @@ public final class CrewPdaService implements Listener {
             case "personal" -> open(player);
             case "public" -> openPublic(player);
             case "help" -> openHelp(player);
+            case "map" -> plugin.shipMapService().open(player);
             default -> {
             }
         }
