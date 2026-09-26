@@ -50,6 +50,7 @@ import com.hushkisses.spacesurvival.paper.lobby.LobbyConnectionListener;
 import com.hushkisses.spacesurvival.paper.map.physical.PaperShipWorldService;
 import com.hushkisses.spacesurvival.paper.map.physical.PhysicalConnectionController;
 import com.hushkisses.spacesurvival.paper.map.physical.ShipPortalListener;
+import com.hushkisses.spacesurvival.paper.objective.ObjectiveGameplayProgressService;
 import com.hushkisses.spacesurvival.paper.match.MatchOrchestrator;
 import com.hushkisses.spacesurvival.paper.pve.DefaultPveMobSpawner;
 import com.hushkisses.spacesurvival.paper.pve.PveMobSpawner;
@@ -114,6 +115,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private ObjectiveRegistry objectiveRegistry;
     private ObjectiveEngine objectiveEngine;
     private SecretMissionService secretMissionService;
+    private ObjectiveGameplayProgressService objectiveGameplayProgressService;
 
     private GameEventRegistry gameEventRegistry;
     private GameEventEngine gameEventEngine;
@@ -192,6 +194,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
 
         objectiveRegistry = DefaultObjectiveCatalog.createRegistry();
         resetObjectiveRuntime();
+        objectiveGameplayProgressService = new ObjectiveGameplayProgressService(this);
 
         gameEventRegistry = DefaultGameEventCatalog.createRegistry();
         gameEventEngine = new GameEventEngine();
@@ -380,6 +383,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public ObjectiveRegistry objectiveRegistry() { return require(objectiveRegistry, "Objective registry"); }
     public ObjectiveEngine objectiveEngine() { return require(objectiveEngine, "Objective engine"); }
     public SecretMissionService secretMissionService() { return require(secretMissionService, "Secret mission service"); }
+    public ObjectiveGameplayProgressService objectiveGameplayProgressService() { return require(objectiveGameplayProgressService, "Objective gameplay progress service"); }
     public GameEventRegistry gameEventRegistry() { return require(gameEventRegistry, "Game event registry"); }
     public GameEventEngine gameEventEngine() { return require(gameEventEngine, "Game event engine"); }
     public GameEventRuntimeState gameEventRuntimeState() { return require(gameEventRuntimeState, "Game event runtime state"); }
