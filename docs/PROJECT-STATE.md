@@ -4,99 +4,88 @@
 - Hushkisses/space-social-survival
 - Default branch: main
 
+## Current main HEAD
+- e02684ddc2eb8b7387462fb975dc154decb71337
+
+## Parent validation dependency
+- PR #23: PT-011~015 Playtest Hardening
+- Branch: dev/PT-011-015-playtest-hardening
+- Status: IMPLEMENTED / VALIDATION_PENDING
+- GitHub Actions full test/build: SUCCESS (Build #585)
+- Windows/Paper integrated validation: pending
+- Do not mark PT-011~015 COMPLETE or merge it without that validation.
+
 ## Current milestone
-Playtest Hardening
+Player Comprehension / Playability
 
 ## Last completed
 - DEV-001 through DEV-059 gameplay + vertical slice — COMPLETE
 - PT-001 through PT-005 Playtest Integration — COMPLETE
 - PT-006 through PT-010 First Multiplayer Playtest Build — COMPLETE_FOR_PLAYTEST
-- PR #21 and PR #22 merged to main
 
 ## Current batch
-- PT-011 through PT-015 Playtest Hardening
+- PX-001 through PX-004 Player Comprehension Core
 - Status: IMPLEMENTED / VALIDATION_PENDING
-- Development branch: dev/PT-011-015-playtest-hardening
+- Development branch: dev/PX-001-004-player-comprehension
+- Base branch: dev/PT-011-015-playtest-hardening
+- Detail: docs/PX/PX-001-004-player-comprehension.md
 
-## PT-011 Physical Gameplay -> Objective Progress
-- existing objective assignments now progress from real gameplay actions.
-- facility actions can advance matching objectives.
-- Cargo deposits advance collection objectives by deposited amount.
-- end-state objectives are finalized from actual survival/facility/infection/equipment state.
-- final result evaluation runs objective finalization before scoring.
-- objective progress is recorded to telemetry.
+## PX-001 Game Start / Onboarding
+- staged public accident/shared-mission/first-action briefing
+- role selection remains the existing production flow
+- role selection immediately opens private player information
+- persistent right-click Crew PDA granted on activation
+- PDA restored on participant respawn/reconnect and protected from normal dropping
+- no hidden scenario truth or other-player private data exposed
 
-## PT-012 Physical Sanction Consequences
-- successful meeting sanctions now produce in-world consequences.
-- medical check performs a precise infection test.
-- disarm drops carried weapons.
-- detain teleports to Habitation and existing movement enforcement prevents movement.
-- access restrict blocks module portal traversal and facility console use.
-- eject moves to an airlock when available and changes the player to spectator.
-- physical sanction actions are recorded to telemetry.
+## PX-002 Role Card / Personal Objective UX
+- private PDA displays:
+  - role and Korean capability explanations
+  - required starter equipment / purpose / possession
+  - base objective / progress
+  - secret mission / progress
+  - alive state
+  - player-visible infection precision only
+  - sanctions/restrictions
+  - current room
+  - recommended next action
+- public-status and first-match help pages are accessible from the PDA
 
-## PT-013 Death Loot / Recovery
-- participants no longer keep inventory on death.
-- functional role equipment and physical resource items remain in normal death drops.
-- other players can recover those dropped items through normal Minecraft pickup.
-- recoverable plugin-tagged stack/unit counts are recorded to telemetry.
-- radio ownership remains inventory-driven and re-syncs after inventory changes.
+## PX-003 Common Objective HUD / Next Action Guidance
+- added core PlayerGuidanceResolver
+- HUD now communicates:
+  - current return stage
+  - crisis stage
+  - current room
+  - one highest-priority public problem
+  - target facility
+  - publicly knowable required resource/action
+- public status GUI exposes broader ship/facility state without hidden actor/cause data
 
-## PT-014 Match Result GUI
-- return success and failure automatically evaluate the match.
-- objective end-state completion is finalized before scoring.
-- all online participants receive a final results GUI.
-- GUI displays:
-  - common mission success/failure
-  - winners
-  - MVP(s)
-  - each player's total score
-  - score component breakdown
-  - revealed base objective and secret mission
-- tied winners/MVP remain supported.
-
-## PT-015 Operator Preflight / Postmatch
-- /space playtest preflight
-  - configured player-count rule
-  - participant online state
-  - match idle state
-  - ItemsAdder status/fallback
-  - voice bridge
-  - PvE backend
-  - NBT directory
-  - telemetry directory
-  - final start-ready verdict
-- /space playtest postmatch
-  - common mission result
-  - winner/MVP counts
-  - score list
-  - seed / player count / scenario
-  - telemetry counters
-  - telemetry file path
+## PX-004 Facility Work UX
+- existing FacilityActionExecutor remains authoritative
+- facility GUI now exposes:
+  - facility status/description
+  - relevant ship metrics
+  - current public problem
+  - shared resources
+  - carried relevant resources
+  - role equipment possession
+  - resource requirements
+  - advanced-role requirement
+  - explicit denial reasons
+  - safe predicted effects
 
 ## Validation status
-- PT-011 through PT-015 GitHub Actions full test/build SUCCESS (Build #585).
-- Windows/Paper integrated validation pending.
-- empirical 6~10 player balance validation remains separate from code completion.
+- PX-001~004 GitHub Actions full test/build: pending for current branch/PR
+- PX-001~004 Windows/Paper integrated validation: pending
+- PT-011~015 Windows/Paper integrated validation: still pending
+- first blind 1~3 player 20-minute playability gate: not yet attempted
+- real 6~10 player balance test remains blocked on the PX playability gate
 
-## Product readiness assessment
-- Current code is a technically connected vertical slice, but not yet ready for a blind 6~10-player full match.
-- The next milestone is player comprehension/playability rather than more backend feature expansion.
-- A 1~3 player, 20-minute no-explanation playability gate must pass before the first real 6~10-player balance test.
-
-## Next phase
-- PX-001 through PX-010 Player Experience / Playability Roadmap
-- Roadmap: docs/PX/PX-001-010-player-experience-roadmap.md
-- First implementation batch: PX-001~004 Player Comprehension Core
-- Do not expand roles/objectives/events/scenarios until the PX exit gate unless a blocker requires it.
-- reserved ranges remain:
-  - DEV-060+ Objectives
-  - DEV-070+ Roles
-  - DEV-080+ Events
-  - DEV-090+ Map Tiles
-  - DEV-100+ Scenarios
-  - DEV-110+ Endings
-  - DEV-120+ Meta Progression
+## Next batch after validation
+- PX-005 through PX-007 World Readability
+- do not expand roles/objectives/events/scenarios for content volume before the PX exit gate
 
 ## Environment
 - Java 25.0.4.1
@@ -107,5 +96,7 @@ Playtest Hardening
 ## Source of Truth
 1. GitHub main latest source
 2. docs/PROJECT-STATE.md
-3. docs/game-design-v1.0.md
-4. docs/development-plan-v1.0.md
+3. docs/PX/PX-001-010-player-experience-roadmap.md
+4. docs/game-design-v1.0.md
+5. docs/development-plan-v1.0.md
+6. related actual source/tests

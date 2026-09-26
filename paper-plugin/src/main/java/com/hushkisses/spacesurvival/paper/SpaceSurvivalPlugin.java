@@ -63,6 +63,7 @@ import com.hushkisses.spacesurvival.paper.social.MeetingGuiService;
 import com.hushkisses.spacesurvival.paper.social.PhysicalSanctionService;
 import com.hushkisses.spacesurvival.paper.social.SanctionEnforcementListener;
 import com.hushkisses.spacesurvival.paper.telemetry.MatchTelemetryService;
+import com.hushkisses.spacesurvival.paper.ui.CrewPdaService;
 import com.hushkisses.spacesurvival.paper.ui.OpeningBriefingUi;
 import com.hushkisses.spacesurvival.paper.ui.OpeningUiListener;
 import com.hushkisses.spacesurvival.paper.ui.MatchHudService;
@@ -163,6 +164,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private PaperShipWorldService shipWorldService;
     private MatchOrchestrator matchOrchestrator;
     private MatchHudService matchHudService;
+    private CrewPdaService crewPdaService;
     private IncidentDirector incidentDirector;
     private MatchTelemetryService telemetryService;
 
@@ -262,6 +264,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         );
         matchOrchestrator = new MatchOrchestrator(this, shipWorldService);
         matchHudService = new MatchHudService(this, shipWorldService);
+        crewPdaService = new CrewPdaService(this, shipWorldService);
         incidentDirector = new IncidentDirector(
                 this,
                 physicalConnectionController
@@ -281,8 +284,13 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                         roleSelectionUi,
                         roleSelectionService,
                         roleRegistry,
+                        crewPdaService,
                         matchOrchestrator::tryActivateIfReady
                 ),
+                this
+        );
+        getServer().getPluginManager().registerEvents(
+                crewPdaService,
                 this
         );
         getServer().getPluginManager().registerEvents(
@@ -423,6 +431,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public PaperShipWorldService shipWorldService() { return require(shipWorldService, "Ship world service"); }
     public MatchOrchestrator matchOrchestrator() { return require(matchOrchestrator, "Match orchestrator"); }
     public MatchHudService matchHudService() { return require(matchHudService, "Match HUD service"); }
+    public CrewPdaService crewPdaService() { return require(crewPdaService, "Crew PDA service"); }
     public FacilityTerminalRegistry facilityTerminalRegistry() { return require(facilityTerminalRegistry, "Facility terminal registry"); }
     public PhysicalConnectionController physicalConnectionController() { return require(physicalConnectionController, "Physical connection controller"); }
     public FacilityActionExecutor facilityActionExecutor() { return require(facilityActionExecutor, "Facility action executor"); }

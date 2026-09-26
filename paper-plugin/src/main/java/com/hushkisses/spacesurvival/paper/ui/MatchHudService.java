@@ -1,11 +1,12 @@
 package com.hushkisses.spacesurvival.paper.ui;
 
 import com.hushkisses.spacesurvival.ending.ReturnStage;
+import com.hushkisses.spacesurvival.guidance.PlayerGuidanceResolver;
+import com.hushkisses.spacesurvival.guidance.PublicProblem;
 import com.hushkisses.spacesurvival.map.tile.TileId;
 import com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin;
 import com.hushkisses.spacesurvival.paper.map.physical.PaperShipWorldService;
 import com.hushkisses.spacesurvival.paper.map.physical.PhysicalShipSnapshot;
-import com.hushkisses.spacesurvival.ship.ShipStateSnapshot;
 import com.hushkisses.spacesurvival.time.CrisisStage;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
@@ -17,6 +18,7 @@ public final class MatchHudService {
 
     private final SpaceSurvivalPlugin plugin;
     private final PaperShipWorldService shipWorldService;
+    private final PlayerGuidanceResolver guidanceResolver = new PlayerGuidanceResolver();
     private BukkitTask task;
 
     public MatchHudService(
@@ -50,9 +52,18 @@ public final class MatchHudService {
             return;
         }
 
-        ShipStateSnapshot ship = plugin.shipState().snapshot();
+        var ship = plugin.shipState().snapshot();
         CrisisStage crisis = plugin.gameRuntimeService().currentCrisisStage();
         ReturnStage returnStage = plugin.returnObjectiveService().stage();
+        PublicProblem problem = guidanceResolver.resolve(
+                returnStage,
+                ship,
+                plugin.facilityRegistry().snapshots()
+        );
+        String facility = plugin.facilityRegistry()
+                .require(problem.targetFacility())
+                .definition()
+                .displayName();
 
         for (Player player : plugin.getServer().getOnlinePlayers()) {
             if (!plugin.lobbyService().contains(
@@ -61,13 +72,12 @@ public final class MatchHudService {
                 continue;
             }
 
-            String area = currentArea(player);
-            String text = "전력 " + ship.power() + "%"
-                    + " | 산소 " + ship.oxygen() + "%"
-                    + " | 선체 " + ship.hull() + "%"
-                    + " | 위기 " + crisisName(crisis)
-                    + " | 목표 " + stageName(returnStage)
-                    + " | 구역 " + area;
+            String text = "[" + stageName(returnStage) + "]"
+                    + " 위기 " + crisisName(crisis)
+                    + " | 현재 " + currentArea(player)
+                    + " | 우선: " + problem.title()
+                    + " → " + facility
+                    + " | 필요: " + problem.need();
 
             player.sendActionBar(Component.text(text));
         }
@@ -81,7 +91,7 @@ public final class MatchHudService {
         return tileId == null ? "함선 외부" : snapshot.tileDisplayName(tileId);
     }
 
-    private static String crisisName(CrisisStage stage) {
+    public static String crisisName(CrisisStage stage) {
         return switch (stage) {
             case STABLE -> "안정";
             case ALERT -> "경계";
@@ -90,12 +100,12 @@ public final class MatchHudService {
         };
     }
 
-    private static String stageName(ReturnStage stage) {
+    public static String stageName(ReturnStage stage) {
         return switch (stage) {
             case SURVIVAL_SYSTEMS -> "생존 기반 복구";
-            case NAVIGATION -> "항법";
+            case NAVIGATION -> "항법 복구";
             case RETURN_PREPARATION -> "귀환 준비";
-            case FINAL_HOLD -> "최종 버티기";
+            case FINAL_HOLD -> "최종 유지";
             case COMPLETED -> "귀환 완료";
             case FAILED -> "귀환 실패";
         };

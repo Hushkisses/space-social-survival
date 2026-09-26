@@ -63,6 +63,11 @@ public final class FacilityActionExecutor {
         return FacilityActionAccessDecision.allow();
     }
 
+    public FunctionalItemType requiredEquipment(FacilityActionDefinition action) {
+        Objects.requireNonNull(action, "action");
+        return requiredEquipment(action.id().value());
+    }
+
     public FacilityActionExecutionResult execute(
             Player player,
             FacilityActionDefinition action

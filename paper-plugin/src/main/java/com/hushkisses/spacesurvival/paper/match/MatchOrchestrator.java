@@ -189,6 +189,7 @@ public final class MatchOrchestrator {
 
         session.transitionTo(GamePhase.ACTIVE);
         plugin.starterKitService().giveRoleKits();
+        plugin.crewPdaService().giveToParticipants();
         plugin.gameRuntimeService().start();
         plugin.incidentDirector().start(setupSnapshot.seed());
         plugin.telemetryService().event("match", "active");

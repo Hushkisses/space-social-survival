@@ -20,28 +20,22 @@ public final class OpeningUiListener implements Listener {
     private final RoleSelectionUi roleSelectionUi;
     private final RoleSelectionService selectionService;
     private final RoleRegistry roleRegistry;
+    private final CrewPdaService crewPdaService;
     private final Runnable selectionChanged;
 
     public OpeningUiListener(
             OpeningBriefingUi briefingUi,
             RoleSelectionUi roleSelectionUi,
             RoleSelectionService selectionService,
-            RoleRegistry roleRegistry
-    ) {
-        this(briefingUi, roleSelectionUi, selectionService, roleRegistry, () -> {});
-    }
-
-    public OpeningUiListener(
-            OpeningBriefingUi briefingUi,
-            RoleSelectionUi roleSelectionUi,
-            RoleSelectionService selectionService,
             RoleRegistry roleRegistry,
+            CrewPdaService crewPdaService,
             Runnable selectionChanged
     ) {
         this.briefingUi = Objects.requireNonNull(briefingUi, "briefingUi");
         this.roleSelectionUi = Objects.requireNonNull(roleSelectionUi, "roleSelectionUi");
         this.selectionService = Objects.requireNonNull(selectionService, "selectionService");
         this.roleRegistry = Objects.requireNonNull(roleRegistry, "roleRegistry");
+        this.crewPdaService = Objects.requireNonNull(crewPdaService, "crewPdaService");
         this.selectionChanged = Objects.requireNonNull(selectionChanged, "selectionChanged");
     }
 
@@ -82,7 +76,8 @@ public final class OpeningUiListener implements Listener {
                 RoleDefinition role = roleRegistry.require(roleId);
                 player.closeInventory();
                 player.sendMessage("§a직업을 확정했습니다: " + role.displayName());
-                player.sendMessage("§7초기 공통 목표: 생존 기반 복구");
+                player.sendMessage("§7개인 PDA에서 역할·개인 목표·첫 행동을 확인하십시오.");
+                crewPdaService.open(player);
                 selectionChanged.run();
             }
             case CANDIDATES_NOT_PREPARED -> {
@@ -99,6 +94,7 @@ public final class OpeningUiListener implements Listener {
                 RoleId selectedId = selectionService.selectedRole(playerId).orElseThrow();
                 RoleDefinition selected = roleRegistry.require(selectedId);
                 player.sendMessage("§e이미 직업을 확정했습니다: " + selected.displayName());
+                crewPdaService.open(player);
             }
         }
     }
