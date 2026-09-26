@@ -343,11 +343,12 @@ public final class FacilityMenuService implements Listener {
             case "engineering.engine" -> List.of(new Requirement(ResourceType.FUEL, 1));
             case "engineering.repair" -> List.of(new Requirement(ResourceType.REPAIR_PARTS, 1));
             case "engineering.advanced_repair" -> List.of(new Requirement(ResourceType.REPAIR_PARTS, 2));
-            case "medical.treat", "medical.clear_status",
+            case "medical.treat", "medical.clear_status", "medical.decontaminate",
                     "medical.advanced_treatment", "medical.suppress_infection" ->
                     List.of(new Requirement(ResourceType.MEDICAL_SUPPLIES, 1));
             case "research.sample" -> List.of(new Requirement(ResourceType.BIO_SAMPLES, 1));
             case "cargo.process" -> List.of(new Requirement(ResourceType.REPAIR_PARTS, 2));
+            case "cargo.repair" -> List.of(new Requirement(ResourceType.REPAIR_PARTS, 1));
             case "cargo.efficient_process" -> List.of(
                     new Requirement(ResourceType.REPAIR_PARTS, 1),
                     new Requirement(ResourceType.CIRCUITS, 1)
@@ -373,6 +374,7 @@ public final class FacilityMenuService implements Listener {
             case "medical.treat" -> "현재 플레이어 기본 치료";
             case "medical.clear_status" -> "현재 플레이어 상태이상 1개 제거";
             case "medical.infection_test" -> "현재 검사 정밀도 범위의 감염 검사";
+            case "medical.decontaminate" -> "의료 물자 1개를 사용해 의료실 손상/오염 상태 정상화";
             case "medical.precise_test" -> "정밀 감염 검사";
             case "medical.advanced_treatment" -> "현재 플레이어 고급 치료";
             case "medical.suppress_infection" -> "확인된 감염 진행 억제";
@@ -385,6 +387,7 @@ public final class FacilityMenuService implements Listener {
             case "cargo.store", "cargo.sort", "cargo.inventory" -> "공용 재고 확인";
             case "cargo.deposit" -> "소지한 물리 자원을 공용 창고에 입고";
             case "cargo.process" -> "수리 부품 2 → 회로판 1";
+            case "cargo.repair" -> "수리 부품 1개를 사용해 화물실 손상 상태 정상화";
             case "cargo.rare" -> "희귀 자원 재고 확인";
             case "cargo.efficient_process" -> "수리 부품 1 + 회로판 1 → 전력 셀 1";
             case "habitation.supply" -> "공용 보급품 1개를 물리 아이템으로 수령";
