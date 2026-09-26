@@ -43,12 +43,14 @@ public final class ShipRouteService {
 
         List<TileId> usable = shortestPath(ship, player, current, target, true);
         if (!usable.isEmpty()) {
+            ConnectionState nextState = nextConnectionState(current, usable);
             return Optional.of(new RoutePlan(
                     current,
                     target,
                     usable,
-                    nextConnectionState(current, usable),
-                    true
+                    nextState,
+                    true,
+                    canTraverse(player, nextState)
             ));
         }
 
@@ -57,12 +59,14 @@ public final class ShipRouteService {
             return Optional.empty();
         }
 
+        ConnectionState nextState = nextConnectionState(current, topology);
         return Optional.of(new RoutePlan(
                 current,
                 target,
                 topology,
-                nextConnectionState(current, topology),
-                false
+                nextState,
+                false,
+                canTraverse(player, nextState)
         ));
     }
 
@@ -168,7 +172,8 @@ public final class ShipRouteService {
             TileId target,
             List<TileId> path,
             ConnectionState nextConnectionState,
-            boolean routeUsable
+            boolean routeUsable,
+            boolean nextConnectionUsable
     ) {
         public RoutePlan {
             path = List.copyOf(path);
@@ -184,8 +189,5 @@ public final class ShipRouteService {
                     : Optional.of(path.get(1));
         }
 
-        public boolean nextConnectionUsable() {
-            return arrived() || routeUsable;
-        }
     }
 }
