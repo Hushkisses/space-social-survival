@@ -146,7 +146,8 @@ public final class MatchHudService {
                 "§8────────────",
                 "§e§l우선 목표",
                 priorityColor(crisis) + compact(problem.title(), 26),
-                "§7→ §f" + compact(targetFacility, 20),
+                "§7목표 §f" + compact(targetFacility, 20),
+                routeLine(player, problem),
                 "§7필요 §f" + compact(problem.need(), 24),
                 "§8PDA 우클릭 · 상세"
         );
@@ -270,6 +271,32 @@ public final class MatchHudService {
                 Bukkit.getScoreboardManager(),
                 "scoreboardManager"
         ).getMainScoreboard();
+    }
+
+
+    private String routeLine(Player player, PublicProblem problem) {
+        PhysicalShipSnapshot snapshot = shipWorldService.activeSnapshot().orElse(null);
+        if (snapshot == null) {
+            return "§7다음 §8지도 없음";
+        }
+
+        return plugin.shipRouteService()
+                .routeToFacility(player, problem.targetFacility())
+                .map(plan -> {
+                    if (plan.arrived()) {
+                        return "§a목표 시설 도착";
+                    }
+
+                    String next = plan.nextTile()
+                            .map(snapshot::tileDisplayName)
+                            .orElse("PDA 지도 확인");
+
+                    if (!plan.nextConnectionUsable()) {
+                        return "§c경로 차단 §f" + compact(next, 18);
+                    }
+                    return "§b다음 §f" + compact(next, 20);
+                })
+                .orElse("§7다음 §fPDA 지도 확인");
     }
 
     private String currentArea(Player player) {
