@@ -77,8 +77,12 @@ Implemented:
   - red/blocked
 - Entering a different module gives current-room navigation feedback and a subtle sound.
 - A shared route-guidance service calculates a player-usable shortest path toward the current public target facility.
-- The right-side HUD continuously shows the next room on that route.
-- Room-entry feedback shows current room, target facility and immediate next room.
+- The right-side HUD keeps the public target facility and required resource/action, but no longer spends a line on the next room.
+- Direction is communicated spatially in the world:
+  - normal portal destination holograms remain yellow-arrow + white text
+  - every exit that moves closer to the current public priority facility changes to a red diamond + red destination text
+  - if more than one equally short route exists, each valid closer-direction exit may be highlighted
+- Room-entry feedback remains compact and only reports the room/category.
 - If no fully traversable route exists, the route can still show the topological path while clearly flagging blocked segments.
 - Crew PDA now includes a ship-map page.
 - PDA map shows:
@@ -124,6 +128,7 @@ Implemented:
 
 - GitHub Actions Build #667: SUCCESS
 - Playtest correction Build #707: SUCCESS
+- Priority-route hologram Build #719: SUCCESS
 - Test: SUCCESS
 - Build: SUCCESS
 
@@ -168,9 +173,11 @@ Do not mark this batch COMPLETE until representative integrated validation is re
    - adjacency
    - open/conditional/blocked connection state
 7. Starting at Bridge, locate Engineering and Cargo using only in-game guidance.
-8. While standing in a corridor/junction, confirm the HUD displays the next room toward the current target facility.
-9. Open PDA -> 함선 지도 and confirm the recommended route lists the room sequence.
-10. Lock or disable a route connection and confirm blocked-route feedback is understandable.
+8. While standing in a corridor/junction, confirm the HUD does not need to show a separate next-room line.
+9. Confirm exits that move closer to the current public target facility use a red diamond/red destination hologram, while unrelated exits keep the normal yellow-arrow/white style.
+10. Change the public priority target and confirm highlighted holograms update automatically.
+11. Open PDA -> 함선 지도 and confirm the recommended route remains available as detailed fallback information.
+12. Lock or disable a route connection and confirm the floor-pad state remains independently readable from the priority hologram.
 
 ### PX-007
 
