@@ -16,15 +16,36 @@ This batch intentionally does not add new roles, objectives, incidents, scenario
 
 Implemented:
 
-- staged opening briefing with:
-  - public accident situation
-  - shared return mission
-  - public initial-problem count
-  - current starting location
-  - explicit first action sequence
-  - role-selection entry point
+### PX-001.1 Physical waiting lobby / automatic start
+
+- normal players are automatically enrolled into the lobby on join while no match is active.
+- a physical waiting platform is rendered in the ship world at a safe negative-X location, outside the generated ship clear/build area.
+- the waiting platform contains a visible green ready zone.
+- when:
+  - the configured minimum player count is met,
+  - every lobby participant is online, and
+  - every lobby participant stands inside the green ready zone,
+  a 10-second ready countdown begins.
+- leaving the ready zone cancels that countdown.
+- a successful countdown automatically calls normal match preparation with a random seed.
+- /space match devstart remains available only as an operator/development bypass; it is not required for the normal player flow.
+- pre-match quit removes the player from the waiting lobby; quit after match creation keeps reconnect state.
+- reset returns retained participants to the waiting lobby.
+
+### Immediate role selection
+
+- successful match preparation no longer forces the staged briefing GUI before role choice.
+- public accident/shared-mission context is delivered by title/chat while the role-selection GUI is opened immediately.
+- each unselected player receives a temporary protected Nether Star:
+  - right-click reopens the role-selection GUI
+  - normal dropping is blocked
+  - it is removed as soon as a role is selected
+- closing the role-selection GUI without choosing a role gives an ActionBar reminder explaining how to reopen it.
 - selecting a role immediately opens the player's private PDA view.
-- when the match activates:
+
+The previous opening briefing GUI remains available as a support/debug surface, but is no longer a mandatory click-through in the normal start path.
+
+When the match activates:
   - role starter equipment is granted through the existing StarterKitService.
   - a persistent Crew PDA item is granted.
   - the player receives the current highest-priority public action.
@@ -130,23 +151,28 @@ Added `PlayerGuidanceResolverTest` covering:
 - unusable Engineering taking priority over metric repair
 - Navigation stage routing to Bridge
 
-GitHub Actions full test/build SUCCESS (Build #595).
+GitHub Actions full test/build SUCCESS (Build #595). HUD polish passed Build #599. Automatic lobby / immediate role-selection flow passed Build #613.
 
 ## Manual Windows/Paper validation
 
 Do not mark COMPLETE until the representative Windows/Paper flow is verified:
 
-1. start a development match
-2. confirm the opening briefing explains accident/shared mission/first action
-3. select a role and verify the private PDA opens
-4. verify base objective and secret mission visibility is private and correct
-5. verify starter equipment purpose/possession updates after activation
-6. right-click PDA to reopen it
-7. verify the right-side scoreboard shows stage/crisis/current room/one public priority/target facility/need
-8. confirm the center ActionBar is no longer permanently occupied by the HUD
-9. force or create a low-power or damaged-facility condition and verify the scoreboard/PDA update
-10. force enough crisis pressure to reach CRISIS/COLLAPSE and verify a top boss bar appears without exposing hidden cause information
-11. open each facility console and verify:
+1. start the server with no active match and confirm joining players are automatically moved into the physical waiting lobby
+2. confirm the green ready zone is visually clear and the ActionBar reports lobby/ready counts
+3. with the normal configured minimum met, move every lobby participant into the ready zone
+4. confirm the 10-second boss-bar countdown starts, and confirm one player stepping out cancels it
+5. complete the countdown and confirm the match starts automatically without a start command
+6. confirm the role-selection GUI opens immediately for every participant
+7. close the role-selection GUI without choosing; confirm the ActionBar explains reopening and the hotbar Nether Star reopens the GUI on right-click
+8. select a role; confirm the temporary selector is removed and the private PDA opens
+9. verify base objective and secret mission visibility is private and correct
+10. verify starter equipment purpose/possession updates after activation
+11. right-click PDA to reopen it
+12. verify the right-side scoreboard shows stage/crisis/current room/one public priority/target facility/need
+13. confirm the center ActionBar is no longer permanently occupied by the HUD
+14. force or create a low-power or damaged-facility condition and verify the scoreboard/PDA update
+15. force enough crisis pressure to reach CRISIS/COLLAPSE and verify a top boss bar appears without exposing hidden cause information
+16. open each facility console and verify:
     - status
     - relevant metrics
     - shared/carried resources
@@ -154,12 +180,13 @@ Do not mark COMPLETE until the representative Windows/Paper flow is verified:
     - resource requirement
     - denial reason
     - effect preview
-12. execute representative basic and advanced actions and confirm:
+17. execute representative basic and advanced actions and confirm:
     - existing behavior still works
     - the action result appears as short-lived ActionBar feedback
-13. die/respawn and verify PDA is not a recoverable loot item and is restored
-14. reconnect and verify PDA remains available
-15. verify PT-011~015 physical objective progress, sanctions, death loot, result GUI and operator tools still function
+18. die/respawn and verify PDA is not a recoverable loot item and is restored
+19. reconnect and verify PDA remains available
+20. run /space match reset and confirm retained participants return to the waiting lobby in Adventure mode
+21. verify PT-011~015 physical objective progress, sanctions, death loot, result GUI and operator tools still function
 
 ## Completion state
 
