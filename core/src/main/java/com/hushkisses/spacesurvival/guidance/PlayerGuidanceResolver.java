@@ -107,10 +107,10 @@ public final class PlayerGuidanceResolver {
 
         return switch (stage) {
             case SURVIVAL_SYSTEMS -> new PublicProblem(
-                    "생존 기반 복구 조건 확인",
+                    "생존 기반 복구 완료",
                     DefaultFacilityCatalog.BRIDGE,
-                    "전력·산소·선체·원자로 안정",
-                    "함교에서 공통 목표를 확인하고 다음 귀환 단계로 진행하십시오"
+                    "함교 콘솔",
+                    "함교 콘솔에서 [귀환 절차 시작]을 눌러 항법 단계로 진행하십시오"
             );
             case NAVIGATION -> new PublicProblem(
                     "항법 목적지 설정 필요",
