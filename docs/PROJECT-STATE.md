@@ -14,18 +14,16 @@ First Multiplayer Playtest Build
 ## Last completed
 - DEV-001 through DEV-059 gameplay + vertical slice — COMPLETE
 
-## Dependency batch
-- PT-001 through PT-005 Playtest Integration
-- Status: VALIDATION_PENDING
-- PR: #21
+## Completed integration batch
+- PT-001 through PT-005 Playtest Integration — COMPLETE
+- PR #21 merged to main
 - GitHub Actions Build #507 SUCCESS
-- Windows/Paper integrated validation remains required before merge
+- Windows/Paper integrated validation SUCCESS
 
 ## Current batch
 - PT-006 through PT-010 First Multiplayer Playtest Build
-- Status: VALIDATION_PENDING
+- Status: COMPLETE_FOR_PLAYTEST
 - Development branch: dev/PT-006-010-playtest-build
-- This is a stacked branch based on dev/PT-001-005-playtest-integration until PR #21 is validated and merged.
 
 ## Included
 
@@ -154,27 +152,27 @@ First Multiplayer Playtest Build
   - physical resource fallback items now have Korean display names.
   - match startup logs cache count, stack count and total resource units.
 
-## Pending validation
-### PT-001 through PT-005 prerequisite
-- Windows full test/build
-- Paper startup
-- facility console interaction
-- NBT fallback
-- physical doors
-- incident director
-- match reset/rematch
+## Validation status
+- PT-001 through PT-005 Windows/Paper integrated validation SUCCESS
+- PT-006 through PT-010 GitHub Actions full test/build SUCCESS
+- PT-002.1/PT-007.1 runtime hotfix Windows/Paper validation SUCCESS
+- single-player vertical-slice smoke validation SUCCESS
+- remaining empirical validation:
+  - real 6~10 player session
+  - multiplayer role distribution
+  - meeting voting with multiple participants
+  - resource economy pacing
+  - incident pacing
+  - telemetry review after a full match
 
-### PT-006 through PT-010
-- Windows full test/build
-- role starter equipment
-- keycard-required connection access
-- equipment-gated advanced facility action
-- physical resource cache looting
-- Cargo physical resource deposit
-- meeting/sanction GUI
-- telemetry JSON write/readability
-- production /space playtest start with 6~10 players
-- reset and second match
+## Next batch
+- PT-011 through PT-015 Playtest Hardening
+- focus:
+  - objective progress from physical gameplay
+  - physical sanction consequences
+  - resource/equipment drop and recovery
+  - match result GUI
+  - operator preflight / postmatch summary
 
 ## Reserved extension ranges
 - DEV-060+ Objectives
