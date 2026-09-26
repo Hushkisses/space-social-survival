@@ -4,18 +4,19 @@ import com.hushkisses.spacesurvival.facility.FacilityId;
 import com.hushkisses.spacesurvival.facility.FacilityStatus;
 import com.hushkisses.spacesurvival.facility.action.*;
 import com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public final class FacilityMenuService implements Listener {
 
@@ -23,7 +24,6 @@ public final class FacilityMenuService implements Listener {
 
     private final SpaceSurvivalPlugin plugin;
     private final FacilityActionExecutor executor;
-    private final Map<UUID, FacilityMenuSession> sessions = new HashMap<>();
 
     public FacilityMenuService(
             SpaceSurvivalPlugin plugin,
@@ -39,72 +39,76 @@ public final class FacilityMenuService implements Listener {
                 plugin.facilityActionRegistry().forFacility(facilityId);
 
         int size = actions.size() <= 9 ? 18 : 27;
-        Inventory inventory = Bukkit.createInventory(
-                null,
+        FacilityMenuHolder holder = new FacilityMenuHolder(
+                facilityId,
                 size,
                 TITLE_PREFIX + facility.definition().displayName()
         );
+        Inventory inventory = holder.getInventory();
 
         inventory.setItem(0, statusItem(
                 facility.definition().displayName(),
                 facility.status()
         ));
 
-        LinkedHashMap<Integer, FacilityActionId> slotActions = new LinkedHashMap<>();
         int slot = 9;
-
         for (FacilityActionDefinition action : actions) {
             if (slot >= size) break;
 
             var access = executor.access(player, action);
             inventory.setItem(slot, actionItem(action, access));
-            slotActions.put(slot, action.id());
+            holder.bind(slot, action.id());
             slot++;
         }
 
-        sessions.put(
-                player.getUniqueId(),
-                new FacilityMenuSession(facilityId, slotActions)
-        );
         player.openInventory(inventory);
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
     public void onClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
-        if (!event.getView().getTitle().startsWith(TITLE_PREFIX)) return;
+
+        Inventory top = event.getView().getTopInventory();
+        if (!(top.getHolder() instanceof FacilityMenuHolder holder)) {
+            return;
+        }
 
         event.setCancelled(true);
 
-        FacilityMenuSession session = sessions.get(player.getUniqueId());
-        if (session == null) return;
+        if (event.getRawSlot() < 0 || event.getRawSlot() >= top.getSize()) {
+            return;
+        }
 
-        FacilityActionId actionId = session.slotActions().get(event.getRawSlot());
-        if (actionId == null) return;
+        FacilityActionId actionId = holder.actionAt(event.getRawSlot());
+        if (actionId == null) {
+            return;
+        }
 
         FacilityActionDefinition action = plugin.facilityActionRegistry()
                 .find(actionId)
                 .orElse(null);
-        if (action == null) return;
-
-        FacilityActionExecutionResult result = executor.execute(player, action);
-        player.sendMessage(
-                (result.success() ? "§a[시설] §f" : "§c[시설] §f")
-                        + result.message()
-        );
-
-        plugin.getServer().getScheduler().runTask(
-                plugin,
-                () -> open(player, session.facilityId())
-        );
-    }
-
-    @EventHandler
-    public void onClose(InventoryCloseEvent event) {
-        if (event.getPlayer() instanceof Player player
-                && event.getView().getTitle().startsWith(TITLE_PREFIX)) {
-            sessions.remove(player.getUniqueId());
+        if (action == null) {
+            player.sendMessage("§c[시설] §f시설 기능을 찾을 수 없습니다.");
+            return;
         }
+
+        FacilityId facilityId = holder.facilityId();
+
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            if (!player.isOnline()) {
+                return;
+            }
+
+            FacilityActionExecutionResult result = executor.execute(player, action);
+            player.sendMessage(
+                    (result.success() ? "§a[시설] §f" : "§c[시설] §f")
+                            + result.message()
+            );
+
+            if (!plugin.meetingGuiService().hasActiveVote()) {
+                open(player, facilityId);
+            }
+        });
     }
 
     private static ItemStack statusItem(String name, FacilityStatus status) {
