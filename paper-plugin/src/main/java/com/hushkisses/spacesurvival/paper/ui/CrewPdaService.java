@@ -85,8 +85,11 @@ public final class CrewPdaService implements Listener {
 
         var overflow = player.getInventory().addItem(pda);
         if (!overflow.isEmpty()) {
+            ItemStack displaced = slotEight.clone();
             player.getInventory().setItem(8, pda);
-            overflow.values().forEach(item ->
+
+            var displacedOverflow = player.getInventory().addItem(displaced);
+            displacedOverflow.values().forEach(item ->
                     player.getWorld().dropItemNaturally(player.getLocation(), item)
             );
         }
