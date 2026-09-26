@@ -77,7 +77,7 @@ Player Comprehension / Playability
 
 ## Validation status
 - PX-001~004 GitHub Actions full test/build: SUCCESS (Build #595, Build #597)
-- PX-003.1 HUD presentation polish CI: pending
+- PX-003.1 HUD presentation polish CI: SUCCESS (Build #599)
 - PX-001~004 Windows/Paper integrated validation: pending
 - PT-011~015 Windows/Paper integrated validation: still pending
 - first blind 1~3 player 20-minute playability gate: not yet attempted
