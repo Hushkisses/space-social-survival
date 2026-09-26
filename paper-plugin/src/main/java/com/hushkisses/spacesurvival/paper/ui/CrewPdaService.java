@@ -332,6 +332,7 @@ public final class CrewPdaService implements Listener {
             );
         }
 
+        inventory.setItem(47, routeSummaryItem(player, ship));
         inventory.setItem(49, actionItem(
                 Material.ARROW,
                 "§a개인 정보로 돌아가기",
@@ -339,6 +340,55 @@ public final class CrewPdaService implements Listener {
                 List.of("§a클릭")
         ));
         player.openInventory(inventory);
+    }
+
+    private ItemStack routeSummaryItem(
+            Player player,
+            com.hushkisses.spacesurvival.paper.map.physical.PhysicalShipSnapshot ship
+    ) {
+        PublicProblem problem = currentProblem();
+        String target = plugin.facilityRegistry()
+                .require(problem.targetFacility())
+                .definition()
+                .displayName();
+
+        var plan = plugin.shipRouteService()
+                .routeToFacility(player, problem.targetFacility())
+                .orElse(null);
+
+        ArrayList<String> lore = new ArrayList<>();
+        lore.add("§7현재 팀 우선 목표까지의 추천 경로입니다.");
+        lore.add("§7목표: §e" + target);
+        lore.add("");
+
+        if (plan == null) {
+            lore.add("§c현재 위치에서 경로를 계산할 수 없습니다.");
+            lore.add("§7방 입구와 통로 목적지 표지를 확인하십시오.");
+        } else if (plan.arrived()) {
+            lore.add("§a이미 목표 시설에 도착했습니다.");
+        } else {
+            int step = 0;
+            for (var tileId : plan.path()) {
+                if (step == 0) {
+                    lore.add("§a현재 §f" + ship.tileDisplayName(tileId));
+                } else {
+                    lore.add("§7" + step + ". §f" + ship.tileDisplayName(tileId));
+                }
+                step++;
+            }
+
+            if (!plan.nextConnectionUsable()) {
+                lore.add("");
+                lore.add("§c다음 통로가 현재 차단되어 있습니다.");
+                lore.add("§7다른 경로 또는 통로 복구가 필요합니다.");
+            }
+        }
+
+        return item(
+                Material.COMPASS,
+                "§b추천 경로 → " + target,
+                lore
+        );
     }
 
     private com.hushkisses.spacesurvival.map.connection.ConnectionState connectionState(
