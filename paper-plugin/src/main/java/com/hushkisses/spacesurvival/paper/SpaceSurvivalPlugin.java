@@ -53,6 +53,7 @@ import com.hushkisses.spacesurvival.paper.map.physical.PaperShipWorldService;
 import com.hushkisses.spacesurvival.paper.map.physical.PhysicalConnectionController;
 import com.hushkisses.spacesurvival.paper.map.physical.ShipPortalListener;
 import com.hushkisses.spacesurvival.paper.map.physical.ShipNavigationListener;
+import com.hushkisses.spacesurvival.paper.map.physical.ShipRouteService;
 import com.hushkisses.spacesurvival.paper.objective.ObjectiveGameplayProgressService;
 import com.hushkisses.spacesurvival.paper.match.MatchOrchestrator;
 import com.hushkisses.spacesurvival.paper.pve.DefaultPveMobSpawner;
@@ -165,6 +166,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
 
     private PaperShipWorldService shipWorldService;
     private MatchOrchestrator matchOrchestrator;
+    private ShipRouteService shipRouteService;
     private LobbyReadyService lobbyReadyService;
     private MatchHudService matchHudService;
     private CrewPdaService crewPdaService;
@@ -267,6 +269,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                 physicalConnectionController
         );
         matchOrchestrator = new MatchOrchestrator(this, shipWorldService);
+        shipRouteService = new ShipRouteService(this, shipWorldService);
         lobbyReadyService = new LobbyReadyService(this);
         matchHudService = new MatchHudService(this, shipWorldService);
         crewPdaService = new CrewPdaService(this, shipWorldService);
@@ -320,7 +323,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
                 this
         );
         getServer().getPluginManager().registerEvents(
-                new ShipNavigationListener(this, shipWorldService),
+                new ShipNavigationListener(this, shipWorldService, shipRouteService),
                 this
         );
         getServer().getPluginManager().registerEvents(
@@ -447,6 +450,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public MatchResultGuiService matchResultGuiService() { return require(matchResultGuiService, "Match result GUI service"); }
     public PaperShipWorldService shipWorldService() { return require(shipWorldService, "Ship world service"); }
     public MatchOrchestrator matchOrchestrator() { return require(matchOrchestrator, "Match orchestrator"); }
+    public ShipRouteService shipRouteService() { return require(shipRouteService, "Ship route service"); }
     public LobbyReadyService lobbyReadyService() { return require(lobbyReadyService, "Lobby ready service"); }
     public MatchHudService matchHudService() { return require(matchHudService, "Match HUD service"); }
     public CrewPdaService crewPdaService() { return require(crewPdaService, "Crew PDA service"); }
