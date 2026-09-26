@@ -27,6 +27,7 @@ public final class RoleSelectionUi {
     private final RoleSelectionService selectionService;
     private final RoleRegistry roleRegistry;
     private final NamespacedKey roleIdKey;
+    private final NamespacedKey roleMenuKey;
 
     public RoleSelectionUi(
             JavaPlugin plugin,
@@ -37,6 +38,7 @@ public final class RoleSelectionUi {
         this.selectionService = Objects.requireNonNull(selectionService, "selectionService");
         this.roleRegistry = Objects.requireNonNull(roleRegistry, "roleRegistry");
         this.roleIdKey = new NamespacedKey(plugin, "role_id");
+        this.roleMenuKey = new NamespacedKey(plugin, "role_menu");
     }
 
     public boolean open(Player player) {
@@ -63,6 +65,52 @@ public final class RoleSelectionUi {
 
         player.openInventory(inventory);
         return true;
+    }
+
+    public void giveMenuItem(Player player) {
+        Objects.requireNonNull(player, "player");
+        removeMenuItem(player);
+        player.getInventory().setItem(4, menuItem());
+    }
+
+    public void removeMenuItem(Player player) {
+        Objects.requireNonNull(player, "player");
+
+        ItemStack[] contents = player.getInventory().getContents();
+        for (int slot = 0; slot < contents.length; slot++) {
+            if (isMenuItem(contents[slot])) {
+                player.getInventory().setItem(slot, null);
+            }
+        }
+    }
+
+    public boolean isMenuItem(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) {
+            return false;
+        }
+
+        Byte marker = item.getItemMeta()
+                .getPersistentDataContainer()
+                .get(roleMenuKey, PersistentDataType.BYTE);
+
+        return marker != null && marker == (byte) 1;
+    }
+
+    private ItemStack menuItem() {
+        ItemStack item = new ItemStack(Material.NETHER_STAR);
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName("§e§l직업 선택 §7— 우클릭");
+        meta.setLore(List.of(
+                "§f직업 후보 창을 다시 엽니다.",
+                "§7직업을 선택하기 전까지 사용할 수 있습니다."
+        ));
+        meta.getPersistentDataContainer().set(
+                roleMenuKey,
+                PersistentDataType.BYTE,
+                (byte) 1
+        );
+        item.setItemMeta(meta);
+        return item;
     }
 
     public RoleId readRoleId(ItemStack item) {
