@@ -480,6 +480,9 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         if (incidentDirector != null) {
             incidentDirector.stop();
         }
+        if (incidentPresentationService != null) {
+            incidentPresentationService.clear();
+        }
         if (gameRuntimeService != null && gameRuntimeService.isRunning()) {
             gameRuntimeService.stop();
         }
