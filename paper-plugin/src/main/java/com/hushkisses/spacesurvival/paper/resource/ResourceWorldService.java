@@ -3,8 +3,12 @@ package com.hushkisses.spacesurvival.paper.resource;
 import com.hushkisses.spacesurvival.map.tile.TileCategory;
 import com.hushkisses.spacesurvival.paper.map.physical.PhysicalShipSnapshot;
 import com.hushkisses.spacesurvival.resource.ResourceType;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Display;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.block.Barrel;
 import org.bukkit.inventory.Inventory;
 
@@ -14,6 +18,8 @@ import java.util.Objects;
 import java.util.Random;
 
 public final class ResourceWorldService {
+
+    private static final String CACHE_LABEL_TAG = "space_survival_resource_cache_label";
 
     private final ResourcePhysicalItemService items;
 
@@ -27,6 +33,7 @@ public final class ResourceWorldService {
     ) {
         Objects.requireNonNull(ship, "ship");
         Random random = new Random(seed ^ 0x7025B11DL);
+        cleanupLabels(ship);
 
         int caches = 0;
         int stacks = 0;
@@ -62,7 +69,7 @@ public final class ResourceWorldService {
             // Apply block-state metadata first. Updating a stale container state
             // after editing its live inventory can restore an empty snapshot on
             // some Paper/Bukkit implementations.
-            initial.setCustomName("§8비상 보급 상자");
+            initial.setCustomName("§6비상 보급 상자 §7[물리 자원]");
             initial.update(true, false);
 
             if (!(location.getBlock().getState() instanceof Barrel barrel)) {
@@ -71,6 +78,7 @@ public final class ResourceWorldService {
 
             Inventory inventory = barrel.getInventory();
             inventory.clear();
+            renderCacheLabel(location);
 
             FillResult result = fill(inventory, random);
             if (result.stacks() == 0 || inventory.isEmpty()) {
@@ -88,6 +96,27 @@ public final class ResourceWorldService {
         }
 
         return new ResourcePopulationResult(caches, stacks, units);
+    }
+
+    private static void cleanupLabels(PhysicalShipSnapshot ship) {
+        for (Entity entity : ship.world().getEntities()) {
+            if (entity.getScoreboardTags().contains(CACHE_LABEL_TAG)) {
+                entity.remove();
+            }
+        }
+    }
+
+    private static void renderCacheLabel(Location barrelLocation) {
+        if (barrelLocation.getWorld() == null) return;
+
+        Location location = barrelLocation.clone().add(0.5, 1.8, 0.5);
+        TextDisplay label = barrelLocation.getWorld().spawn(location, TextDisplay.class);
+        label.text(Component.text("비상 보급 상자\n물리 자원"));
+        label.setBillboard(Display.Billboard.CENTER);
+        label.setSeeThrough(true);
+        label.setShadowed(true);
+        label.setGlowing(true);
+        label.addScoreboardTag(CACHE_LABEL_TAG);
     }
 
     private FillResult fill(Inventory inventory, Random random) {
