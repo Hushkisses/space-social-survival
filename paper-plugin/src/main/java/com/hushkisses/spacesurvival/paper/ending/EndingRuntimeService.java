@@ -70,6 +70,8 @@ public final class EndingRuntimeService {
                 session.transitionTo(GamePhase.FINISHED);
             }
         });
+        var result = plugin.matchResultRuntimeService().evaluate(false);
+        plugin.matchResultGuiService().openForAll(result);
         plugin.telemetryService().finish("return_failed");
     }
 
@@ -89,6 +91,8 @@ public final class EndingRuntimeService {
             });
 
             plugin.getServer().broadcastMessage("§a[귀환 성공] §f최종 버티기 단계가 완료되었습니다.");
+            var result = plugin.matchResultRuntimeService().evaluate(true);
+            plugin.matchResultGuiService().openForAll(result);
             plugin.telemetryService().finish("return_success");
         }
     }
