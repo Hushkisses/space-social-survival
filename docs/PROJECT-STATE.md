@@ -24,11 +24,13 @@ Player Comprehension / Playability
 - PT-006 through PT-010 First Multiplayer Playtest Build — COMPLETE_FOR_PLAYTEST
 
 ## Current batch
-- PX-001 through PX-004 Player Comprehension Core
+- PX-001 through PX-007 Player Comprehension + World Readability
 - Status: IMPLEMENTED / VALIDATION_PENDING
 - Development branch: dev/PX-001-004-player-comprehension
 - Base branch: dev/PT-011-015-playtest-hardening
-- Detail: docs/PX/PX-001-004-player-comprehension.md
+- Details:
+  - docs/PX/PX-001-004-player-comprehension.md
+  - docs/PX/PX-005-007-world-readability.md
 
 ## PX-001 Game Start / Onboarding
 - normal player flow no longer requires a start command:
@@ -82,17 +84,46 @@ Player Comprehension / Playability
   - explicit denial reasons
   - safe predicted effects
 
+## PX-005 Incident Presentation / Response Feedback
+- small incidents use Korean chat + ActionBar + sound with affected area and response hint
+- major incidents use title/subtitle + alarm + temporary boss bar
+- persistent next action remains in the existing HUD
+- detectable resolution conditions announce stabilization
+- hidden actor/identity/scenario truth remains hidden
+
+## PX-006 Ship Navigation / Signage / Map
+- generated rooms have floating room-name/category labels
+- portal pads have destination labels
+- room-entry feedback reports current room/category
+- PDA includes a graph-style ship map with:
+  - room categories
+  - current room
+  - Bridge distance
+  - adjacency
+  - connection state
+- no live player-position map
+
+## PX-007 Item / Resource Usability
+- physical resource items explain purpose, normal use location and Cargo deposit semantics
+- functional role equipment explains purpose/use location and loss risk
+- resource/equipment pickup feedback added
+- functional equipment drop warning added
+- emergency resource caches have visible labels
+- Cargo deposit feedback shows resource breakdown, updated shared quantities and objective delta
+- ItemsAdder remains optional with vanilla fallbacks
+
 ## Validation status
 - PX-001~004 GitHub Actions full test/build: SUCCESS (Build #595, Build #597)
 - PX-003.1 HUD presentation polish CI: SUCCESS (Build #599)
 - PX-001.1 automatic lobby / immediate role-selection flow CI: SUCCESS (Build #613)
+- PX-005~007 World Readability CI: SUCCESS (Build #667)
 - PX-001~004 Windows/Paper integrated validation: pending
 - PT-011~015 Windows/Paper integrated validation: still pending
 - first blind 1~3 player 20-minute playability gate: not yet attempted
 - real 6~10 player balance test remains blocked on the PX playability gate
 
 ## Next batch after validation
-- PX-005 through PX-007 World Readability
+- PX-008 through PX-010 Social / Terminal-State / Playability Gate
 - do not expand roles/objectives/events/scenarios for content volume before the PX exit gate
 
 ## Environment
