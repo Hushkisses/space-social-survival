@@ -42,7 +42,7 @@ public final class MeetingGuiService implements Listener {
     private BukkitTask phaseTask;
     private BossBar phaseBar;
 
-    private final Map<UUID, SanctionType> pendingSanction = new HashMap<>();
+    private final Map<UUID, PlayerId> pendingTarget = new HashMap<>();
     private final Map<UUID, SanctionChoice> pendingConfirmation = new HashMap<>();
     private final Map<UUID, Map<Integer, PlayerId>> targetSlots = new HashMap<>();
     private final Set<UUID> transitioningInventory = new HashSet<>();
@@ -202,27 +202,27 @@ public final class MeetingGuiService implements Listener {
             return;
         }
 
-        if (title.equals(CHOICE_TITLE)) {
-            SanctionType type = sanctionAt(event.getRawSlot());
-            if (type == null) return;
-
-            if (type == SanctionType.NO_ACTION) {
+        if (title.equals(TARGET_TITLE)) {
+            if (event.getRawSlot() == 4) {
                 cast(player, SanctionChoice.noAction());
                 return;
             }
 
-            pendingSanction.put(player.getUniqueId(), type);
-            transition(player, () -> openTargets(player));
-            return;
-        }
-
-        if (title.equals(TARGET_TITLE)) {
             Map<Integer, PlayerId> slots = targetSlots.get(player.getUniqueId());
             if (slots == null) return;
 
             PlayerId target = slots.get(event.getRawSlot());
-            SanctionType type = pendingSanction.get(player.getUniqueId());
-            if (target == null || type == null) return;
+            if (target == null) return;
+
+            pendingTarget.put(player.getUniqueId(), target);
+            transition(player, () -> openChoices(player));
+            return;
+        }
+
+        if (title.equals(CHOICE_TITLE)) {
+            SanctionType type = sanctionAt(event.getRawSlot());
+            PlayerId target = pendingTarget.get(player.getUniqueId());
+            if (type == null || target == null) return;
 
             SanctionChoice choice = new SanctionChoice(type, target);
             if (requiresConfirmation(type)) {
@@ -241,7 +241,7 @@ public final class MeetingGuiService implements Listener {
             cast(player, choice);
         } else if (event.getRawSlot() == 15) {
             pendingConfirmation.remove(player.getUniqueId());
-            transition(player, () -> openTargets(player));
+            transition(player, () -> openChoices(player));
         }
     }
 
@@ -273,7 +273,7 @@ public final class MeetingGuiService implements Listener {
                 return;
             }
             player.sendMessage("§e[회의] §f투표가 아직 끝나지 않아 투표 창을 다시 엽니다.");
-            openChoices(player);
+            openTargets(player);
         }, 20L);
     }
 
@@ -377,7 +377,7 @@ public final class MeetingGuiService implements Listener {
         forEachOnlineParticipant(meeting, player -> {
             player.sendTitle(
                     "§d§l투표 시작",
-                    "§f처분과 대상을 선택하십시오 · §e" + secondsRemaining + "초",
+                    "§f먼저 처분할 승무원을 선택하십시오 · §e" + secondsRemaining + "초",
                     5,
                     35,
                     10
@@ -393,74 +393,72 @@ public final class MeetingGuiService implements Listener {
     private void openChoices(Player player) {
         if (phase != MeetingUxPhase.VOTING || activeVote == null) return;
 
-        Inventory inventory = Bukkit.createInventory(null, 36, CHOICE_TITLE);
+        PlayerId target = pendingTarget.get(player.getUniqueId());
+        if (target == null) {
+            openTargets(player);
+            return;
+        }
 
-        int eligible = eligibleVoterCount();
+        Inventory inventory = Bukkit.createInventory(null, 36, CHOICE_TITLE);
+        String targetName = playerName(target);
+
         inventory.setItem(4, item(
-                Material.CLOCK,
-                "§d투표 진행",
+                Material.PLAYER_HEAD,
+                "§f대상: §e" + targetName,
                 List.of(
-                        "§7남은 시간: §f" + secondsRemaining + "초",
-                        "§7투표 완료: §f" + voteCount() + "/" + eligible,
-                        "§8개별 투표 내용은 공개되지 않습니다."
+                        "§7이 승무원에게 적용할 처분을 선택하십시오.",
+                        "§8뒤로 가려면 창을 닫으십시오."
                 )
         ));
 
         inventory.setItem(10, item(
-                Material.LIME_DYE,
-                "§a무조치",
-                List.of("§7현재 처분을 하지 않습니다.", "", "§a클릭하면 즉시 투표")
-        ));
-        inventory.setItem(11, item(
                 Material.POTION,
                 "§b의료 검사",
                 List.of(
-                        "§7대상에게 의료 검사를 명령합니다.",
+                        "§7" + targetName + "에게 의료 검사를 명령합니다.",
                         "§8집행 조건: 의료실 사용 가능"
                 )
         ));
-        inventory.setItem(12, item(
+        inventory.setItem(11, item(
                 Material.IRON_SWORD,
                 "§e무장해제",
                 List.of(
-                        "§7대상의 무장을 제한합니다.",
+                        "§7" + targetName + "의 무장을 제한합니다.",
                         "§8집행 조건: 보안 담당 권한"
                 )
         ));
-        inventory.setItem(14, item(
+        inventory.setItem(13, item(
                 Material.IRON_BARS,
                 "§6감금",
                 List.of(
-                        "§7대상을 구금합니다.",
+                        "§7" + targetName + "을(를) 구금합니다.",
                         "§8집행 조건: 보안 담당 권한 + 감금 가능",
-                        "§e대상 선택 후 최종 확인"
+                        "§e최종 확인 필요"
                 )
         ));
-        inventory.setItem(15, item(
+        inventory.setItem(14, item(
                 Material.IRON_DOOR,
                 "§d출입 제한",
                 List.of(
-                        "§7대상의 시설 접근을 제한합니다.",
+                        "§7" + targetName + "의 시설 접근을 제한합니다.",
                         "§8집행 조건: 보안 담당 권한",
-                        "§e대상 선택 후 최종 확인"
+                        "§e최종 확인 필요"
                 )
         ));
         inventory.setItem(16, item(
                 Material.HEAVY_WEIGHTED_PRESSURE_PLATE,
                 "§c추방",
                 List.of(
-                        "§7대상을 우주선에서 추방합니다.",
+                        "§7" + targetName + "을(를) 우주선에서 추방합니다.",
                         "§8집행 조건: 사용 가능한 에어록",
-                        "§c대상 선택 후 최종 확인"
+                        "§c최종 확인 필요"
                 )
         ));
 
         inventory.setItem(31, item(
-                Material.PAPER,
-                "§f회의 참가자",
-                participantNames(
-                        plugin.meetingService().activeMeeting().orElseThrow()
-                ).stream().map(name -> "§7- §f" + name).toList()
+                Material.ARROW,
+                "§7대상 다시 선택",
+                List.of("§7창을 닫으면 대상 선택 화면으로 돌아갑니다.")
         ));
 
         player.openInventory(inventory);
@@ -468,8 +466,17 @@ public final class MeetingGuiService implements Listener {
 
     private void openTargets(Player player) {
         MeetingSession meeting = plugin.meetingService().activeMeeting().orElseThrow();
-        int size = meeting.participants().size() <= 9 ? 18 : 27;
+        int size = meeting.participants().size() <= 9 ? 27 : 36;
         Inventory inventory = Bukkit.createInventory(null, size, TARGET_TITLE);
+
+        inventory.setItem(4, item(
+                Material.LIME_DYE,
+                "§a아무도 처분하지 않음",
+                List.of(
+                        "§7이번 회의에서는 처분하지 않습니다.",
+                        "§a클릭하면 무조치로 즉시 투표합니다."
+                )
+        ));
 
         LinkedHashMap<Integer, PlayerId> slots = new LinkedHashMap<>();
         int slot = 9;
@@ -486,7 +493,10 @@ public final class MeetingGuiService implements Listener {
                 rawMeta = skullMeta;
             }
             rawMeta.setDisplayName("§f" + name);
-            rawMeta.setLore(List.of("§7이 플레이어를 처분 대상으로 선택합니다."));
+            rawMeta.setLore(List.of(
+                    "§7먼저 이 승무원을 선택합니다.",
+                    "§7다음 화면에서 처분을 결정합니다."
+            ));
             head.setItemMeta(rawMeta);
 
             inventory.setItem(slot, head);
@@ -494,17 +504,18 @@ public final class MeetingGuiService implements Listener {
             slot++;
         }
 
-        SanctionType type = pendingSanction.get(player.getUniqueId());
-        if (type != null) {
-            inventory.setItem(
-                    4,
-                    item(
-                            Material.NAME_TAG,
-                            "§e선택한 처분: §f" + sanctionName(type),
-                            List.of("§7아래에서 대상을 선택하십시오.")
-                    )
-            );
-        }
+        inventory.setItem(
+                size - 5,
+                item(
+                        Material.CLOCK,
+                        "§d투표 진행",
+                        List.of(
+                                "§7남은 시간: §f" + secondsRemaining + "초",
+                                "§7투표 완료: §f" + voteCount() + "/" + eligibleVoterCount(),
+                                "§8개별 투표 내용은 공개되지 않습니다."
+                        )
+                )
+        );
 
         targetSlots.put(player.getUniqueId(), Map.copyOf(slots));
         player.openInventory(inventory);
@@ -529,8 +540,8 @@ public final class MeetingGuiService implements Listener {
         ));
         inventory.setItem(15, item(
                 Material.RED_CONCRETE,
-                "§c대상 다시 선택",
-                List.of("§7이전 화면으로 돌아갑니다.")
+                "§c처분 다시 선택",
+                List.of("§7같은 대상에 대한 처분 선택으로 돌아갑니다.")
         ));
 
         player.openInventory(inventory);
@@ -836,11 +847,10 @@ public final class MeetingGuiService implements Listener {
 
     private static SanctionType sanctionAt(int slot) {
         return switch (slot) {
-            case 10 -> SanctionType.NO_ACTION;
-            case 11 -> SanctionType.MEDICAL_CHECK;
-            case 12 -> SanctionType.DISARM;
-            case 14 -> SanctionType.DETAIN;
-            case 15 -> SanctionType.ACCESS_RESTRICT;
+            case 10 -> SanctionType.MEDICAL_CHECK;
+            case 11 -> SanctionType.DISARM;
+            case 13 -> SanctionType.DETAIN;
+            case 14 -> SanctionType.ACCESS_RESTRICT;
             case 16 -> SanctionType.EJECT;
             default -> null;
         };
