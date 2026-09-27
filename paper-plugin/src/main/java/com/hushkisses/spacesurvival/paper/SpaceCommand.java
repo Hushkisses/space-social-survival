@@ -808,7 +808,7 @@ final class SpaceCommand implements CommandExecutor {
                         + "§7~§f"
                         + plugin.configuration().game().maxPlayers()
         );
-        sender.sendMessage("§7현재 개발: §ePT-011~015 Playtest Hardening");
+        sender.sendMessage("§7현재 개발: §ePX-010 1~3인 End-to-End Playability Harness");
     }
 
     private void sendRoleUsage(CommandSender sender) {
@@ -875,6 +875,7 @@ final class SpaceCommand implements CommandExecutor {
         sender.sendMessage("§c사용법: /space door list|set|repair");
         sender.sendMessage("§c사용법: /space director status|force");
         sender.sendMessage("§c사용법: /space playtest status|start|reset|preflight|postmatch");
+        sender.sendMessage("§c사용법: /space playability start|check|reset|save|help");
         sender.sendMessage("§c사용법: /space telemetry status|save");
         sender.sendMessage("§c사용법: /space item list|give");
         sender.sendMessage("§c사용법: /space role prepare|candidates|gui|choose|status");
