@@ -66,16 +66,30 @@ class PlayerGuidanceResolverTest {
 
 
     @Test
-    void lowOxygenNamesConcreteEngineeringRecoveryAction() {
+    void lowOxygenRoutesToHabitationLifeSupport() {
         PublicProblem problem = resolver.resolve(
                 ReturnStage.SURVIVAL_SYSTEMS,
                 new ShipStateSnapshot(80, 35, 80, 80),
                 normalFacilities()
         );
 
-        assertEquals(DefaultFacilityCatalog.ENGINEERING, problem.targetFacility());
+        assertEquals(DefaultFacilityCatalog.HABITATION, problem.targetFacility());
         assertTrue(problem.need().contains("수리 부품"));
-        assertTrue(problem.nextAction().contains("산소 계통 복구"));
+        assertTrue(problem.nextAction().contains("생명유지 계통 복구"));
+    }
+
+
+    @Test
+    void lowHullRoutesThroughCargoToPhysicalRepair() {
+        PublicProblem problem = resolver.resolve(
+                ReturnStage.SURVIVAL_SYSTEMS,
+                new ShipStateSnapshot(80, 80, 35, 80),
+                normalFacilities()
+        );
+
+        assertEquals(DefaultFacilityCatalog.CARGO, problem.targetFacility());
+        assertTrue(problem.need().contains("현장 수리 부품"));
+        assertTrue(problem.nextAction().contains("선체 균열"));
     }
 
     @Test
