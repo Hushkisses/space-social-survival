@@ -32,5 +32,21 @@ if not exist "dev-server\server\plugins\SpaceSurvival.jar" (
     exit /b 1
 )
 
+set "IA_SOURCE=dev-server\itemsadder-content\spacesurvival"
+set "IA_TARGET=dev-server\server\plugins\ItemsAdder\contents\spacesurvival"
+
+if exist "%IA_SOURCE%" (
+    echo [SpaceSurvival] Syncing ItemsAdder content...
+    if exist "%IA_TARGET%" rmdir /S /Q "%IA_TARGET%"
+    mkdir "%IA_TARGET%" >nul 2>nul
+    xcopy "%IA_SOURCE%\*" "%IA_TARGET%\" /E /I /Y >nul
+    if errorlevel 1 (
+        echo [SpaceSurvival] ItemsAdder content sync failed.
+        exit /b 1
+    )
+    echo [SpaceSurvival] ItemsAdder content sync complete.
+)
+
 echo [SpaceSurvival] Deploy complete.
+echo [SpaceSurvival] After ItemsAdder asset changes, start the server and run /iazip.
 endlocal

@@ -27,7 +27,7 @@ public final class DefaultFacilityCatalog {
                 new FacilityDefinition(BRIDGE, FacilityType.BRIDGE, "함교",
                         "공통 목표, 우주선 상태, 회의 및 귀환 절차를 관리하는 핵심 시설"),
                 new FacilityDefinition(ENGINEERING, FacilityType.ENGINEERING, "기관실",
-                        "전력, 엔진, 원자로 및 핵심 수리를 담당하는 시설"),
+                        "전력, 엔진, 원자로와 기관 계통 정비를 담당하는 시설"),
                 new FacilityDefinition(MEDICAL, FacilityType.MEDICAL, "의료실",
                         "치료, 상태이상 제거, 감염 검사와 의료 처리를 담당하는 시설"),
                 new FacilityDefinition(RESEARCH, FacilityType.RESEARCH, "연구실",
@@ -35,7 +35,7 @@ public final class DefaultFacilityCatalog {
                 new FacilityDefinition(CARGO, FacilityType.CARGO, "화물실",
                         "자원 저장, 분류, 판별 및 가공을 담당하는 시설"),
                 new FacilityDefinition(HABITATION, FacilityType.HABITATION, "생활구역",
-                        "보급, 장비 정비, 개인 보관과 비공개 활동이 일어나는 시설")
+                        "산소·생명유지 계통, 보급, 장비 정비와 개인 보관을 담당하는 시설")
         );
     }
 }

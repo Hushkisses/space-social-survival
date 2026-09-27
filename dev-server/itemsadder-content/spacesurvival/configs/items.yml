@@ -1,0 +1,87 @@
+info:
+  namespace: spacesurvival
+
+items:
+  repair_parts:
+    name: "수리 부품"
+    material: IRON_NUGGET
+    graphics:
+      texture: item/repair_parts
+
+  circuits:
+    name: "회로판"
+    material: REDSTONE
+    graphics:
+      texture: item/circuits
+
+  power_cells:
+    name: "전력 셀"
+    material: GLOWSTONE_DUST
+    graphics:
+      texture: item/power_cells
+
+  fuel:
+    name: "연료"
+    material: BLAZE_POWDER
+    graphics:
+      texture: item/fuel
+
+  medical_supplies:
+    name: "의료 물자"
+    material: PAPER
+    graphics:
+      texture: item/medical_supplies
+
+  bio_samples:
+    name: "생체 샘플"
+    material: SLIME_BALL
+    graphics:
+      texture: item/bio_samples
+
+  data_cores:
+    name: "데이터 코어"
+    material: AMETHYST_SHARD
+    graphics:
+      texture: item/data_cores
+
+  engineering_multitool:
+    name: "엔지니어 멀티툴"
+    material: IRON_PICKAXE
+    graphics:
+      texture: item/engineering_multitool
+
+  medical_scanner:
+    name: "의료 스캐너"
+    material: CLOCK
+    graphics:
+      texture: item/medical_scanner
+
+  security_keycard:
+    name: "보안 키카드"
+    material: TRIPWIRE_HOOK
+    graphics:
+      texture: item/security_keycard
+
+  research_scanner:
+    name: "연구 스캐너"
+    material: SPYGLASS
+    graphics:
+      texture: item/research_scanner
+
+  radio:
+    name: "장거리 무전기"
+    material: COMPASS
+    graphics:
+      texture: item/radio
+
+  cargo_scanner:
+    name: "화물 스캐너"
+    material: RECOVERY_COMPASS
+    graphics:
+      texture: item/cargo_scanner
+
+  hull_breach:
+    name: "선체 균열"
+    material: CRACKED_STONE_BRICKS
+    graphics:
+      texture: item/hull_breach

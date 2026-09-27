@@ -63,6 +63,11 @@ public final class FacilityActionExecutor {
         return FacilityActionAccessDecision.allow();
     }
 
+    public FunctionalItemType requiredEquipment(FacilityActionDefinition action) {
+        Objects.requireNonNull(action, "action");
+        return requiredEquipment(action.id().value());
+    }
+
     public FacilityActionExecutionResult execute(
             Player player,
             FacilityActionDefinition action
@@ -131,15 +136,12 @@ public final class FacilityActionExecutor {
             );
             case "engineering.repair" -> {
                 if (!shared().remove(ResourceType.REPAIR_PARTS, 1)) {
-                    yield failure("공용 수리 부품이 부족합니다.");
+                    yield failure("기관실 설비 복구에 필요한 공용 수리 부품 1개가 부족합니다.");
                 }
-                int value = plugin.engineeringFacilityService().adjust(ShipMetric.HULL, 12);
-                if (plugin.facilityRegistry().require(actionFacility("engineering")).status()
-                        == FacilityStatus.DAMAGED) {
-                    plugin.facilityRegistry().require(actionFacility("engineering"))
-                            .setStatus(FacilityStatus.NORMAL);
-                }
-                yield result("핵심 수리를 완료했습니다. 선체 안정도: " + value + "%");
+                plugin.facilityRegistry()
+                        .require(actionFacility("engineering"))
+                        .setStatus(FacilityStatus.NORMAL);
+                yield result("기관실 설비를 정상화했습니다. 선체 균열은 현장에서 별도로 수리해야 합니다.");
             }
             case "engineering.diagnose" -> {
                 var diagnosis = plugin.engineeringFacilityService().diagnose();
@@ -155,24 +157,35 @@ public final class FacilityActionExecutor {
             }
             case "engineering.advanced_repair" -> {
                 if (!shared().remove(ResourceType.REPAIR_PARTS, 2)) {
-                    yield failure("고급 수리에 필요한 수리 부품 2개가 부족합니다.");
+                    yield failure("기관계 고급 정비에 필요한 수리 부품 2개가 부족합니다.");
                 }
-                int hull = plugin.engineeringFacilityService().adjust(ShipMetric.HULL, 25);
                 int reactor = plugin.engineeringFacilityService().adjust(ShipMetric.REACTOR, 15);
                 plugin.facilityRegistry().require(actionFacility("engineering"))
                         .setStatus(FacilityStatus.NORMAL);
                 int doors = connections.openAllFaultedConnections();
                 plugin.gameEventRuntimeState().setFlag("door_fault", false);
                 yield result(
-                        "고급 수리 완료 — 선체 " + hull
-                                + "% / 원자로 " + reactor
-                                + "% / 복구된 통로 " + doors + "개"
+                        "기관계 고급 정비 완료 — 원자로 "
+                                + reactor
+                                + "% / 복구된 통로 "
+                                + doors
+                                + "개"
                 );
             }
 
             case "medical.treat" -> medicalTreat(player, 25, 1);
             case "medical.clear_status" -> clearMedicalCondition(player);
             case "medical.infection_test" -> infectionTest(player, false);
+            case "medical.decontaminate" -> {
+                if (!shared().remove(ResourceType.MEDICAL_SUPPLIES, 1)) {
+                    yield failure("의료실 오염 제거에 필요한 공용 의료 물자 1개가 부족합니다.");
+                }
+                plugin.facilityRegistry()
+                        .require(actionFacility("medical"))
+                        .setStatus(FacilityStatus.NORMAL);
+                plugin.gameEventRuntimeState().setFlag("medical_contamination", false);
+                yield result("의료 물자 1개를 사용해 의료실 오염 제거를 완료했습니다.");
+            }
             case "medical.precise_test" -> infectionTest(player, true);
             case "medical.advanced_treatment" -> medicalTreat(player, 50, 1);
             case "medical.suppress_infection" -> suppressInfection(player);
@@ -209,7 +222,27 @@ public final class FacilityActionExecutor {
                     "공용 재고: " + shared().snapshot()
             );
             case "cargo.deposit" -> depositCarriedResources(player);
+            case "cargo.withdraw_repair" -> {
+                if (!shared().remove(ResourceType.REPAIR_PARTS, 1)) {
+                    yield failure("공용 수리 부품이 부족합니다.");
+                }
+                plugin.resourcePhysicalItemService().give(
+                        player,
+                        ResourceType.REPAIR_PARTS,
+                        1
+                );
+                yield result("현장 수리용 수리 부품 1개를 수령했습니다.");
+            }
             case "cargo.process" -> process("circuit_salvage");
+            case "cargo.repair" -> {
+                if (!shared().remove(ResourceType.REPAIR_PARTS, 1)) {
+                    yield failure("화물실 설비 복구에 필요한 공용 수리 부품 1개가 부족합니다.");
+                }
+                plugin.facilityRegistry()
+                        .require(actionFacility("cargo"))
+                        .setStatus(FacilityStatus.NORMAL);
+                yield result("수리 부품 1개를 사용해 화물실 설비를 복구했습니다.");
+            }
             case "cargo.rare" -> result(
                     "희귀 자원 — 생체 샘플 "
                             + shared().quantity(ResourceType.BIO_SAMPLES)
@@ -219,6 +252,18 @@ public final class FacilityActionExecutor {
             case "cargo.efficient_process" -> process("power_cell_refurbish");
 
             case "habitation.supply" -> transferSupply(player);
+            case "habitation.oxygen" -> {
+                if (!shared().remove(ResourceType.REPAIR_PARTS, 1)) {
+                    yield failure("생명유지 계통 복구에 필요한 공용 수리 부품 1개가 부족합니다.");
+                }
+                int value = Math.min(
+                        100,
+                        plugin.shipState().oxygen() + 15
+                );
+                plugin.shipState().set(ShipMetric.OXYGEN, value);
+                plugin.gameEventRuntimeState().setFlag("local_oxygen_drop", false);
+                yield result("생명유지 계통을 복구했습니다. 산소: " + value + "%");
+            }
             case "habitation.maintenance" -> {
                 if (!shared().remove(ResourceType.REPAIR_PARTS, 1)) {
                     yield failure("정비에 사용할 수리 부품이 없습니다.");
@@ -368,6 +413,15 @@ public final class FacilityActionExecutor {
     }
 
     private FacilityActionExecutionResult depositCarriedResources(Player player) {
+        PlayerId playerId = PlayerId.of(player.getUniqueId());
+        Map<String, Integer> beforeProgress = new LinkedHashMap<>();
+        for (var objective : plugin.objectiveEngine().objectives(playerId)) {
+            beforeProgress.put(
+                    objective.definition().id().value(),
+                    objective.progress()
+            );
+        }
+
         Map<ResourceType, Integer> removed =
                 plugin.resourcePhysicalItemService().removeAllFrom(player);
 
@@ -376,14 +430,53 @@ public final class FacilityActionExecutor {
         }
 
         int total = 0;
+        ArrayList<String> deposited = new ArrayList<>();
         for (Map.Entry<ResourceType, Integer> entry : removed.entrySet()) {
             shared().add(entry.getKey(), entry.getValue());
             total += entry.getValue();
+            deposited.add(
+                    resourceName(entry.getKey())
+                            + " "
+                            + entry.getValue()
+                            + "개"
+                            + "→공용 "
+                            + shared().quantity(entry.getKey())
+            );
         }
 
         plugin.telemetryService().recordResourceDeposit(total);
         plugin.objectiveGameplayProgressService().recordDeposit(player, removed);
-        return result("공용 창고에 자원 " + total + "개를 입고했습니다: " + removed);
+
+        int objectiveDelta = 0;
+        for (var objective : plugin.objectiveEngine().objectives(playerId)) {
+            int before = beforeProgress.getOrDefault(
+                    objective.definition().id().value(),
+                    objective.progress()
+            );
+            objectiveDelta += Math.max(0, objective.progress() - before);
+        }
+
+        String objectiveText = objectiveDelta > 0
+                ? " | 개인 목표 +" + objectiveDelta
+                : "";
+
+        return result(
+                "입고 완료 " + total + "개 — "
+                        + String.join(", ", deposited)
+                        + objectiveText
+        );
+    }
+
+    private static String resourceName(ResourceType type) {
+        return switch (type) {
+            case REPAIR_PARTS -> "수리 부품";
+            case CIRCUITS -> "회로판";
+            case POWER_CELLS -> "전력 셀";
+            case FUEL -> "연료";
+            case MEDICAL_SUPPLIES -> "의료 물자";
+            case BIO_SAMPLES -> "생체 샘플";
+            case DATA_CORES -> "데이터 코어";
+        };
     }
 
     private ResourceStore shared() {

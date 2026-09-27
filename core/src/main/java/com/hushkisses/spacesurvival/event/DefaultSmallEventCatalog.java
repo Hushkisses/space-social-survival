@@ -28,7 +28,7 @@ public final class DefaultSmallEventCatalog {
                         new SharedResourceDeltaEffect(ResourceType.POWER_CELLS, -1)),
                 event("cargo_damage", "화물 파손", "화물실 설비 일부가 손상됩니다.",
                         new FacilityStatusEffect(DefaultFacilityCatalog.CARGO, FacilityStatus.DAMAGED)),
-                event("medical_contamination", "의료품 오염", "의료실이 오염되어 점검이 필요합니다.",
+                event("medical_contamination", "의료품 오염", "의료실이 오염되어 복구가 필요합니다.",
                         new FacilityStatusEffect(DefaultFacilityCatalog.MEDICAL, FacilityStatus.DAMAGED),
                         new EventFlagEffect("medical_contamination", true)),
                 event("small_fire", "소형 화재", "선체 내부에서 소형 화재가 발생합니다.",

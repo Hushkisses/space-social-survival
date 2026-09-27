@@ -3,8 +3,11 @@ package com.hushkisses.spacesurvival.paper.resource;
 import com.hushkisses.spacesurvival.map.tile.TileCategory;
 import com.hushkisses.spacesurvival.paper.map.physical.PhysicalShipSnapshot;
 import com.hushkisses.spacesurvival.resource.ResourceType;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Display;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.block.Barrel;
 import org.bukkit.inventory.Inventory;
 
@@ -27,6 +30,7 @@ public final class ResourceWorldService {
     ) {
         Objects.requireNonNull(ship, "ship");
         Random random = new Random(seed ^ 0x7025B11DL);
+        clearCacheLabels(ship);
 
         int caches = 0;
         int stacks = 0;
@@ -69,6 +73,8 @@ public final class ResourceWorldService {
                 continue;
             }
 
+            renderCacheLabel(location);
+
             Inventory inventory = barrel.getInventory();
             inventory.clear();
 
@@ -88,6 +94,24 @@ public final class ResourceWorldService {
         }
 
         return new ResourcePopulationResult(caches, stacks, units);
+    }
+
+    private static void clearCacheLabels(PhysicalShipSnapshot ship) {
+        ship.world().getEntitiesByClass(TextDisplay.class).stream()
+                .filter(entity -> entity.getScoreboardTags().contains("spacesurvival_cache"))
+                .forEach(TextDisplay::remove);
+    }
+
+    private static void renderCacheLabel(Location location) {
+        if (location.getWorld() == null) return;
+
+        TextDisplay display = location.getWorld().spawn(
+                location.clone().add(0.5, 1.8, 0.5),
+                TextDisplay.class
+        );
+        display.addScoreboardTag("spacesurvival_cache");
+        display.setBillboard(Display.Billboard.CENTER);
+        display.text(Component.text("비상 보급 상자\n§7물리 자원"));
     }
 
     private FillResult fill(Inventory inventory, Random random) {

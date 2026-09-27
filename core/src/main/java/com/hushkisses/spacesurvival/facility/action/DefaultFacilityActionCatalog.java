@@ -28,14 +28,15 @@ public final class DefaultFacilityActionCatalog {
 
                 basic("engineering.power", DefaultFacilityCatalog.ENGINEERING, "전력 관리"),
                 basic("engineering.engine", DefaultFacilityCatalog.ENGINEERING, "엔진 관리"),
-                basic("engineering.repair", DefaultFacilityCatalog.ENGINEERING, "핵심 수리"),
+                basic("engineering.repair", DefaultFacilityCatalog.ENGINEERING, "기관실 설비 복구"),
                 advanced("engineering.diagnose", DefaultFacilityCatalog.ENGINEERING, "정밀 고장 진단", RoleCapability.DIAGNOSE_FAULT),
                 advanced("engineering.redistribute", DefaultFacilityCatalog.ENGINEERING, "전력 재배분", RoleCapability.REDISTRIBUTE_POWER),
-                advanced("engineering.advanced_repair", DefaultFacilityCatalog.ENGINEERING, "고급 수리", RoleCapability.ADVANCED_REPAIR),
+                advanced("engineering.advanced_repair", DefaultFacilityCatalog.ENGINEERING, "기관계 고급 정비", RoleCapability.ADVANCED_REPAIR),
 
                 basic("medical.treat", DefaultFacilityCatalog.MEDICAL, "기본 치료"),
                 basic("medical.clear_status", DefaultFacilityCatalog.MEDICAL, "상태이상 제거"),
                 basic("medical.infection_test", DefaultFacilityCatalog.MEDICAL, "기본 감염 검사"),
+                basic("medical.decontaminate", DefaultFacilityCatalog.MEDICAL, "의료실 오염 제거"),
                 advanced("medical.precise_test", DefaultFacilityCatalog.MEDICAL, "감염 정밀 검사", RoleCapability.PRECISE_INFECTION_TEST),
                 advanced("medical.advanced_treatment", DefaultFacilityCatalog.MEDICAL, "고급 치료", RoleCapability.ADVANCED_TREATMENT),
                 advanced("medical.suppress_infection", DefaultFacilityCatalog.MEDICAL, "감염 억제", RoleCapability.SUPPRESS_INFECTION),
@@ -49,13 +50,16 @@ public final class DefaultFacilityActionCatalog {
 
                 basic("cargo.store", DefaultFacilityCatalog.CARGO, "자원 저장"),
                 basic("cargo.deposit", DefaultFacilityCatalog.CARGO, "소지 자원 공용 창고 입고"),
+                basic("cargo.withdraw_repair", DefaultFacilityCatalog.CARGO, "현장 수리 부품 수령"),
                 basic("cargo.sort", DefaultFacilityCatalog.CARGO, "자원 분류"),
                 basic("cargo.process", DefaultFacilityCatalog.CARGO, "자원 가공"),
+                basic("cargo.repair", DefaultFacilityCatalog.CARGO, "화물실 설비 복구"),
                 advanced("cargo.inventory", DefaultFacilityCatalog.CARGO, "정밀 재고 확인", RoleCapability.PRECISE_INVENTORY_CHECK),
                 advanced("cargo.rare", DefaultFacilityCatalog.CARGO, "희귀 자원 판별", RoleCapability.IDENTIFY_RARE_RESOURCE),
                 advanced("cargo.efficient_process", DefaultFacilityCatalog.CARGO, "고효율 가공", RoleCapability.HIGH_EFFICIENCY_PROCESSING),
 
                 basic("habitation.supply", DefaultFacilityCatalog.HABITATION, "기본 보급"),
+                basic("habitation.oxygen", DefaultFacilityCatalog.HABITATION, "생명유지 계통 복구"),
                 basic("habitation.maintenance", DefaultFacilityCatalog.HABITATION, "장비 정비"),
                 basic("habitation.locker", DefaultFacilityCatalog.HABITATION, "개인 보관함")
         );

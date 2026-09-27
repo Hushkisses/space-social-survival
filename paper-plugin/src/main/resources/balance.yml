@@ -14,6 +14,23 @@ map:
 objectives:
   secret-mission-chance-percent: 50
 
+# Playability-phase tuning. These values intentionally start below the
+# current survival-system thresholds so the opening recovery phase cannot
+# be skipped. Tune from playtest evidence; they are not final balance.
+starting-ship:
+  power: 35
+  oxygen: 40
+  hull: 38
+  reactor: 30
+
+# Shared emergency reserve used by the opening recovery loop.
+# Random physical caches remain separate and still matter later.
+starting-shared-resources:
+  repair-parts: 4
+  power-cells: 2
+  fuel: 2
+  medical-supplies: 2
+
 events:
   initial-small-min: 2
   initial-small-max: 3
