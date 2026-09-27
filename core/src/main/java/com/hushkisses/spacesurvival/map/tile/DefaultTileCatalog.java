@@ -24,12 +24,13 @@ public final class DefaultTileCatalog {
         for (int i = 1; i <= 3; i++) {
             tiles.add(tile("junction_" + i, TileCategory.JUNCTION, "교차 구역 " + i, 4));
         }
-        for (int i = 1; i <= 2; i++) {
-            tiles.add(tile("airlock_" + i, TileCategory.AIRLOCK, "에어록 " + i, 3));
-        }
-        for (int i = 1; i <= 4; i++) {
-            tiles.add(tile("auxiliary_" + i, TileCategory.AUXILIARY, "보조 구역 " + i, 3));
-        }
+        tiles.add(tile("airlock_1", TileCategory.AIRLOCK, "주 에어록", 3));
+        tiles.add(tile("airlock_2", TileCategory.AIRLOCK, "보조 에어록", 3));
+
+        tiles.add(tile("auxiliary_1", TileCategory.AUXILIARY, "정비실", 3));
+        tiles.add(tile("auxiliary_2", TileCategory.AUXILIARY, "비상 창고", 3));
+        tiles.add(tile("auxiliary_3", TileCategory.AUXILIARY, "통신 보조실", 3));
+        tiles.add(tile("auxiliary_4", TileCategory.AUXILIARY, "격리실", 3));
 
         return List.copyOf(tiles);
     }
