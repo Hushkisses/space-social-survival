@@ -296,7 +296,7 @@ public final class CrewPdaService implements Listener {
         }
 
         var mapImage = plugin.itemsAdderBridge()
-                .fontImage("spacesurvival:ship_map_gui", -16);
+                .fontImage("spacesurvival:ship_map_gui", -8);
         boolean imageMode = mapImage.isPresent()
                 && plugin.itemsAdderBridge()
                 .createItem("spacesurvival:map_hotspot")
