@@ -61,6 +61,20 @@ class CompactSingleDeckMapGeneratorTest {
     }
 
     @Test
+    void ejectionValidationSeedContainsAirlock() {
+        GeneratedMap map = generator.generate(
+                DefaultTileCatalog.create(),
+                constraints,
+                new Random(1000L)
+        );
+
+        assertTrue(
+                map.tileIds().contains(new TileId("airlock_1")),
+                "seed 1000 must keep an airlock for PX-009 solo validation"
+        );
+    }
+
+    @Test
     void bridgeToEngineeringStaysShort() {
         for (int seed = 0; seed < 100; seed++) {
             GeneratedMap map = generator.generate(
