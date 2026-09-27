@@ -218,6 +218,74 @@ public final class PaperShipWorldService {
         return Optional.ofNullable(activeSnapshot);
     }
 
+    public Optional<Location> detentionSpawn() {
+        PhysicalShipSnapshot ship = activeSnapshot;
+        if (ship == null) return Optional.empty();
+
+        PhysicalTilePlacement habitation = ship.placements().get(new TileId("habitation"));
+        if (habitation == null) return Optional.empty();
+
+        return Optional.of(new Location(
+                ship.world(),
+                habitation.minX() + 4.5,
+                FLOOR_Y + 1.0,
+                habitation.minZ() + 4.5
+        ));
+    }
+
+    public boolean insideDetentionArea(Location location) {
+        PhysicalShipSnapshot ship = activeSnapshot;
+        if (ship == null || location.getWorld() == null
+                || !location.getWorld().equals(ship.world())) {
+            return false;
+        }
+
+        PhysicalTilePlacement habitation = ship.placements().get(new TileId("habitation"));
+        if (habitation == null) return false;
+
+        int minX = habitation.minX() + 3;
+        int maxX = habitation.minX() + 5;
+        int minZ = habitation.minZ() + 3;
+        int maxZ = habitation.minZ() + 5;
+
+        int x = location.getBlockX();
+        int y = location.getBlockY();
+        int z = location.getBlockZ();
+
+        return x >= minX && x <= maxX
+                && z >= minZ && z <= maxZ
+                && y >= FLOOR_Y + 1
+                && y <= FLOOR_Y + 3;
+    }
+
+    public Optional<Location> ejectionChamber() {
+        PhysicalShipSnapshot ship = activeSnapshot;
+        if (ship == null) return Optional.empty();
+
+        return ship.placements().entrySet().stream()
+                .filter(entry -> entry.getKey().value().startsWith("airlock"))
+                .findFirst()
+                .map(entry -> entry.getValue().center(ship.world()));
+    }
+
+    public Optional<Location> ejectionViewpoint() {
+        PhysicalShipSnapshot ship = activeSnapshot;
+        if (ship == null) return Optional.empty();
+
+        return ship.placements().entrySet().stream()
+                .filter(entry -> entry.getKey().value().startsWith("airlock"))
+                .findFirst()
+                .map(entry -> {
+                    PhysicalTilePlacement placement = entry.getValue();
+                    return new Location(
+                            ship.world(),
+                            placement.minX() + placement.size() + 5.5,
+                            FLOOR_Y + 4.0,
+                            placement.minZ() + placement.size() / 2.0 + 0.5
+                    );
+                });
+    }
+
     public Map<TileId, StructurePlacementResult> structurePlacements() {
         return structurePlacements;
     }
@@ -689,6 +757,49 @@ public final class PaperShipWorldService {
                 world.getBlockAt(x, FLOOR_Y + 2, z).setType(Material.IRON_TRAPDOOR, false);
             }
         }
+
+        renderDetentionCell(world, placement);
+    }
+
+    private static void renderDetentionCell(
+            World world,
+            PhysicalTilePlacement placement
+    ) {
+        int outerMinX = placement.minX() + 2;
+        int outerMaxX = placement.minX() + 6;
+        int outerMinZ = placement.minZ() + 2;
+        int outerMaxZ = placement.minZ() + 6;
+
+        for (int x = outerMinX; x <= outerMaxX; x++) {
+            for (int z = outerMinZ; z <= outerMaxZ; z++) {
+                boolean perimeter = x == outerMinX
+                        || x == outerMaxX
+                        || z == outerMinZ
+                        || z == outerMaxZ;
+
+                world.getBlockAt(x, FLOOR_Y, z).setType(
+                        perimeter ? Material.IRON_BLOCK : Material.GRAY_CONCRETE,
+                        false
+                );
+
+                for (int y = FLOOR_Y + 1; y <= FLOOR_Y + 3; y++) {
+                    world.getBlockAt(x, y, z).setType(
+                            perimeter ? Material.IRON_BARS : Material.AIR,
+                            false
+                    );
+                }
+
+                world.getBlockAt(x, FLOOR_Y + 4, z).setType(
+                        perimeter ? Material.IRON_BLOCK : Material.IRON_TRAPDOOR,
+                        false
+                );
+            }
+        }
+
+        int centerX = placement.minX() + 4;
+        int centerZ = placement.minZ() + 4;
+        world.getBlockAt(centerX, FLOOR_Y, centerZ)
+                .setType(Material.RED_CONCRETE, false);
     }
 
     private void renderAuxiliaryInterior(
