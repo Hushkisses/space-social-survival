@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 public final class PaperShipWorldService {
 
-    public static final String WORLD_NAME = "space_ship_compact_v4";
+    public static final String WORLD_NAME = "space_ship_compact_v5";
 
     private static final int FLOOR_Y = CompactSingleDeckLayoutPlanner.FLOOR_Y;
     private static final int ROOM_HEIGHT = 5;
@@ -96,13 +96,13 @@ public final class PaperShipWorldService {
         for (TileId tileId : generated.tileIds()) {
             PhysicalTilePlacement placement = placements.get(tileId);
 
-            // MAP-V4 intentionally ignores legacy large NBT rooms. The compact
+            // MAP-V5 intentionally ignores legacy large NBT rooms. The compact
             // spatial skeleton is the source of truth until its scale is accepted.
             placementResults.put(
                     tileId,
                     new StructurePlacementResult(
                             false,
-                            "MAP-V4",
+                            "MAP-V5",
                             "compact procedural room"
                     )
             );
@@ -118,6 +118,7 @@ public final class PaperShipWorldService {
 
         LinkedHashSet<PhysicalDeckCell> corridorCells = new LinkedHashSet<>();
         LinkedHashSet<PhysicalDeckCell> centerLines = new LinkedHashSet<>();
+        LinkedHashMap<PhysicalDeckCell, Material> navigationLines = new LinkedHashMap<>();
         ArrayList<RenderedConnection> renderedConnections = new ArrayList<>();
 
         int connectionIndex = 0;
@@ -137,6 +138,14 @@ public final class PaperShipWorldService {
 
             centerLines.addAll(centerPath);
             corridorCells.addAll(expandCorridor(centerPath));
+
+            Material routeColor = routeColor(connection);
+            if (routeColor != null) {
+                for (PhysicalDeckCell cell : centerPath) {
+                    navigationLines.put(cell, routeColor);
+                }
+            }
+
             renderedConnections.add(new RenderedConnection(
                     connection,
                     firstDoor,
@@ -149,6 +158,7 @@ public final class PaperShipWorldService {
                 world,
                 corridorCells,
                 centerLines,
+                navigationLines,
                 placements.values()
         );
 
@@ -187,6 +197,7 @@ public final class PaperShipWorldService {
         }
 
         renderHubWayfinding(world, placements);
+        renderInteriorWayfinding(world, placements);
         structurePlacements = Collections.unmodifiableMap(placementResults);
 
         activeSnapshot = new PhysicalShipSnapshot(
@@ -435,6 +446,122 @@ public final class PaperShipWorldService {
         world.getBlockAt(cx, FLOOR_Y, cz).setType(Material.YELLOW_CONCRETE, false);
     }
 
+    private static void renderInteriorWayfinding(
+            World world,
+            Map<TileId, PhysicalTilePlacement> placements
+    ) {
+        PhysicalTilePlacement hub = placements.get(new TileId("junction_1"));
+        if (hub != null) {
+            int cx = hub.center(world).getBlockX();
+            int cz = hub.center(world).getBlockZ();
+
+            paintFloorLine(world, cx, cz, hub.minX(), cz, Material.LIGHT_BLUE_CONCRETE);
+            paintFloorLine(
+                    world,
+                    cx,
+                    cz,
+                    hub.minX() + hub.size() - 1,
+                    cz,
+                    Material.RED_CONCRETE
+            );
+            paintFloorLine(world, cx, cz, cx, hub.minZ(), Material.LIME_CONCRETE);
+            paintFloorLine(
+                    world,
+                    cx,
+                    cz,
+                    cx,
+                    hub.minZ() + hub.size() - 1,
+                    Material.PINK_CONCRETE
+            );
+            world.getBlockAt(cx, FLOOR_Y, cz).setType(Material.YELLOW_CONCRETE, false);
+        }
+
+        PhysicalTilePlacement habitation = placements.get(new TileId("habitation"));
+        if (habitation != null) {
+            int cx = habitation.center(world).getBlockX();
+            int cz = habitation.center(world).getBlockZ();
+            paintFloorLine(
+                    world,
+                    cx,
+                    cz,
+                    habitation.minX() + habitation.size() - 1,
+                    cz,
+                    Material.ORANGE_CONCRETE
+            );
+        }
+
+        PhysicalTilePlacement medical = placements.get(new TileId("medical"));
+        if (medical != null) {
+            int cx = medical.center(world).getBlockX();
+            int cz = medical.center(world).getBlockZ();
+            paintFloorLine(
+                    world,
+                    cx,
+                    cz,
+                    medical.minX() + medical.size() - 1,
+                    cz,
+                    Material.PURPLE_CONCRETE
+            );
+        }
+    }
+
+    private static void paintFloorLine(
+            World world,
+            int startX,
+            int startZ,
+            int endX,
+            int endZ,
+            Material material
+    ) {
+        int x = startX;
+        int z = startZ;
+        world.getBlockAt(x, FLOOR_Y, z).setType(material, false);
+
+        while (x != endX) {
+            x += Integer.compare(endX, x);
+            world.getBlockAt(x, FLOOR_Y, z).setType(material, false);
+        }
+        while (z != endZ) {
+            z += Integer.compare(endZ, z);
+            world.getBlockAt(x, FLOOR_Y, z).setType(material, false);
+        }
+    }
+
+    private static Material routeColor(GeneratedConnection connection) {
+        String first = connection.first().tileId().value();
+        String second = connection.second().tileId().value();
+
+        if (pair(first, second, "bridge", "junction_1")) {
+            return Material.LIGHT_BLUE_CONCRETE;
+        }
+        if (pair(first, second, "junction_1", "engineering")) {
+            return Material.RED_CONCRETE;
+        }
+        if (pair(first, second, "junction_1", "habitation")) {
+            return Material.LIME_CONCRETE;
+        }
+        if (pair(first, second, "habitation", "cargo")) {
+            return Material.ORANGE_CONCRETE;
+        }
+        if (pair(first, second, "junction_1", "medical")) {
+            return Material.PINK_CONCRETE;
+        }
+        if (pair(first, second, "medical", "research")) {
+            return Material.PURPLE_CONCRETE;
+        }
+        return null;
+    }
+
+    private static boolean pair(
+            String first,
+            String second,
+            String a,
+            String b
+    ) {
+        return (first.equals(a) && second.equals(b))
+                || (first.equals(b) && second.equals(a));
+    }
+
     private static void standingSign(
             World world,
             int x,
@@ -524,6 +651,7 @@ public final class PaperShipWorldService {
             World world,
             Set<PhysicalDeckCell> corridorCells,
             Set<PhysicalDeckCell> centerLines,
+            Map<PhysicalDeckCell, Material> navigationLines,
             Collection<PhysicalTilePlacement> placements
     ) {
         for (PhysicalDeckCell cell : corridorCells) {
@@ -531,9 +659,12 @@ public final class PaperShipWorldService {
                 continue;
             }
 
-            Material floor = centerLines.contains(cell)
-                    ? Material.WHITE_CONCRETE
-                    : Material.SMOOTH_STONE;
+            Material floor = navigationLines.getOrDefault(
+                    cell,
+                    centerLines.contains(cell)
+                            ? Material.WHITE_CONCRETE
+                            : Material.SMOOTH_STONE
+            );
 
             world.getBlockAt(cell.x(), FLOOR_Y, cell.z()).setType(floor, false);
             world.getBlockAt(cell.x(), FLOOR_Y + ROOM_HEIGHT, cell.z())
