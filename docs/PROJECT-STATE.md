@@ -285,6 +285,14 @@ Player Comprehension / Playability
     - left HUD shifted further left
     - right sidebar compressed
     - onboarding/activation chat reduced to remove duplicate guidance
+  - second screenshot correction:
+    - movement room-entry ActionBar no longer overwrites the ItemsAdder mission HUD
+    - custom HUD is explicitly re-sent/recalculated on refresh
+    - mission textures are normalized to 112x54 and rendered at native `scale_ratio: 54`
+    - routine role/PDA/opening narration removed from player chat/actionbar
+    - PX-010 start/reset success output is console-only for player-issued commands
+    - right sidebar title changed to `함선 상태` to avoid duplicate branding
+    - stale dropped items inside the ship envelope are cleared before a new ship render
 - Windows/Paper integrated validation: pending
 - Details: `docs/PX/PX-010-playability-harness.md`
 
