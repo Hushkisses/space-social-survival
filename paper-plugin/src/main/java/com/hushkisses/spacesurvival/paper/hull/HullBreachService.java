@@ -4,6 +4,7 @@ import com.hushkisses.spacesurvival.integration.itemsadder.ItemsAdderBridge;
 import com.hushkisses.spacesurvival.map.tile.TileId;
 import com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin;
 import com.hushkisses.spacesurvival.paper.map.physical.PhysicalShipSnapshot;
+import com.hushkisses.spacesurvival.player.PlayerId;
 import com.hushkisses.spacesurvival.resource.ResourceType;
 import com.hushkisses.spacesurvival.ship.ShipMetric;
 import net.kyori.adventure.text.Component;
@@ -138,6 +139,16 @@ public final class HullBreachService implements Listener {
 
         event.setCancelled(true);
         Player player = event.getPlayer();
+        PlayerId playerId = PlayerId.of(player.getUniqueId());
+
+        if (plugin.deathService().isDead(playerId)) {
+            player.sendMessage(
+                    plugin.infectedPlayerService().isInfectedForm(playerId)
+                            ? "§4[감염체] §f감염체 상태에서는 선체를 수리할 수 없습니다."
+                            : "§7[사망 상태] §f사망 상태에서는 선체를 수리할 수 없습니다."
+            );
+            return;
+        }
 
         if (!plugin.resourcePhysicalItemService().remove(
                 player,

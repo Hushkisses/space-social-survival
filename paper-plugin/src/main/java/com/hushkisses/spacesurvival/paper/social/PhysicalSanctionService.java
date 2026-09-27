@@ -8,6 +8,7 @@ import com.hushkisses.spacesurvival.social.sanction.SanctionExecutionResult;
 import com.hushkisses.spacesurvival.social.sanction.SanctionType;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -58,8 +59,7 @@ public final class PhysicalSanctionService {
             }
             case DISARM -> disarm(target);
             case DETAIN -> detain(target);
-            case ACCESS_RESTRICT ->
-                    target.sendMessage("§c[출입 제한] §f시설 콘솔과 모듈 간 통로 사용이 제한됩니다.");
+            case ACCESS_RESTRICT -> restrictAccess(target);
             case EJECT -> eject(target);
         }
 
@@ -67,6 +67,12 @@ public final class PhysicalSanctionService {
                 "sanction.physical",
                 choice.sanction().name() + ":" + target.getName()
         );
+    }
+
+    public boolean detained(Player player) {
+        return plugin.sanctionStateRegistry()
+                .state(PlayerId.of(player.getUniqueId()))
+                .detained();
     }
 
     public boolean accessRestricted(Player player) {
@@ -93,33 +99,77 @@ public final class PhysicalSanctionService {
     }
 
     private void detain(Player player) {
-        var snapshot = plugin.shipWorldService().activeSnapshot().orElse(null);
-        if (snapshot == null) return;
-
-        var placement = snapshot.placements().get(new TileId("habitation"));
-        if (placement == null) {
-            player.teleportAsync(snapshot.bridgeSpawn());
-        } else {
-            player.teleportAsync(placement.center(snapshot.world()));
+        var spawn = plugin.shipWorldService().detentionSpawn().orElse(null);
+        if (spawn == null) {
+            var snapshot = plugin.shipWorldService().activeSnapshot().orElse(null);
+            if (snapshot == null) return;
+            spawn = snapshot.bridgeSpawn();
         }
 
-        player.sendMessage("§6[감금] §f이동이 제한됩니다.");
+        player.teleportAsync(spawn);
+        player.sendTitle(
+                "§6감금 처분",
+                "§f감금 구역 밖으로 이동할 수 없습니다",
+                10,
+                60,
+                10
+        );
+        player.playSound(player.getLocation(), Sound.BLOCK_IRON_DOOR_CLOSE, 1.0f, 0.8f);
+        player.sendMessage("§6[감금] §f보안 처분으로 감금되었습니다.");
+        player.sendMessage("§7가능: 감금 셀 내부 이동, PDA·인벤토리 사용, 허용된 통신");
+        player.sendMessage("§7제한: 셀 밖 이동, 시설 작업, 함선 통로 이용");
+        player.sendMessage("§8이 상태는 현재 제재 상태가 유지되는 동안 계속됩니다.");
+    }
+
+    private void restrictAccess(Player player) {
+        player.sendTitle(
+                "§c출입 권한 제한",
+                "§f시설 콘솔과 제한 통로를 사용할 수 없습니다",
+                10,
+                50,
+                10
+        );
+        player.playSound(player.getLocation(), Sound.BLOCK_IRON_DOOR_CLOSE, 0.8f, 1.1f);
+        player.sendMessage("§c[출입 제한] §f시설 콘솔과 모듈 간 통로 사용이 제한됩니다.");
+        player.sendMessage("§7이동 가능한 공개 구역과 PDA 사용은 계속 가능합니다.");
     }
 
     private void eject(Player player) {
-        var snapshot = plugin.shipWorldService().activeSnapshot().orElse(null);
-        if (snapshot != null) {
-            var airlock = snapshot.placements().entrySet().stream()
-                    .filter(entry -> entry.getKey().value().startsWith("airlock"))
-                    .findFirst()
-                    .map(entry -> entry.getValue().center(snapshot.world()))
-                    .orElse(snapshot.bridgeSpawn());
-            player.teleportAsync(airlock);
+        var chamber = plugin.shipWorldService().ejectionChamber().orElse(null);
+        if (chamber != null) {
+            player.teleportAsync(chamber);
         }
 
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
+        player.setGameMode(GameMode.ADVENTURE);
+        player.sendTitle(
+                "§4추방 절차",
+                "§c에어록 감압 중...",
+                5,
+                40,
+                5
+        );
+        player.playSound(player.getLocation(), Sound.BLOCK_BEACON_DEACTIVATE, 1.0f, 0.7f);
+        player.sendMessage("§4[추방] §f에어록 추방 절차가 시작되었습니다.");
+
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            if (!player.isOnline() || !ejected(player)) {
+                return;
+            }
+
             player.setGameMode(GameMode.SPECTATOR);
+            plugin.shipWorldService().ejectionViewpoint()
+                    .ifPresent(player::teleportAsync);
+
+            player.sendTitle(
+                    "§4추방 완료",
+                    "§7생존 승무원으로서의 행동이 종료되었습니다",
+                    10,
+                    70,
+                    10
+            );
             player.sendMessage("§4[추방] §f우주선에서 추방되었습니다.");
-        });
+            player.sendMessage("§7시설 작업·함선 내 이동은 불가능합니다.");
+            player.sendMessage("§7개인 목표는 게임 종료 전까지 공개되지 않습니다.");
+        }, 40L);
     }
 }

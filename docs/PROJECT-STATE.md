@@ -214,6 +214,38 @@ Player Comprehension / Playability
 - GitHub Actions: SUCCESS (Build #900)
 - Windows/Paper validation: pending
 
+## PX-009 Death / Detention / Ejection UX
+- Status: IMPLEMENTED — Windows/Paper validated; merge pending parent PR chain
+- Development branch: `dev/PX-009-terminal-state-ux`
+- Draft PR: #28
+- Base: `dev/physical-ship-layout-v2`
+- death:
+  - normal dead -> Spectator with explicit rule presentation
+  - infected scenario conversion -> Adventure infected form with post-death goals
+  - dropped functional equipment/resources remain recoverable
+  - living/dead normal text chat is separated
+- detention:
+  - physical 5x5 barred cell in Habitation with 3x3 walkable interior
+  - detained player may move inside but cannot leave
+  - facility work blocked while detained
+- access restriction:
+  - explicit title/sound/state feedback
+  - existing facility/door enforcement retained
+- ejection:
+  - existing airlock prerequisite retained
+  - staged airlock presentation -> delayed Spectator -> outside-ship viewpoint
+- post-death facility and physical hull repair actions are blocked
+- solo validation commands:
+  - `/space match devstate death`
+  - `/space match devstate detain`
+  - `/space match devstate access`
+  - `/space match devstate eject`
+- seed `1000` is test-pinned to include `airlock_1` for ejection validation
+- GitHub Actions: SUCCESS (Build #977)
+- Windows/Paper integrated validation: PASS — user reported all requested PX-009 checks working on 2026-09-27
+- Do not merge PR #28 ahead of its parent PR validation/merge order.
+- Details: `docs/PX/PX-009-terminal-state-ux.md`
+
 ## PX-008 Meeting UX
 - GitHub Actions full test/build: SUCCESS (Build #815)
 - meeting is now staged as discussion -> voting -> result instead of opening the vote GUI immediately
@@ -226,8 +258,9 @@ Player Comprehension / Playability
 - facility work is paused during discussion/voting
 - Windows/Paper integrated validation: pending
 
-## Next after PX-008 validation
-- PX-009 Death / Detention / Ejection UX
+## Next after current validation stack
+- PX-009 Windows/Paper validation: PASS
+- remaining parent-stack validation/merge ordering is preserved
 - PX-010 1-3 Player End-to-End Playability Harness
 - do not expand roles/objectives/events/scenarios for content volume before the PX exit gate
 

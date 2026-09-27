@@ -3,6 +3,11 @@ package com.hushkisses.spacesurvival.paper.command;
 import com.hushkisses.spacesurvival.lobby.LobbyJoinResult;
 import com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin;
 import com.hushkisses.spacesurvival.paper.match.MatchSetupSnapshot;
+import com.hushkisses.spacesurvival.player.PlayerId;
+import com.hushkisses.spacesurvival.social.sanction.SanctionChoice;
+import com.hushkisses.spacesurvival.social.sanction.SanctionExecutionContext;
+import com.hushkisses.spacesurvival.social.sanction.SanctionExecutionResult;
+import com.hushkisses.spacesurvival.social.sanction.SanctionType;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -27,6 +32,7 @@ public final class MatchCommandHandler {
         return switch (args[1].toLowerCase(Locale.ROOT)) {
             case "start" -> start(sender, args, false);
             case "devstart" -> start(sender, args, true);
+            case "devstate" -> devState(sender, args);
             case "status" -> status(sender);
             case "reset" -> reset(sender);
             case "bridge" -> bridge(sender);
@@ -82,6 +88,101 @@ public final class MatchCommandHandler {
             sender.sendMessage("§c매치를 준비할 수 없습니다: " + exception.getMessage());
         }
         return true;
+    }
+
+    private boolean devState(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("spacesurvival.admin")) {
+            sender.sendMessage("§c개발 상태 테스트 권한이 없습니다.");
+            return true;
+        }
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§c이 명령어는 게임 안의 플레이어만 사용할 수 있습니다.");
+            return true;
+        }
+        if (args.length < 3) {
+            sendDevStateUsage(sender);
+            return true;
+        }
+
+        PlayerId playerId = PlayerId.of(player.getUniqueId());
+
+        return switch (args[2].toLowerCase(Locale.ROOT)) {
+            case "death" -> {
+                if (player.isDead()) {
+                    sender.sendMessage("§c이미 사망 상태입니다.");
+                } else {
+                    sender.sendMessage("§ePX-009 일반 사망 전환을 강제합니다.");
+                    player.setHealth(0.0);
+                }
+                yield true;
+            }
+            case "detain" -> applyDevSanction(
+                    sender,
+                    playerId,
+                    SanctionType.DETAIN
+            );
+            case "access" -> applyDevSanction(
+                    sender,
+                    playerId,
+                    SanctionType.ACCESS_RESTRICT
+            );
+            case "eject" -> applyDevSanction(
+                    sender,
+                    playerId,
+                    SanctionType.EJECT
+            );
+            default -> {
+                sendDevStateUsage(sender);
+                yield true;
+            }
+        };
+    }
+
+    private boolean applyDevSanction(
+            CommandSender sender,
+            PlayerId target,
+            SanctionType type
+    ) {
+        boolean airlockAvailable = plugin.shipWorldService().activeSnapshot()
+                .map(snapshot -> snapshot.generatedMap().tileIds().stream()
+                        .anyMatch(tileId -> tileId.value().startsWith("airlock")))
+                .orElse(false);
+
+        SanctionChoice choice = new SanctionChoice(type, target);
+        SanctionExecutionResult execution = plugin.sanctionExecutor().execute(
+                choice,
+                new SanctionExecutionContext(
+                        true,
+                        true,
+                        true,
+                        airlockAvailable
+                )
+        );
+
+        if (!execution.executed()) {
+            sender.sendMessage(
+                    "§c개발 상태 강제 적용 실패: §f"
+                            + execution.failureReason()
+            );
+            if (type == SanctionType.EJECT && !airlockAvailable) {
+                sender.sendMessage(
+                        "§7현재 시드에는 에어록이 없어 추방 전제조건을 충족하지 않습니다."
+                );
+            }
+            return true;
+        }
+
+        plugin.physicalSanctionService().apply(choice, execution);
+        sender.sendMessage("§aPX-009 개발 상태 적용: §f" + type.name());
+        return true;
+    }
+
+    private static void sendDevStateUsage(CommandSender sender) {
+        sender.sendMessage("§e사용법: /space match devstate death");
+        sender.sendMessage("§e사용법: /space match devstate detain");
+        sender.sendMessage("§e사용법: /space match devstate access");
+        sender.sendMessage("§e사용법: /space match devstate eject");
+        sender.sendMessage("§8상태 초기화는 /space match reset 을 사용하십시오.");
     }
 
     private boolean status(CommandSender sender) {
@@ -152,6 +253,7 @@ public final class MatchCommandHandler {
     private static void sendUsage(CommandSender sender) {
         sender.sendMessage("§c사용법: /space match start [seed]");
         sender.sendMessage("§c사용법: /space match devstart [seed] §7- 최소 인원 무시 테스트 강제 시작");
+        sender.sendMessage("§c사용법: /space match devstate <death|detain|access|eject> §7- PX-009 1인 검증");
         sender.sendMessage("§c사용법: /space match status");
         sender.sendMessage("§c사용법: /space match reset");
         sender.sendMessage("§c사용법: /space match bridge");

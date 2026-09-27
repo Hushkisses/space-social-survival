@@ -33,6 +33,7 @@ import com.hushkisses.spacesurvival.objective.ObjectiveRegistry;
 import com.hushkisses.spacesurvival.objective.secret.SecretMissionService;
 import com.hushkisses.spacesurvival.paper.config.PluginConfiguration;
 import com.hushkisses.spacesurvival.paper.config.PluginConfigurationLoader;
+import com.hushkisses.spacesurvival.paper.death.DeathCommunicationListener;
 import com.hushkisses.spacesurvival.paper.death.PlayerDeathStateListener;
 import com.hushkisses.spacesurvival.paper.ending.EndingRuntimeService;
 import com.hushkisses.spacesurvival.paper.ending.MatchResultRuntimeService;
@@ -316,6 +317,10 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         );
         getServer().getPluginManager().registerEvents(
                 new PlayerDeathStateListener(this),
+                this
+        );
+        getServer().getPluginManager().registerEvents(
+                new DeathCommunicationListener(this),
                 this
         );
         getServer().getPluginManager().registerEvents(
