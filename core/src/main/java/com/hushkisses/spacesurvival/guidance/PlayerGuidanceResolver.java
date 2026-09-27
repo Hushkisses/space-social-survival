@@ -62,9 +62,9 @@ public final class PlayerGuidanceResolver {
         if (ship.hull() < requirements.minHull()) {
             return new PublicProblem(
                     "선체 안정도 부족 " + ship.hull() + "%",
-                    DefaultFacilityCatalog.ENGINEERING,
-                    "수리 부품",
-                    "기관실에서 핵심 수리를 실행하십시오"
+                    DefaultFacilityCatalog.CARGO,
+                    "현장 수리 부품",
+                    "화물실에서 [현장 수리 부품 수령] 후 표시된 선체 균열을 직접 수리하십시오"
             );
         }
         if (ship.reactor() < requirements.minReactor()) {
@@ -78,9 +78,9 @@ public final class PlayerGuidanceResolver {
         if (ship.oxygen() < requirements.minOxygen()) {
             return new PublicProblem(
                     "산소 수준 저하 " + ship.oxygen() + "%",
-                    DefaultFacilityCatalog.ENGINEERING,
+                    DefaultFacilityCatalog.HABITATION,
                     "수리 부품 1개",
-                    "기관실 콘솔에서 [산소 계통 복구]를 실행하십시오"
+                    "생활구역 콘솔에서 [생명유지 계통 복구]를 실행하십시오"
             );
         }
 
