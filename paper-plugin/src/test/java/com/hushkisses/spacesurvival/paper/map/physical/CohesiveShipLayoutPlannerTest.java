@@ -42,11 +42,11 @@ class CohesiveShipLayoutPlannerTest {
 
         for (int i = 0; i < placements.size(); i++) {
             for (int j = i + 1; j < placements.size(); j++) {
+                PhysicalTilePlacement first = placements.get(i);
+                PhysicalTilePlacement second = placements.get(j);
                 assertFalse(
-                        overlaps(placements.get(i), placements.get(j)),
-                        () -> placements.get(i).tileId()
-                                + " overlaps "
-                                + placements.get(j).tileId()
+                        overlaps(first, second),
+                        first.tileId() + " overlaps " + second.tileId()
                 );
             }
         }
