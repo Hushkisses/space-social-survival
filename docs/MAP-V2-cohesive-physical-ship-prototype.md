@@ -1,171 +1,178 @@
-# MAP-V4 Dense Single-Deck Ship Prototype
+# MAP-V5 Dense Large-Room Ship Prototype
 
 ## Status
 
 - Experimental branch: `dev/physical-ship-layout-v2`
 - Draft PR: #27
-- Purpose: make the ship readable and dense enough for 6-10 players
-- GitHub Actions: SUCCESS (Build #885)
+- Purpose: preserve large usable rooms while removing wasted corridor distance
+- GitHub Actions: SUCCESS (Build #900)
 - Windows/Paper playtest: pending
 
-## Reset from V3
+## Design correction from V4
 
-MAP-V3 was still too hard to navigate:
+MAP-V4 made the whole ship smaller by shrinking rooms.
 
-- upper/lower decks added cognitive cost without enough gameplay value
-- route holograms were not intuitive
-- repeated junction/deck spaces made the ship feel larger than necessary
-- traversal still felt like learning a generated graph instead of learning a spacecraft
+Playtest feedback clarified that room size was not the problem.
 
-MAP-V4 removes those assumptions.
+The actual problem was:
+
+- too much empty travel distance between rooms
+- navigation depended too much on abstract signs/holograms
+- the ship needed a more readable route language
+
+MAP-V5 therefore restores room size and compresses only the connections between them.
 
 ## Physical scale
 
-Single deck only.
+Single deck remains.
 
-Fixed physical envelope:
+Core room sizes:
 
-- X: 0 through 49
-- Z: -19 through 19
-- Y: one gameplay deck at 80
+- Bridge: 15x15
+- Engineering: 15x15
+- Habitation: 13x13
+- Cargo: 13x13
+- Medical: 13x13
+- Research: 13x13
+- Central hub: 11x11
 
-Room sizes:
+Optional rooms are 11x11.
 
-- normal core rooms: 9x9 or 11x11
-- Cargo / Engineering: 11x11
-- optional rooms: 9x9
+Core connected-room gaps are generally 1-3 blocks.
 
-The expected farthest normal core-facility trip is intentionally short enough for a 6-10 player social game.
+The full optional-slot envelope is approximately:
 
-## Unique core facilities
+- X: 0 through 60
+- Z: -23 through 23
 
-Exactly one of each core facility is generated:
+The usable ship feels denser than that envelope because the core rooms occupy most of the footprint instead of leaving long corridors.
+
+## Stable core geography
+
+Exactly one of each core facility remains:
 
 - Bridge
 - Engineering
+- Habitation
+- Cargo
 - Medical
 - Research
-- Cargo
-- Habitation
 
-There is one central hub only:
+One central hub remains.
 
-- `junction_1`
+Primary layout:
 
-The following are not generated in MAP-V4:
+```text
+             Habitation --- Cargo
+                  |           |
+Bridge --- Central Hub --- Engineering
+                  |           |
+               Medical --- Research
+```
 
-- `junction_2`
-- `junction_3`
-- corridor_1 through corridor_5
-- airlock_2
+Optional rooms attach directly to the outside of those large rooms.
 
-No duplicate core facility exists in the topology.
+## Permanent floor routes
 
-## Compact skeleton
+Floating destination holograms are not the primary navigation system.
 
-The central hub is the primary orientation landmark.
+Permanent floor route colors are now used:
 
-From the hub:
+- cyan/light blue: Bridge
+- red: Engineering
+- lime: Habitation
+- orange: Cargo
+- pink: Medical
+- purple: Research
 
-- west: Bridge
-- north: Habitation, then Cargo
-- south: Medical, then Research
-- east: Engineering
+The central hub floor contains four colored rays:
 
-Two short side loops connect:
+- west -> Bridge
+- east -> Engineering
+- north -> Habitation / Cargo
+- south -> Medical / Research
 
-- Habitation -> Cargo -> Engineering
-- Medical -> Research -> Engineering
+Habitation carries the orange branch toward Cargo.
 
-This gives alternate movement without making a maze.
+Medical carries the purple branch toward Research.
+
+The physical corridor center line uses the same color whenever it is part of a primary route.
+
+Emergency guidance still uses a small temporary lime doorway marker, but that marker is secondary to permanent navigation.
+
+## PDA schematic map
+
+The PDA map is no longer a sequential list of generated graph nodes.
+
+It is a fixed schematic whose item positions mirror the physical ship:
+
+- Habitation / Cargo on the north side
+- Bridge / Hub / Engineering in the center
+- Medical / Research on the south side
+- optional rooms appear only when generated
+
+Markers:
+
+- green dot: current room
+- yellow diamond: current urgent target
+
+The same facility colors used on the physical floor are used in the PDA.
+
+The map still exposes connection state details without showing hidden scenario truth.
 
 ## Randomness
 
-The ship skeleton and core-facility geography stay stable between matches.
+The core geography remains stable so players can learn the ship.
 
-Each match adds exactly three optional rooms selected from:
+Each match still varies:
 
-- Maintenance Room
-- Emergency Storage
-- Communications Auxiliary
-- Isolation Room
-- Main Airlock
-
-Randomness is therefore moved toward:
-
-- which auxiliary rooms exist
-- event/damage locations
-- resource locations
+- three optional rooms
+- damage / incident locations
+- hull breach location
+- resources
 - connection faults / locks
-
-rather than randomizing the basic geography players need to learn.
-
-## Wayfinding
-
-Floating route/destination holograms were removed.
-
-Permanent physical signs are used instead:
-
-Central hub:
-
-- ← Bridge
-- Engineering →
-- ↑ Habitation / Cargo
-- ↓ Medical / Research
-
-Every room also receives a physical sign with its room name.
-
-The current urgent target is represented only by a small lime floor marker at recommended doorways. The HUD still states the target facility.
-
-The goal is:
-
-- HUD tells the player **what** facility is needed.
-- fixed ship geography/signs tell the player **where** it is.
-- dynamic floor markers only help at a doorway; they are not the primary navigation system.
+- scenario state
 
 ## Lighting
 
-Power-linked lighting remains, but emergency lighting is brighter than V3:
+Power-linked lighting remains:
 
 - 70-100: white, light 15
 - 40-69: yellow, light 13
 - 15-39: red emergency, light 10
 - 0-14: near-blackout, light 4
 
-Starting power 35 therefore remains visibly damaged while still being navigable.
+## Runtime isolation
 
-## World isolation / cleanup
+MAP-V5 uses:
 
-MAP-V4 uses:
+`space_ship_compact_v5`
 
-`space_ship_compact_v4`
+This prevents old V2/V3/V4 prototype blocks from visually overlapping the current test.
 
-Legacy prototype worlds do not overlap with it.
-
-Before each generation, the full compact ship envelope is cleared. Legacy 15x15 NBT modules are intentionally not loaded until the final footprint is accepted.
+Legacy large NBT modules remain disabled until physical scale is accepted.
 
 ## Automated validation
 
-Build #885 passes:
+Build #900 passes:
 
 - full project test/build
 - 100 generated seeds
-- exactly 10 meaningful rooms per match
-- exactly one of each core facility
-- no corridor rooms
+- exactly one of every core facility
+- no independent corridor rooms
 - no second hub
 - connected topology
-- Bridge -> Engineering graph distance <= 2
-- all physical room slots stay in the single-deck compact envelope
-- no room overlap
+- large core-room minimum sizes are enforced
+- every primary core connection gap is <= 3 blocks
+- no physical room overlap
 
 ## Playtest questions
 
-Evaluate these before architecture polish:
+Evaluate these first:
 
-1. Can you understand the whole ship after one walk around?
-2. Is the central hub immediately recognizable?
-3. Can you find Bridge / Engineering / Medical without relying on a hologram?
-4. Is the ship now dense enough for 6-10 players to meet naturally?
-5. Are the two small side loops useful, or should the map be even simpler?
-6. Are three optional rooms too many, too few, or appropriate?
+1. Do the restored room sizes feel comfortable again?
+2. Are the gaps between rooms now short enough?
+3. Can you navigate by floor color without reading every sign?
+4. Does the PDA map immediately explain the ship's shape?
+5. Does the ship feel dense enough for 6-10 players without feeling cramped?
+6. Should the central hub remain, or should rooms connect even more directly?
