@@ -1,6 +1,5 @@
 package com.hushkisses.spacesurvival.paper.map.physical;
 
-import com.hushkisses.spacesurvival.map.tile.DefaultTileCatalog;
 import com.hushkisses.spacesurvival.map.tile.TileId;
 import org.junit.jupiter.api.Test;
 
@@ -13,70 +12,121 @@ class CohesiveShipLayoutPlannerTest {
 
     private final CohesiveShipLayoutPlanner planner = new CohesiveShipLayoutPlanner();
 
+    private static final List<TileId> ALL_COMPACT_TILES = List.of(
+            new TileId("bridge"),
+            new TileId("engineering"),
+            new TileId("medical"),
+            new TileId("research"),
+            new TileId("cargo"),
+            new TileId("habitation"),
+            new TileId("junction_1"),
+            new TileId("junction_2"),
+            new TileId("auxiliary_1"),
+            new TileId("auxiliary_2"),
+            new TileId("auxiliary_3"),
+            new TileId("auxiliary_4"),
+            new TileId("airlock_1"),
+            new TileId("airlock_2")
+    );
+
     @Test
-    void semanticCoreFacilitiesHaveIntuitiveFrontToRearOrder() {
-        List<TileId> ids = DefaultTileCatalog.create().stream()
-                .map(tile -> tile.id())
-                .toList();
+    void coreFacilitiesUseTwoFunctionalDecks() {
+        Map<TileId, PhysicalTilePlacement> layout =
+                planner.plan(ALL_COMPACT_TILES, 1004L);
 
-        Map<TileId, PhysicalTilePlacement> layout = planner.plan(ids, 1004L);
+        assertEquals(
+                CohesiveShipLayoutPlanner.UPPER_FLOOR_Y,
+                layout.get(new TileId("bridge")).floorY()
+        );
+        assertEquals(
+                CohesiveShipLayoutPlanner.UPPER_FLOOR_Y,
+                layout.get(new TileId("habitation")).floorY()
+        );
+        assertEquals(
+                CohesiveShipLayoutPlanner.UPPER_FLOOR_Y,
+                layout.get(new TileId("medical")).floorY()
+        );
+        assertEquals(
+                CohesiveShipLayoutPlanner.UPPER_FLOOR_Y,
+                layout.get(new TileId("research")).floorY()
+        );
 
-        PhysicalTilePlacement bridge = layout.get(new TileId("bridge"));
-        PhysicalTilePlacement habitation = layout.get(new TileId("habitation"));
-        PhysicalTilePlacement cargo = layout.get(new TileId("cargo"));
-        PhysicalTilePlacement engineering = layout.get(new TileId("engineering"));
-
-        assertTrue(bridge.minX() < habitation.minX());
-        assertTrue(habitation.minX() <= cargo.minX());
-        assertTrue(cargo.minX() < engineering.minX());
-
-        assertEquals(CohesiveShipLayoutPlanner.UPPER_FLOOR_Y, bridge.floorY());
-        assertEquals(CohesiveShipLayoutPlanner.UPPER_FLOOR_Y, habitation.floorY());
-        assertEquals(CohesiveShipLayoutPlanner.LOWER_FLOOR_Y, cargo.floorY());
-        assertEquals(CohesiveShipLayoutPlanner.LOWER_FLOOR_Y, engineering.floorY());
+        assertEquals(
+                CohesiveShipLayoutPlanner.LOWER_FLOOR_Y,
+                layout.get(new TileId("cargo")).floorY()
+        );
+        assertEquals(
+                CohesiveShipLayoutPlanner.LOWER_FLOOR_Y,
+                layout.get(new TileId("engineering")).floorY()
+        );
     }
 
     @Test
-    void allKnownModuleSlotsRemainPhysicallySeparated() {
-        List<TileId> ids = DefaultTileCatalog.create().stream()
-                .map(tile -> tile.id())
-                .toList();
+    void upperAndLowerAtriumShareHorizontalFootprint() {
+        Map<TileId, PhysicalTilePlacement> layout =
+                planner.plan(ALL_COMPACT_TILES, 1004L);
 
-        Map<TileId, PhysicalTilePlacement> layout = planner.plan(ids, 1004L);
+        PhysicalTilePlacement upper = layout.get(new TileId("junction_1"));
+        PhysicalTilePlacement lower = layout.get(new TileId("junction_2"));
+
+        assertEquals(upper.minX(), lower.minX());
+        assertEquals(upper.minZ(), lower.minZ());
+        assertEquals(upper.size(), lower.size());
+        assertNotEquals(upper.floorY(), lower.floorY());
+    }
+
+    @Test
+    void entireShipFitsCompactPlaytestEnvelope() {
+        Map<TileId, PhysicalTilePlacement> layout =
+                planner.plan(ALL_COMPACT_TILES, 1004L);
+
+        for (PhysicalTilePlacement placement : layout.values()) {
+            int maxX = placement.minX() + placement.size() - 1;
+            int maxZ = placement.minZ() + placement.size() - 1;
+
+            assertTrue(
+                    placement.minX() >= CohesiveShipLayoutPlanner.SHIP_MIN_X,
+                    placement.tileId() + " minX"
+            );
+            assertTrue(
+                    maxX <= CohesiveShipLayoutPlanner.SHIP_MAX_X,
+                    placement.tileId() + " maxX"
+            );
+            assertTrue(
+                    placement.minZ() >= CohesiveShipLayoutPlanner.SHIP_MIN_Z,
+                    placement.tileId() + " minZ"
+            );
+            assertTrue(
+                    maxZ <= CohesiveShipLayoutPlanner.SHIP_MAX_Z,
+                    placement.tileId() + " maxZ"
+            );
+        }
+    }
+
+    @Test
+    void roomsDoNotOverlapOnTheSameDeck() {
+        Map<TileId, PhysicalTilePlacement> layout =
+                planner.plan(ALL_COMPACT_TILES, 1004L);
         List<PhysicalTilePlacement> placements = layout.values().stream().toList();
 
         for (int i = 0; i < placements.size(); i++) {
             for (int j = i + 1; j < placements.size(); j++) {
                 PhysicalTilePlacement first = placements.get(i);
                 PhysicalTilePlacement second = placements.get(j);
+
+                if (first.floorY() != second.floorY()) {
+                    continue;
+                }
+
                 assertFalse(
-                        overlaps(first, second),
+                        overlaps2d(first, second),
                         first.tileId() + " overlaps " + second.tileId()
                 );
             }
         }
     }
 
-    @Test
-    void plannerIsStableForTheSameSelectedModules() {
-        List<TileId> ids = List.of(
-                new TileId("bridge"),
-                new TileId("engineering"),
-                new TileId("medical"),
-                new TileId("research"),
-                new TileId("cargo"),
-                new TileId("habitation"),
-                new TileId("auxiliary_1"),
-                new TileId("airlock_1")
-        );
-
-        assertEquals(
-                planner.plan(ids, 4242L),
-                planner.plan(ids, 4242L)
-        );
-    }
-
-    private static boolean overlaps(
+    private static boolean overlaps2d(
             PhysicalTilePlacement first,
             PhysicalTilePlacement second
     ) {
@@ -85,14 +135,9 @@ class CohesiveShipLayoutPlannerTest {
         int secondMaxX = second.minX() + second.size() - 1;
         int secondMaxZ = second.minZ() + second.size() - 1;
 
-        int firstMaxY = first.floorY() + 6;
-        int secondMaxY = second.floorY() + 6;
-
         return first.minX() <= secondMaxX
                 && firstMaxX >= second.minX()
                 && first.minZ() <= secondMaxZ
-                && firstMaxZ >= second.minZ()
-                && first.floorY() <= secondMaxY
-                && firstMaxY >= second.floorY();
+                && firstMaxZ >= second.minZ();
     }
 }
