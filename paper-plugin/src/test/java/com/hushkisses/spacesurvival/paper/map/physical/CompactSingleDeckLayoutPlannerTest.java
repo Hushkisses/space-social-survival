@@ -83,6 +83,34 @@ class CompactSingleDeckLayoutPlannerTest {
         assertEquals(1, count(layout, "habitation"));
     }
 
+    @Test
+    void coreRoomsStayGenerousWhileConnectedGapsStayShort() {
+        Map<TileId, PhysicalTilePlacement> layout = planner.plan(ALL);
+
+        for (String id : List.of(
+                "bridge",
+                "engineering",
+                "medical",
+                "research",
+                "cargo",
+                "habitation"
+        )) {
+            assertTrue(
+                    layout.get(new TileId(id)).size() >= 13,
+                    id + " should remain at least 13x13"
+            );
+        }
+
+        assertTrue(gap(layout, "bridge", "junction_1") <= 3);
+        assertTrue(gap(layout, "junction_1", "engineering") <= 3);
+        assertTrue(gap(layout, "junction_1", "habitation") <= 3);
+        assertTrue(gap(layout, "junction_1", "medical") <= 3);
+        assertTrue(gap(layout, "habitation", "cargo") <= 3);
+        assertTrue(gap(layout, "medical", "research") <= 3);
+        assertTrue(gap(layout, "cargo", "engineering") <= 3);
+        assertTrue(gap(layout, "research", "engineering") <= 3);
+    }
+
     private static long count(
             Map<TileId, PhysicalTilePlacement> layout,
             String id
@@ -90,6 +118,37 @@ class CompactSingleDeckLayoutPlannerTest {
         return layout.keySet().stream()
                 .filter(tileId -> tileId.value().equals(id))
                 .count();
+    }
+
+    private static int gap(
+            Map<TileId, PhysicalTilePlacement> layout,
+            String firstId,
+            String secondId
+    ) {
+        PhysicalTilePlacement first = layout.get(new TileId(firstId));
+        PhysicalTilePlacement second = layout.get(new TileId(secondId));
+
+        int firstMaxX = first.minX() + first.size() - 1;
+        int firstMaxZ = first.minZ() + first.size() - 1;
+        int secondMaxX = second.minX() + second.size() - 1;
+        int secondMaxZ = second.minZ() + second.size() - 1;
+
+        int xGap = Math.max(
+                0,
+                Math.max(
+                        second.minX() - firstMaxX - 1,
+                        first.minX() - secondMaxX - 1
+                )
+        );
+        int zGap = Math.max(
+                0,
+                Math.max(
+                        second.minZ() - firstMaxZ - 1,
+                        first.minZ() - secondMaxZ - 1
+                )
+        );
+
+        return Math.max(xGap, zGap);
     }
 
     private static boolean overlaps(
