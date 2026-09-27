@@ -141,8 +141,8 @@ public final class FacilityMenuService implements Listener {
         List<String> lore = switch (facilityId.value()) {
             case "engineering" -> List.of(
                     "§7전력: §f" + ship.power() + "%",
-                    "§7선체: §f" + ship.hull() + "%",
-                    "§7원자로: §f" + ship.reactor() + "%"
+                    "§7원자로: §f" + ship.reactor() + "%",
+                    "§8선체 균열은 손상 현장에서 직접 수리합니다."
             );
             case "medical" -> List.of(
                     "§7산소: §f" + ship.oxygen() + "%",
@@ -157,7 +157,8 @@ public final class FacilityMenuService implements Listener {
                     "§7산소: §f" + ship.oxygen() + "%"
             );
             case "habitation" -> List.of(
-                    "§7산소: §f" + ship.oxygen() + "%"
+                    "§7산소: §f" + ship.oxygen() + "%",
+                    "§8생활구역에서 생명유지 계통을 복구합니다."
             );
             default -> List.of(
                     "§7전력: §f" + ship.power() + "%",
@@ -341,13 +342,13 @@ public final class FacilityMenuService implements Listener {
         return switch (id) {
             case "engineering.power" -> List.of(new Requirement(ResourceType.POWER_CELLS, 1));
             case "engineering.engine" -> List.of(new Requirement(ResourceType.FUEL, 1));
-            case "engineering.repair", "engineering.oxygen" ->
-                    List.of(new Requirement(ResourceType.REPAIR_PARTS, 1));
             case "engineering.advanced_repair" -> List.of(new Requirement(ResourceType.REPAIR_PARTS, 2));
             case "medical.treat", "medical.clear_status", "medical.decontaminate",
                     "medical.advanced_treatment", "medical.suppress_infection" ->
                     List.of(new Requirement(ResourceType.MEDICAL_SUPPLIES, 1));
             case "research.sample" -> List.of(new Requirement(ResourceType.BIO_SAMPLES, 1));
+            case "habitation.oxygen" -> List.of(new Requirement(ResourceType.REPAIR_PARTS, 1));
+            case "cargo.withdraw_repair" -> List.of(new Requirement(ResourceType.REPAIR_PARTS, 1));
             case "cargo.process" -> List.of(new Requirement(ResourceType.REPAIR_PARTS, 2));
             case "cargo.repair" -> List.of(new Requirement(ResourceType.REPAIR_PARTS, 1));
             case "cargo.efficient_process" -> List.of(
@@ -368,11 +369,10 @@ public final class FacilityMenuService implements Listener {
             case "bridge.long_range_comms" -> "장거리 통신 계통 정상화";
             case "engineering.power" -> "전력 +15";
             case "engineering.engine" -> "원자로/엔진 안정도 +10";
-            case "engineering.repair" -> "선체 안정도 +12, 기관실 손상 복구 가능";
-            case "engineering.oxygen" -> "수리 부품 1개를 사용해 산소 +15";
+
             case "engineering.diagnose" -> "정밀 함선 상태 진단";
             case "engineering.redistribute" -> "전력 +8";
-            case "engineering.advanced_repair" -> "선체 +25, 원자로 +15, 고장 통로 복구";
+            case "engineering.advanced_repair" -> "원자로 +15, 고장 통로 복구";
             case "medical.treat" -> "현재 플레이어 기본 치료";
             case "medical.clear_status" -> "현재 플레이어 상태이상 1개 제거";
             case "medical.infection_test" -> "현재 검사 정밀도 범위의 감염 검사";
@@ -388,11 +388,13 @@ public final class FacilityMenuService implements Listener {
             case "research.event_cause" -> "최근 사건 원인 정보 분석";
             case "cargo.store", "cargo.sort", "cargo.inventory" -> "공용 재고 확인";
             case "cargo.deposit" -> "소지한 물리 자원을 공용 창고에 입고";
+            case "cargo.withdraw_repair" -> "공용 수리 부품 1개를 현장 수리용 물리 아이템으로 수령";
             case "cargo.process" -> "수리 부품 2 → 회로판 1";
             case "cargo.repair" -> "수리 부품 1개를 사용해 화물실 손상 상태 정상화";
             case "cargo.rare" -> "희귀 자원 재고 확인";
             case "cargo.efficient_process" -> "수리 부품 1 + 회로판 1 → 전력 셀 1";
             case "habitation.supply" -> "공용 보급품 1개를 물리 아이템으로 수령";
+            case "habitation.oxygen" -> "수리 부품 1개를 사용해 산소 +15";
             case "habitation.maintenance" -> "개인 장비 정비";
             case "habitation.locker" -> "개인 보관 자원 확인";
             default -> "실행 결과를 시설에서 확인";
