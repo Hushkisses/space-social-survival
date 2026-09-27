@@ -107,7 +107,9 @@ public final class PlaytestBuildCommandHandler {
                             + ", modules="
                             + snapshot.generatedMap().tileIds().size()
             );
-            sender.sendMessage("§8[PX-010] §7검증 매치 준비 완료 · seed=" + seed);
+            if (!(sender instanceof Player)) {
+                sender.sendMessage("PX-010 playability match prepared · seed=" + seed);
+            }
         } catch (IllegalStateException exception) {
             sender.sendMessage("§cPX-010 검증 매치를 시작할 수 없습니다: " + exception.getMessage());
         }
@@ -120,7 +122,9 @@ public final class PlaytestBuildCommandHandler {
             return true;
         }
         plugin.matchOrchestrator().reset();
-        sender.sendMessage("§8[PX-010] §7매치 초기화 완료");
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("PX-010 match reset complete");
+        }
         return true;
     }
 
