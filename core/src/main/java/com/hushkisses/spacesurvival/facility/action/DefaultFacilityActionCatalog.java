@@ -28,11 +28,9 @@ public final class DefaultFacilityActionCatalog {
 
                 basic("engineering.power", DefaultFacilityCatalog.ENGINEERING, "전력 관리"),
                 basic("engineering.engine", DefaultFacilityCatalog.ENGINEERING, "엔진 관리"),
-                basic("engineering.repair", DefaultFacilityCatalog.ENGINEERING, "핵심 수리"),
-                basic("engineering.oxygen", DefaultFacilityCatalog.ENGINEERING, "산소 계통 복구"),
                 advanced("engineering.diagnose", DefaultFacilityCatalog.ENGINEERING, "정밀 고장 진단", RoleCapability.DIAGNOSE_FAULT),
                 advanced("engineering.redistribute", DefaultFacilityCatalog.ENGINEERING, "전력 재배분", RoleCapability.REDISTRIBUTE_POWER),
-                advanced("engineering.advanced_repair", DefaultFacilityCatalog.ENGINEERING, "고급 수리", RoleCapability.ADVANCED_REPAIR),
+                advanced("engineering.advanced_repair", DefaultFacilityCatalog.ENGINEERING, "기관계 고급 정비", RoleCapability.ADVANCED_REPAIR),
 
                 basic("medical.treat", DefaultFacilityCatalog.MEDICAL, "기본 치료"),
                 basic("medical.clear_status", DefaultFacilityCatalog.MEDICAL, "상태이상 제거"),
@@ -51,6 +49,7 @@ public final class DefaultFacilityActionCatalog {
 
                 basic("cargo.store", DefaultFacilityCatalog.CARGO, "자원 저장"),
                 basic("cargo.deposit", DefaultFacilityCatalog.CARGO, "소지 자원 공용 창고 입고"),
+                basic("cargo.withdraw_repair", DefaultFacilityCatalog.CARGO, "현장 수리 부품 수령"),
                 basic("cargo.sort", DefaultFacilityCatalog.CARGO, "자원 분류"),
                 basic("cargo.process", DefaultFacilityCatalog.CARGO, "자원 가공"),
                 basic("cargo.repair", DefaultFacilityCatalog.CARGO, "화물실 설비 복구"),
@@ -59,6 +58,7 @@ public final class DefaultFacilityActionCatalog {
                 advanced("cargo.efficient_process", DefaultFacilityCatalog.CARGO, "고효율 가공", RoleCapability.HIGH_EFFICIENCY_PROCESSING),
 
                 basic("habitation.supply", DefaultFacilityCatalog.HABITATION, "기본 보급"),
+                basic("habitation.oxygen", DefaultFacilityCatalog.HABITATION, "생명유지 계통 복구"),
                 basic("habitation.maintenance", DefaultFacilityCatalog.HABITATION, "장비 정비"),
                 basic("habitation.locker", DefaultFacilityCatalog.HABITATION, "개인 보관함")
         );
