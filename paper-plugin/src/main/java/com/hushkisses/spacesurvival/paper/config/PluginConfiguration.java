@@ -6,6 +6,14 @@ import com.hushkisses.spacesurvival.config.GameConfig;
 public record PluginConfiguration(
         GameConfig game,
         BalanceConfig balance,
-        MatchSetupConfig matchSetup
+        MatchSetupConfig matchSetup,
+        MeetingUxConfig meetingUx
 ) {
+    public PluginConfiguration(
+            GameConfig game,
+            BalanceConfig balance,
+            MatchSetupConfig matchSetup
+    ) {
+        this(game, balance, matchSetup, MeetingUxConfig.playtestDefaults());
+    }
 }
