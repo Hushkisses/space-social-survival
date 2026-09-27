@@ -73,6 +73,7 @@ public final class ShipPortalListener implements Listener {
         if (access != null && !access.allowed()) {
             cooldownUntil.put(player.getUniqueId(), now + 800L);
             player.sendMessage("§c[통로] §f" + denialMessage(access.denialReason()));
+            event.setTo(from);
             return;
         }
 
