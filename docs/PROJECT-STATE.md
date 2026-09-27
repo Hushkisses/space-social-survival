@@ -171,9 +171,18 @@ Player Comprehension / Playability
 - first blind 1~3 player 20-minute playability gate: not yet attempted
 - real 6~10 player balance test remains blocked on the PX playability gate
 
-## MAP-V5 Dense Large-Room Prototype
+## MAP-V5.1 Dense Large-Room + Vertical Interior Prototype
 - experimental Draft PR #27 remains playtest-only
 - single-deck core geography remains stable
+- verticality is internal only: no second navigation deck
+- Bridge: raised command dais + forward viewport
+- Engineering: reactor pit + maintenance catwalk
+- Cargo: tall storage stacks
+- Central hub: glass machinery shaft
+- Medical / Research / Habitation: lighter vertical interior accents
+- PDA map can use ItemsAdder font-image GUI `spacesurvival:ship_map_gui` with vanilla fallback
+- quick-deploy decodes the tracked GUI image source automatically
+- GitHub Actions: SUCCESS (Build #926)
 - restored core room sizes: 13x13 to 15x15
 - central hub: 11x11
 - primary connected-room gaps: generally 1-3 blocks, enforced <= 3 in tests
