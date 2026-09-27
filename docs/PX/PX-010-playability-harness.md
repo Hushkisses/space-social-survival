@@ -210,3 +210,42 @@ Correction:
 - duplicate all-crew activation broadcast removed
 
 The left mission HUD remains the primary immediate-action surface; right sidebar and chat are now secondary.
+
+
+## PX-010.3 HUD persistence / crisp-render / chat cleanup
+
+Second Windows screenshot pass identified three presentation problems:
+
+1. mission HUD was being overwritten on movement,
+2. font-image scaling was soft/pixelated,
+3. onboarding/debug chat still competed with HUD information.
+
+Changes:
+
+- ItemsAdder custom HUD is reasserted on every HUD refresh even when the mission image id did not change
+- after custom HUD visibility/image changes the bridge now requests HUD offset recalculation and sends an explicit holder update
+- room-entry navigation no longer writes an ActionBar message; current room is already visible in the right sidebar
+- role selection no longer writes routine ActionBar guidance that competes with the custom HUD
+- opening title/chat narration removed; the role GUI + mission HUD are the primary onboarding surfaces
+- PDA activation/first-action tutorial chat removed
+- successful `/space playability start/reset` does not write development success text into player chat; details remain in console
+- right sidebar title is now `함선 상태`, avoiding a duplicate `람몽어스` brand next to the left HUD
+
+### Crisp mission-HUD rendering
+
+The source mission assets contain a 176x84 visible panel inside a larger legacy canvas.
+
+During `quick-deploy.bat`, mission HUD PNGs are now normalized to a 112x54 final texture using one high-quality resample. ItemsAdder then renders those assets with:
+
+- `scale_ratio: 54`
+- `y_position: 52`
+
+This keeps approximately the accepted on-screen size while avoiding an additional non-native font-image resize in Minecraft.
+
+### Stale floor-item cleanup
+
+Resource caches themselves only place resource items inside barrels.
+
+The previous ship rebuild cleared blocks/displays but not dropped `Item` entities. That allowed loose resources from an earlier test run to remain around newly generated caches.
+
+Before rendering a new ship, dropped item entities inside the ship build envelope are now removed. Current-match death/resource drops are unaffected until the next ship rebuild.
