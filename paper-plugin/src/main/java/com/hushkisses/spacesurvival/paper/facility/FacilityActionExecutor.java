@@ -284,9 +284,9 @@ public final class FacilityActionExecutor {
     private FacilityActionExecutionResult startMeeting() {
         MeetingStartResult meeting = plugin.meetingGuiService().startRegular();
         if (!meeting.started()) {
-            return failure("회의를 시작할 수 없습니다: " + meeting.denialReason());
+            return failure("회의를 시작할 수 없습니다: " + meetingDenialName(meeting.denialReason()));
         }
-        return result("회의를 소집했습니다. 참가자에게 투표 GUI가 열렸습니다.");
+        return result("회의를 소집했습니다. 토론 단계가 시작됩니다.");
     }
 
     private FacilityActionExecutionResult advanceReturn() {
@@ -525,6 +525,20 @@ public final class FacilityActionExecutor {
 
     private static com.hushkisses.spacesurvival.facility.FacilityId actionFacility(String id) {
         return new com.hushkisses.spacesurvival.facility.FacilityId(id);
+    }
+
+
+    private static String meetingDenialName(
+            com.hushkisses.spacesurvival.social.meeting.MeetingStartDenialReason reason
+    ) {
+        if (reason == null) return "알 수 없는 사유";
+        return switch (reason) {
+            case MEETING_ALREADY_ACTIVE -> "이미 다른 회의가 진행 중입니다.";
+            case BRIDGE_UNAVAILABLE -> "함교를 사용할 수 없습니다.";
+            case NO_POWER_OR_COMMUNICATION -> "전력과 통신이 모두 끊겨 일반 회의를 소집할 수 없습니다.";
+            case COOLDOWN_ACTIVE -> "회의 재소집 대기시간이 남아 있습니다.";
+            case NO_PARTICIPANTS -> "회의 참가자가 없습니다.";
+        };
     }
 
     private static String denialMessage(FacilityActionAccessDecision.DenialReason reason) {
