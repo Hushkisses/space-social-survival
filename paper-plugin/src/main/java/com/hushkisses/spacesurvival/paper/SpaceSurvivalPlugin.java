@@ -489,6 +489,10 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
             gameRuntimeService.stop();
         }
 
+        if (hullBreachService != null && shipWorldService != null) {
+            shipWorldService.activeSnapshot().ifPresent(hullBreachService::clear);
+        }
+
         roleSelectionService.reset();
         if (meetingGuiService != null) {
             meetingGuiService.resetRuntime();
