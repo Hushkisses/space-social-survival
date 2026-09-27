@@ -206,7 +206,7 @@ public final class MatchHudService {
         Objective objective = scoreboard.registerNewObjective(
                 OBJECTIVE_NAME,
                 Criteria.DUMMY,
-                Component.text("람몽어스")
+                Component.text("함선 상태")
         );
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
         return new HudBoard(scoreboard, objective);
@@ -272,10 +272,6 @@ public final class MatchHudService {
                 missionHudStates.remove(playerId);
             }
             return false;
-        }
-
-        if (fontImageId.equals(previous)) {
-            return true;
         }
 
         boolean shown = plugin.itemsAdderBridge().showCustomHud(
