@@ -189,17 +189,9 @@ public final class MatchOrchestrator {
                     10
             );
             online.sendMessage("§6[상황] §f" + scenarioDefinition.publicBriefing());
-            online.sendMessage("§6[공통 목표] §f함선을 복구하고 귀환하십시오.");
             online.sendMessage(
-                    "§7공개된 초기 문제 "
-                            + initialEventCount
-                            + "건 · 함선 모듈 "
-                            + ship.generatedMap().tileIds().size()
-                            + "개"
-            );
-            online.sendMessage(
-                    "§e직업 후보 3개 중 하나를 선택하십시오. "
-                            + "창을 닫아도 핫바의 네더별을 우클릭하면 다시 열립니다."
+                    "§e[시작] §f함선을 복구하고 귀환하십시오. "
+                            + "먼저 직업 후보 3개 중 하나를 선택하십시오."
             );
 
             plugin.roleSelectionUi().open(online);
@@ -251,9 +243,6 @@ public final class MatchOrchestrator {
         plugin.telemetryService().event("match", "active");
         status = MatchLifecycleStatus.ACTIVE;
 
-        plugin.getServer().broadcastMessage(
-                "§a[람몽어스] §f모든 승무원의 직업 선택이 완료되어 임무가 시작되었습니다."
-        );
         return true;
     }
 
