@@ -3,7 +3,6 @@ package com.hushkisses.spacesurvival.paper.map.physical;
 import com.hushkisses.spacesurvival.map.tile.TileId;
 import com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin;
 import com.hushkisses.spacesurvival.player.PlayerId;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -76,9 +75,6 @@ public final class ShipNavigationListener implements Listener {
             return;
         }
 
-        player.sendActionBar(Component.text(
-                "현재 구역 · " + name + " · " + category
-        ));
         player.playSound(
                 player.getLocation(),
                 Sound.BLOCK_AMETHYST_BLOCK_CHIME,
