@@ -90,7 +90,7 @@ public final class CohesiveDeckMapGenerator {
         connect("bridge", "corridor_1", points, connections, pairs);
         connect("corridor_1", "junction_1", points, connections, pairs);
         connect("junction_1", "habitation", points, connections, pairs);
-        connect("habitation", "medical", points, connections, pairs);
+        connect("junction_1", "medical", points, connections, pairs);
         connect("medical", "research", points, connections, pairs);
 
         // The only mandatory inter-deck link. Physically this becomes the central stairwell.
