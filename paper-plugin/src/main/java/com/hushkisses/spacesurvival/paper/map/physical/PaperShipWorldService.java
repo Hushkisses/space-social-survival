@@ -198,7 +198,6 @@ public final class PaperShipWorldService {
             );
         }
 
-        renderOrientationMarkers(world);
 
         structurePlacements = Collections.unmodifiableMap(placementResults);
 
@@ -729,7 +728,9 @@ public final class PaperShipWorldService {
         int x = threshold.getBlockX();
         int z = threshold.getBlockZ();
 
-        for (int y = FLOOR_Y + 1; y <= FLOOR_Y + 3; y++) {
+        // Two-block-high doorway keeps the access plate unavoidable;
+        // players cannot simply jump over a locked/disabled threshold.
+        for (int y = FLOOR_Y + 1; y <= FLOOR_Y + 2; y++) {
             threshold.getWorld().getBlockAt(x, y, z).setType(Material.AIR, false);
         }
     }
@@ -744,28 +745,6 @@ public final class PaperShipWorldService {
 
         world.getBlockAt(x, y - 1, z).setType(Material.GOLD_BLOCK, false);
         world.getBlockAt(x, y, z).setType(Material.LIGHT_WEIGHTED_PRESSURE_PLATE, false);
-    }
-
-    private static void renderOrientationMarkers(World world) {
-        orientationMarker(world, 7.5, 84.5, "▲ 선수 · 함교 방향", NamedTextColor.AQUA);
-        orientationMarker(world, 79.5, 4.5, "◆ 중앙 데크", NamedTextColor.WHITE);
-        orientationMarker(world, 151.5, 84.5, "▼ 후방 · 기관 구역", NamedTextColor.RED);
-    }
-
-    private static void orientationMarker(
-            World world,
-            double x,
-            double z,
-            String text,
-            NamedTextColor color
-    ) {
-        TextDisplay display = world.spawn(
-                new Location(world, x, FLOOR_Y + 3.6, z),
-                TextDisplay.class
-        );
-        display.addScoreboardTag("spacesurvival_nav");
-        display.setBillboard(Display.Billboard.CENTER);
-        display.text(Component.text(text, color));
     }
 
     private static Bounds bounds(
