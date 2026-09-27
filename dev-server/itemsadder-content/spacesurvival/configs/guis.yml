@@ -1,0 +1,10 @@
+info:
+  namespace: spacesurvival
+
+font_images:
+  ship_map_gui:
+    path: font/gui/ship_map_gui.png
+    suggest_in_command: false
+    y_position: 48
+    shadow:
+      enabled: false
