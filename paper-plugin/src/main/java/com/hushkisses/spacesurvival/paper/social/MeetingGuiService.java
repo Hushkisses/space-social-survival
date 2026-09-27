@@ -98,7 +98,7 @@ public final class MeetingGuiService implements Listener {
         phase = MeetingUxPhase.IDLE;
         secondsRemaining = 0;
         totalPhaseSeconds = 0;
-        pendingSanction.clear();
+        pendingTarget.clear();
         pendingConfirmation.clear();
         targetSlots.clear();
         transitioningInventory.clear();
@@ -117,7 +117,7 @@ public final class MeetingGuiService implements Listener {
         }
 
         activeVote.vote(PlayerId.of(player.getUniqueId()), choice);
-        pendingSanction.remove(player.getUniqueId());
+        pendingTarget.remove(player.getUniqueId());
         pendingConfirmation.remove(player.getUniqueId());
         targetSlots.remove(player.getUniqueId());
 
@@ -150,7 +150,7 @@ public final class MeetingGuiService implements Listener {
 
         plugin.meetingService().resolveActive();
         activeVote = null;
-        pendingSanction.clear();
+        pendingTarget.clear();
         pendingConfirmation.clear();
         targetSlots.clear();
 
@@ -173,7 +173,7 @@ public final class MeetingGuiService implements Listener {
         phase = MeetingUxPhase.IDLE;
         secondsRemaining = 0;
         totalPhaseSeconds = 0;
-        pendingSanction.clear();
+        pendingTarget.clear();
         pendingConfirmation.clear();
         targetSlots.clear();
         plugin.getServer().broadcastMessage("§6[회의] §f회의가 취소되었습니다. 일반 임무로 복귀합니다.");
@@ -261,7 +261,7 @@ public final class MeetingGuiService implements Listener {
             return;
         }
 
-        pendingSanction.remove(uuid);
+        pendingTarget.remove(uuid);
         pendingConfirmation.remove(uuid);
         targetSlots.remove(uuid);
 
@@ -283,7 +283,7 @@ public final class MeetingGuiService implements Listener {
 
         activeVote = new SanctionVoteService(meeting);
         lastResult = null;
-        pendingSanction.clear();
+        pendingTarget.clear();
         pendingConfirmation.clear();
         targetSlots.clear();
         transitioningInventory.clear();
@@ -383,7 +383,7 @@ public final class MeetingGuiService implements Listener {
                     10
             );
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 0.8f, 1.4f);
-            openChoices(player);
+            openTargets(player);
         });
 
         plugin.telemetryService().event("meeting.phase", "voting");
