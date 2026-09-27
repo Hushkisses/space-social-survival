@@ -46,10 +46,16 @@ public record PhysicalShipSnapshot(
         if (location.getWorld() == null || !location.getWorld().equals(world)) {
             return false;
         }
-        return corridorCells.contains(new PhysicalDeckCell(
-                location.getBlockX(),
-                location.getBlockZ()
-        ));
+        int x = location.getBlockX();
+        int y = location.getBlockY();
+        int z = location.getBlockZ();
+
+        return corridorCells.stream().anyMatch(cell ->
+                cell.x() == x
+                        && cell.z() == z
+                        && y >= cell.floorY()
+                        && y <= cell.floorY() + 5
+        );
     }
 
     public Optional<TileId> tileAt(Location location) {
