@@ -85,3 +85,52 @@ items:
     material: CRACKED_STONE_BRICKS
     graphics:
       texture: item/hull_breach
+
+
+  map_hotspot:
+    name: "지도 핫스팟"
+    material: PAPER
+    graphics:
+      texture: item/map_hotspot
+
+  map_current_marker:
+    name: "현재 위치"
+    material: PAPER
+    graphics:
+      texture: item/map_current_marker
+
+  map_target_marker:
+    name: "긴급 목표"
+    material: PAPER
+    graphics:
+      texture: item/map_target_marker
+
+  map_current_target_marker:
+    name: "현재 위치 / 긴급 목표"
+    material: PAPER
+    graphics:
+      texture: item/map_current_target_marker
+
+  map_optional_marker:
+    name: "보조 구역"
+    material: PAPER
+    graphics:
+      texture: item/map_optional_marker
+
+  map_info_button:
+    name: "지도 정보"
+    material: PAPER
+    graphics:
+      texture: item/map_info_button
+
+  map_route_button:
+    name: "추천 경로"
+    material: PAPER
+    graphics:
+      texture: item/map_route_button
+
+  map_back_button:
+    name: "돌아가기"
+    material: PAPER
+    graphics:
+      texture: item/map_back_button
