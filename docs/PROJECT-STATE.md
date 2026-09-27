@@ -235,7 +235,13 @@ Player Comprehension / Playability
   - existing airlock prerequisite retained
   - staged airlock presentation -> delayed Spectator -> outside-ship viewpoint
 - post-death facility and physical hull repair actions are blocked
-- GitHub Actions: SUCCESS (Build #962)
+- solo validation commands:
+  - `/space match devstate death`
+  - `/space match devstate detain`
+  - `/space match devstate access`
+  - `/space match devstate eject`
+- seed `1000` is test-pinned to include `airlock_1` for ejection validation
+- GitHub Actions: SUCCESS (Build #968; latest command/test additions pending CI)
 - Windows/Paper integrated validation: pending
 - Details: `docs/PX/PX-009-terminal-state-ux.md`
 
