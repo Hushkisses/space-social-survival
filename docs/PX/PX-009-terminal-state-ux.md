@@ -5,9 +5,10 @@
 - Branch: `dev/PX-009-terminal-state-ux`
 - Draft PR: #28
 - Base: `dev/physical-ship-layout-v2`
-- Status: IMPLEMENTED / VALIDATION_PENDING
-- GitHub Actions: SUCCESS (Build #973)
-- Windows/Paper integrated validation: pending
+- Status: IMPLEMENTED (Paper validated; merge pending parent PR chain)
+- GitHub Actions: SUCCESS (Build #977)
+- Windows/Paper integrated validation: PASS — reported by user on 2026-09-27
+- Merge remains blocked until the parent PR validation/merge order is satisfied.
 
 ## Goal
 
@@ -219,3 +220,20 @@ The player should move to the airlock, see the depressurization transition, then
 ```
 
 Use reset between sanction-state tests because current sanction state is match-runtime state.
+
+
+## Windows / Paper validation result — 2026-09-27
+
+The user reported the PX-009 integration checks working correctly on the real Windows/Paper environment.
+
+Validated in the reported test pass:
+
+- normal death presentation and Spectator transition,
+- physical item/resource drops remaining recoverable,
+- detention cell teleport and bounded movement,
+- facility denial while detained,
+- access-restriction presentation and enforcement,
+- seed `1000` airlock ejection flow,
+- delayed Spectator transition and exterior viewpoint after ejection.
+
+The implementation therefore no longer has a PX-009 Paper-validation blocker. PR #28 must still remain unmerged until its parent PR chain is validated and merged in order.
