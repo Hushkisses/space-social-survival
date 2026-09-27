@@ -172,8 +172,9 @@ Player Comprehension / Playability
 - real 6~10 player balance test remains blocked on the PX playability gate
 
 ## PX-008 Meeting UX
-- GitHub Actions full test/build: SUCCESS (Build #808)
+- GitHub Actions full test/build: SUCCESS (Build #815)
 - meeting is now staged as discussion -> voting -> result instead of opening the vote GUI immediately
+- voting interaction is target-first: select a player first, then choose what sanction to apply; NO_ACTION remains available without a target
 - meeting reason and participant list are explicitly presented
 - discussion/voting timers are configurable in balance.yml
 - BossBar shows phase/countdown; voting shows completion count without revealing vote content
