@@ -9,6 +9,7 @@ public record TelemetrySnapshot(
         int playerCount,
         String scenario,
         Instant startedAt,
+        Instant endedAt,
         Map<String, Long> counters,
         int eventCount,
         String lastSavedFile
