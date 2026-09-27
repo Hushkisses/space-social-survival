@@ -4,6 +4,11 @@ match:
 return:
   hold-seconds: 240
 
+# Playability-phase meeting timings. These are tuning defaults, not final balance.
+meeting:
+  discussion-seconds: 60
+  voting-seconds: 45
+
 map:
   min-tiles: 10
   max-tiles: 14
