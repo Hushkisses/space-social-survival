@@ -68,12 +68,18 @@ public final class CrewPdaService implements Listener {
             Player player = plugin.getServer().getPlayer(playerId.value());
             if (player == null) continue;
             ensurePda(player);
-            player.sendMessage("§b[PDA] §f승무원 PDA가 지급되었습니다. §e우클릭§f하면 언제든 역할·목표·공용 상태를 확인할 수 있습니다.");
             PublicProblem problem = currentProblem();
             String target = plugin.facilityRegistry().require(problem.targetFacility())
                     .definition().displayName();
-            player.sendMessage("§6[첫 행동] §f" + problem.title() + " → §e" + target);
-            player.sendMessage("§7" + problem.nextAction());
+            player.sendMessage("§a[람몽어스] §f임무 시작 · §bPDA 우클릭§f으로 역할·목표 확인");
+            player.sendMessage(
+                    "§6[첫 행동] §f"
+                            + problem.title()
+                            + " §7→ §e"
+                            + target
+                            + " §8· §7필요: §f"
+                            + problem.need()
+            );
         }
     }
 
