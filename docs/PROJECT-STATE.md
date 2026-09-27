@@ -273,6 +273,13 @@ Player Comprehension / Playability
 - existing `director force`, `resource add`, and `return reset <holdSeconds>` tools are reused rather than duplicated
 - qualitative blind-playtest criteria are deliberately not auto-passed by code
 - telemetry snapshot now retains match end time so the 20-minute gate remains measurable after match finish
+- PX-010.1 left mission HUD prototype:
+  - player-facing active UX brand: `람몽어스`
+  - ItemsAdder CUSTOM HUD on the left for role-selection/opening recovery/return guidance
+  - right scoreboard reduced while custom mission HUD is active
+  - vanilla right-sidebar urgent objective remains as fallback
+  - complex facility-damage states deliberately retain the vanilla fallback for this first pass
+  - ItemsAdder assets changed; `/iazip` required for Windows visual validation
 - Windows/Paper integrated validation: pending
 - Details: `docs/PX/PX-010-playability-harness.md`
 
