@@ -27,7 +27,9 @@ public final class PaperShipWorldService {
     public static final String WORLD_NAME = "space_ship_compact_v5";
 
     private static final int FLOOR_Y = CompactSingleDeckLayoutPlanner.FLOOR_Y;
-    private static final int ROOM_HEIGHT = 5;
+    private static final int CORRIDOR_HEIGHT = 5;
+    private static final int MAX_INTERIOR_HEIGHT = 11;
+    private static final int ENGINEERING_PIT_DEPTH = 3;
     private static final int CORRIDOR_HALF_WIDTH = 1;
 
     private final CompactSingleDeckMapGenerator generator = new CompactSingleDeckMapGenerator();
@@ -336,7 +338,9 @@ public final class PaperShipWorldService {
 
         for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {
-                for (int y = FLOOR_Y - 1; y <= FLOOR_Y + ROOM_HEIGHT + 2; y++) {
+                for (int y = FLOOR_Y - ENGINEERING_PIT_DEPTH - 2;
+                     y <= FLOOR_Y + MAX_INTERIOR_HEIGHT + 2;
+                     y++) {
                     world.getBlockAt(x, y, z).setType(Material.AIR, false);
                 }
             }
@@ -352,30 +356,40 @@ public final class PaperShipWorldService {
         int minZ = placement.minZ();
         int maxX = minX + placement.size() - 1;
         int maxZ = minZ + placement.size() - 1;
+        int roomHeight = roomHeight(definition.id());
 
         Material accent = accent(definition.category());
 
         for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {
                 world.getBlockAt(x, FLOOR_Y, z).setType(Material.SMOOTH_STONE, false);
-                world.getBlockAt(x, FLOOR_Y + ROOM_HEIGHT, z)
-                        .setType(Material.IRON_BLOCK, false);
 
-                boolean wall = x == minX || x == maxX || z == minZ || z == maxZ;
-                if (wall) {
-                    for (int y = FLOOR_Y + 1; y < FLOOR_Y + ROOM_HEIGHT; y++) {
+                boolean lowerWall = x == minX || x == maxX || z == minZ || z == maxZ;
+                boolean upperWall = x == minX + 1
+                        || x == maxX - 1
+                        || z == minZ + 1
+                        || z == maxZ - 1;
+
+                for (int y = FLOOR_Y + 1; y < FLOOR_Y + roomHeight; y++) {
+                    boolean wall = y <= FLOOR_Y + 3 ? lowerWall : upperWall;
+                    if (wall) {
                         world.getBlockAt(x, y, z).setType(
                                 y == FLOOR_Y + 2
                                         ? accent
                                         : Material.LIGHT_GRAY_CONCRETE,
                                 false
                         );
-                    }
-                } else {
-                    for (int y = FLOOR_Y + 1; y < FLOOR_Y + ROOM_HEIGHT; y++) {
+                    } else {
                         world.getBlockAt(x, y, z).setType(Material.AIR, false);
                     }
                 }
+            }
+        }
+
+        for (int x = minX + 1; x <= maxX - 1; x++) {
+            for (int z = minZ + 1; z <= maxZ - 1; z++) {
+                world.getBlockAt(x, FLOOR_Y + roomHeight, z)
+                        .setType(Material.IRON_BLOCK, false);
             }
         }
 
@@ -385,24 +399,313 @@ public final class PaperShipWorldService {
 
         world.getBlockAt(cx, FLOOR_Y, cz).setType(roomFloorAccent(definition), false);
 
-        registerLightPoint(cx, FLOOR_Y + ROOM_HEIGHT - 1, FLOOR_Y + ROOM_HEIGHT, cz);
+        registerLightPoint(
+                cx,
+                FLOOR_Y + roomHeight - 1,
+                FLOOR_Y + roomHeight,
+                cz
+        );
         if (placement.size() >= 11) {
             registerLightPoint(
-                    minX + 2,
-                    FLOOR_Y + ROOM_HEIGHT - 1,
-                    FLOOR_Y + ROOM_HEIGHT,
-                    minZ + 2
+                    minX + 3,
+                    FLOOR_Y + roomHeight - 1,
+                    FLOOR_Y + roomHeight,
+                    minZ + 3
             );
             registerLightPoint(
-                    maxX - 2,
-                    FLOOR_Y + ROOM_HEIGHT - 1,
-                    FLOOR_Y + ROOM_HEIGHT,
-                    maxZ - 2
+                    maxX - 3,
+                    FLOOR_Y + roomHeight - 1,
+                    FLOOR_Y + roomHeight,
+                    maxZ - 3
             );
         }
 
+        renderVerticalInterior(world, placement, definition.id(), roomHeight);
+
         world.getBlockAt(minX + 2, FLOOR_Y + 1, minZ + 2)
                 .setType(Material.IRON_BLOCK, false);
+    }
+
+    private void renderVerticalInterior(
+            World world,
+            PhysicalTilePlacement placement,
+            TileId tileId,
+            int roomHeight
+    ) {
+        switch (tileId.value()) {
+            case "bridge" -> renderBridgeInterior(world, placement, roomHeight);
+            case "engineering" -> renderEngineeringInterior(world, placement, roomHeight);
+            case "cargo" -> renderCargoInterior(world, placement, roomHeight);
+            case "junction_1" -> renderHubInterior(world, placement, roomHeight);
+            case "medical" -> renderMedicalInterior(world, placement);
+            case "research" -> renderResearchInterior(world, placement, roomHeight);
+            case "habitation" -> renderHabitationInterior(world, placement);
+            default -> renderAuxiliaryInterior(world, placement);
+        }
+    }
+
+    private void renderBridgeInterior(
+            World world,
+            PhysicalTilePlacement placement,
+            int roomHeight
+    ) {
+        int minX = placement.minX();
+        int minZ = placement.minZ();
+        int maxX = minX + placement.size() - 1;
+        int maxZ = minZ + placement.size() - 1;
+
+        // The bow-side command dais rises without changing the main entrance level.
+        for (int x = minX + 2; x <= minX + 5; x++) {
+            for (int z = minZ + 2; z <= maxZ - 2; z++) {
+                world.getBlockAt(x, FLOOR_Y + 1, z)
+                        .setType(Material.POLISHED_ANDESITE, false);
+            }
+        }
+        for (int z = minZ + 4; z <= maxZ - 4; z++) {
+            world.getBlockAt(minX + 4, FLOOR_Y + 2, z)
+                    .setType(Material.DEEPSLATE_TILES, false);
+        }
+
+        // Large forward viewport.
+        for (int z = minZ + 3; z <= maxZ - 3; z++) {
+            for (int y = FLOOR_Y + 2; y <= FLOOR_Y + Math.min(roomHeight - 2, 6); y++) {
+                world.getBlockAt(minX, y, z).setType(Material.TINTED_GLASS, false);
+            }
+        }
+
+        for (int z : new int[]{minZ + 3, maxZ - 3}) {
+            world.getBlockAt(minX + 6, FLOOR_Y + 1, z)
+                    .setType(Material.LECTERN, false);
+            world.getBlockAt(minX + 7, FLOOR_Y + 1, z)
+                    .setType(Material.POLISHED_BLACKSTONE, false);
+        }
+    }
+
+    private void renderEngineeringInterior(
+            World world,
+            PhysicalTilePlacement placement,
+            int roomHeight
+    ) {
+        int cx = placement.minX() + placement.size() / 2;
+        int cz = placement.minZ() + placement.size() / 2;
+
+        int radius = 3;
+        int pitFloor = FLOOR_Y - ENGINEERING_PIT_DEPTH;
+
+        for (int x = cx - radius; x <= cx + radius; x++) {
+            for (int z = cz - radius; z <= cz + radius; z++) {
+                world.getBlockAt(x, FLOOR_Y, z).setType(Material.AIR, false);
+                for (int y = pitFloor + 1; y <= FLOOR_Y + 2; y++) {
+                    world.getBlockAt(x, y, z).setType(Material.AIR, false);
+                }
+                world.getBlockAt(x, pitFloor, z).setType(Material.DEEPSLATE_TILES, false);
+            }
+        }
+
+        // Reactor core in the lower pit.
+        for (int y = pitFloor + 1; y <= FLOOR_Y + 3; y++) {
+            world.getBlockAt(cx, y, cz).setType(
+                    y % 2 == 0 ? Material.SEA_LANTERN : Material.CRYING_OBSIDIAN,
+                    false
+            );
+        }
+
+        // Safety rail around the reactor pit.
+        for (int x = cx - radius - 1; x <= cx + radius + 1; x++) {
+            world.getBlockAt(x, FLOOR_Y + 1, cz - radius - 1)
+                    .setType(Material.IRON_BARS, false);
+            world.getBlockAt(x, FLOOR_Y + 1, cz + radius + 1)
+                    .setType(Material.IRON_BARS, false);
+        }
+        for (int z = cz - radius; z <= cz + radius; z++) {
+            world.getBlockAt(cx - radius - 1, FLOOR_Y + 1, z)
+                    .setType(Material.IRON_BARS, false);
+            world.getBlockAt(cx + radius + 1, FLOOR_Y + 1, z)
+                    .setType(Material.IRON_BARS, false);
+        }
+
+        // Simple walkable descent into the pit.
+        for (int i = 0; i < ENGINEERING_PIT_DEPTH; i++) {
+            int x = cx - radius + i;
+            int y = FLOOR_Y - 1 - i;
+            world.getBlockAt(x, y, cz + radius).setType(Material.POLISHED_ANDESITE, false);
+            world.getBlockAt(x, y + 1, cz + radius).setType(Material.AIR, false);
+            world.getBlockAt(x, y + 2, cz + radius).setType(Material.AIR, false);
+        }
+
+        // Upper maintenance catwalk.
+        int catwalkY = FLOOR_Y + 4;
+        for (int x = placement.minX() + 2;
+             x <= placement.minX() + placement.size() - 3;
+             x++) {
+            world.getBlockAt(x, catwalkY, placement.minZ() + 2)
+                    .setType(Material.IRON_TRAPDOOR, false);
+            world.getBlockAt(x, catwalkY, placement.minZ() + placement.size() - 3)
+                    .setType(Material.IRON_TRAPDOOR, false);
+        }
+        for (int z = placement.minZ() + 3;
+             z <= placement.minZ() + placement.size() - 4;
+             z++) {
+            world.getBlockAt(placement.minX() + 2, catwalkY, z)
+                    .setType(Material.IRON_TRAPDOOR, false);
+            world.getBlockAt(
+                    placement.minX() + placement.size() - 3,
+                    catwalkY,
+                    z
+            ).setType(Material.IRON_TRAPDOOR, false);
+        }
+
+        registerLightPoint(
+                cx,
+                FLOOR_Y + roomHeight - 2,
+                FLOOR_Y + roomHeight,
+                cz
+        );
+    }
+
+    private void renderCargoInterior(
+            World world,
+            PhysicalTilePlacement placement,
+            int roomHeight
+    ) {
+        int minX = placement.minX();
+        int minZ = placement.minZ();
+        int maxX = minX + placement.size() - 1;
+        int maxZ = minZ + placement.size() - 1;
+
+        // Tall container stacks along the outer walls keep the center readable.
+        for (int x : new int[]{minX + 2, maxX - 2}) {
+            for (int z = minZ + 2; z <= maxZ - 2; z += 3) {
+                for (int y = FLOOR_Y + 1; y <= FLOOR_Y + 4; y++) {
+                    world.getBlockAt(x, y, z).setType(
+                            y % 2 == 0 ? Material.BARREL : Material.IRON_BLOCK,
+                            false
+                    );
+                }
+            }
+        }
+
+        int shelfY = FLOOR_Y + 4;
+        for (int z = minZ + 2; z <= maxZ - 2; z++) {
+            world.getBlockAt(minX + 3, shelfY, z)
+                    .setType(Material.IRON_TRAPDOOR, false);
+        }
+
+        registerLightPoint(
+                placement.minX() + placement.size() / 2,
+                FLOOR_Y + roomHeight - 1,
+                FLOOR_Y + roomHeight,
+                placement.minZ() + placement.size() / 2
+        );
+    }
+
+    private void renderHubInterior(
+            World world,
+            PhysicalTilePlacement placement,
+            int roomHeight
+    ) {
+        int cx = placement.minX() + placement.size() / 2;
+        int cz = placement.minZ() + placement.size() / 2;
+
+        // A glass machinery shaft makes the ship feel vertically larger
+        // without adding another navigable deck.
+        for (int x = cx - 2; x <= cx + 2; x++) {
+            for (int z = cz - 2; z <= cz + 2; z++) {
+                world.getBlockAt(x, FLOOR_Y, z).setType(Material.TINTED_GLASS, false);
+                for (int y = FLOOR_Y - 4; y < FLOOR_Y; y++) {
+                    world.getBlockAt(x, y, z).setType(Material.AIR, false);
+                }
+            }
+        }
+        for (int y = FLOOR_Y - 4; y <= FLOOR_Y + roomHeight - 2; y++) {
+            world.getBlockAt(cx, y, cz).setType(
+                    y % 3 == 0 ? Material.SEA_LANTERN : Material.CHAIN,
+                    false
+            );
+        }
+    }
+
+    private void renderMedicalInterior(
+            World world,
+            PhysicalTilePlacement placement
+    ) {
+        int minX = placement.minX();
+        int minZ = placement.minZ();
+        int maxZ = minZ + placement.size() - 1;
+
+        // Raised isolation/observation strip.
+        for (int x = minX + 2; x <= minX + 5; x++) {
+            for (int z = minZ + 2; z <= maxZ - 2; z++) {
+                world.getBlockAt(x, FLOOR_Y + 1, z)
+                        .setType(Material.QUARTZ_BLOCK, false);
+            }
+        }
+        for (int z = minZ + 3; z <= maxZ - 3; z++) {
+            world.getBlockAt(minX + 6, FLOOR_Y + 2, z)
+                    .setType(Material.GLASS_PANE, false);
+        }
+    }
+
+    private void renderResearchInterior(
+            World world,
+            PhysicalTilePlacement placement,
+            int roomHeight
+    ) {
+        int cx = placement.minX() + placement.size() / 2;
+        int cz = placement.minZ() + placement.size() / 2;
+
+        // Central sample column and raised observation edge.
+        for (int y = FLOOR_Y + 1; y <= FLOOR_Y + Math.min(5, roomHeight - 2); y++) {
+            world.getBlockAt(cx, y, cz).setType(
+                    y % 2 == 0 ? Material.CYAN_STAINED_GLASS : Material.AMETHYST_BLOCK,
+                    false
+            );
+        }
+
+        for (int z = placement.minZ() + 2;
+             z <= placement.minZ() + placement.size() - 3;
+             z++) {
+            world.getBlockAt(placement.minX() + 2, FLOOR_Y + 1, z)
+                    .setType(Material.POLISHED_DIORITE, false);
+        }
+    }
+
+    private void renderHabitationInterior(
+            World world,
+            PhysicalTilePlacement placement
+    ) {
+        int minX = placement.minX();
+        int minZ = placement.minZ();
+        int maxX = minX + placement.size() - 1;
+        int maxZ = minZ + placement.size() - 1;
+
+        // Lower peripheral bunks around a taller central lounge.
+        for (int x : new int[]{minX + 2, maxX - 2}) {
+            for (int z = minZ + 2; z <= maxZ - 2; z += 4) {
+                world.getBlockAt(x, FLOOR_Y + 1, z).setType(Material.WHITE_BED, false);
+                world.getBlockAt(x, FLOOR_Y + 2, z).setType(Material.IRON_TRAPDOOR, false);
+            }
+        }
+    }
+
+    private void renderAuxiliaryInterior(
+            World world,
+            PhysicalTilePlacement placement
+    ) {
+        int cx = placement.minX() + placement.size() / 2;
+        int cz = placement.minZ() + placement.size() / 2;
+        world.getBlockAt(cx, FLOOR_Y + 1, cz).setType(Material.CHAIN, false);
+    }
+
+    private static int roomHeight(TileId tileId) {
+        return switch (tileId.value()) {
+            case "engineering" -> 11;
+            case "cargo" -> 10;
+            case "bridge", "junction_1" -> 9;
+            case "research" -> 8;
+            case "habitation", "medical" -> 7;
+            default -> 6;
+        };
     }
 
     private static void renderRoomSign(
