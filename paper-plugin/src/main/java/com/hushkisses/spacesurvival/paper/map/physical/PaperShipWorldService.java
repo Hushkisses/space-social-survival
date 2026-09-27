@@ -682,7 +682,7 @@ public final class PaperShipWorldService {
         // Lower peripheral bunks around a taller central lounge.
         for (int x : new int[]{minX + 2, maxX - 2}) {
             for (int z = minZ + 2; z <= maxZ - 2; z += 4) {
-                world.getBlockAt(x, FLOOR_Y + 1, z).setType(Material.WHITE_BED, false);
+                world.getBlockAt(x, FLOOR_Y + 1, z).setType(Material.WHITE_WOOL, false);
                 world.getBlockAt(x, FLOOR_Y + 2, z).setType(Material.IRON_TRAPDOOR, false);
             }
         }
@@ -970,10 +970,10 @@ public final class PaperShipWorldService {
             );
 
             world.getBlockAt(cell.x(), FLOOR_Y, cell.z()).setType(floor, false);
-            world.getBlockAt(cell.x(), FLOOR_Y + ROOM_HEIGHT, cell.z())
+            world.getBlockAt(cell.x(), FLOOR_Y + CORRIDOR_HEIGHT, cell.z())
                     .setType(Material.IRON_BLOCK, false);
 
-            for (int y = FLOOR_Y + 1; y < FLOOR_Y + ROOM_HEIGHT; y++) {
+            for (int y = FLOOR_Y + 1; y < FLOOR_Y + CORRIDOR_HEIGHT; y++) {
                 world.getBlockAt(cell.x(), y, cell.z()).setType(Material.AIR, false);
             }
 
@@ -981,8 +981,8 @@ public final class PaperShipWorldService {
                     && Math.floorMod(cell.x() * 31 + cell.z() * 17, 7) == 0) {
                 registerLightPoint(
                         cell.x(),
-                        FLOOR_Y + ROOM_HEIGHT - 1,
-                        FLOOR_Y + ROOM_HEIGHT,
+                        FLOOR_Y + CORRIDOR_HEIGHT - 1,
+                        FLOOR_Y + CORRIDOR_HEIGHT,
                         cell.z()
                 );
             }
@@ -1000,7 +1000,7 @@ public final class PaperShipWorldService {
                     continue;
                 }
 
-                for (int y = FLOOR_Y + 1; y < FLOOR_Y + ROOM_HEIGHT; y++) {
+                for (int y = FLOOR_Y + 1; y < FLOOR_Y + CORRIDOR_HEIGHT; y++) {
                     world.getBlockAt(x, y, z).setType(
                             y == FLOOR_Y + 2
                                     ? Material.IRON_BLOCK
