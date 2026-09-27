@@ -84,3 +84,29 @@ dev-server\start-dev.bat
 ```
 
 When the font image is registered, the PDA map uses it as a GUI background. If ItemsAdder or the font image is unavailable, the plugin automatically falls back to the vanilla schematic inventory map.
+
+
+## 람몽어스 left mission HUD
+
+PX-010.1 adds the optional ItemsAdder custom HUD:
+
+```text
+spacesurvival:mission_hud
+```
+
+Tracked HUD source:
+
+```text
+dev-server/itemsadder-content/spacesurvival/configs/guis.yml
+dev-server/itemsadder-content/spacesurvival/textures/font/hud/*.png.b64
+```
+
+The plugin selects the HUD image from real match state. If ItemsAdder or a required image is unavailable, the right-side vanilla scoreboard remains the gameplay fallback.
+
+After these HUD assets change:
+
+```text
+dev-server\quick-deploy.bat
+dev-server\start-dev.bat
+/iazip
+```
