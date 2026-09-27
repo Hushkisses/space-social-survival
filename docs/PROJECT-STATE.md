@@ -241,7 +241,7 @@ Player Comprehension / Playability
   - `/space match devstate access`
   - `/space match devstate eject`
 - seed `1000` is test-pinned to include `airlock_1` for ejection validation
-- GitHub Actions: SUCCESS (Build #968; latest command/test additions pending CI)
+- GitHub Actions: SUCCESS (Build #973)
 - Windows/Paper integrated validation: pending
 - Details: `docs/PX/PX-009-terminal-state-ux.md`
 
