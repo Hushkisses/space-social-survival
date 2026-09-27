@@ -6,7 +6,7 @@
 - Draft PR: #28
 - Base: `dev/physical-ship-layout-v2`
 - Status: IMPLEMENTED / VALIDATION_PENDING
-- GitHub Actions: SUCCESS (Build #962)
+- GitHub Actions: SUCCESS (Build #968; later validation build pending after command/test additions)
 - Windows/Paper integrated validation: pending
 
 ## Goal
@@ -158,3 +158,64 @@ Existing access-restriction and ejection enforcement remains in place.
 4. confirm delayed Spectator conversion,
 5. confirm outside-ship viewpoint,
 6. confirm facility/ship interaction is no longer possible.
+
+
+## Solo validation commands
+
+Start a one-player development match first.
+
+For general PX-009 validation:
+
+```text
+/space match devstart
+```
+
+or use a fixed seed.
+
+### Death
+
+```text
+/space match devstate death
+```
+
+### Detention
+
+```text
+/space match devstate detain
+```
+
+The player should be moved into the Habitation detention cell, be able to walk inside its 3x3 interior, and be unable to leave.
+
+### Access restriction
+
+```text
+/space match devstate access
+```
+
+Facility consoles and restricted physical thresholds should reject interaction with Korean feedback.
+
+### Ejection
+
+Use the stable validation seed:
+
+```text
+/space match devstart 1000
+```
+
+Seed 1000 is protected by an automated test to include `airlock_1`.
+
+Then run:
+
+```text
+/space match devstate eject
+```
+
+The player should move to the airlock, see the depressurization transition, then become Spectator outside the ship after the short delay.
+
+### Reset
+
+```text
+/space match reset
+```
+
+Use reset between sanction-state tests because current sanction state is match-runtime state.
