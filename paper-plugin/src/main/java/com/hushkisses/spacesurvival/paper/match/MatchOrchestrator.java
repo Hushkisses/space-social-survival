@@ -106,6 +106,7 @@ public final class MatchOrchestrator {
                 seed,
                 config
         );
+        plugin.hullBreachService().populate(ship, seed);
         var resourcePopulation = plugin.resourceWorldService().populate(ship, seed);
         plugin.getLogger().info(
                 "Physical resource caches placed: "
