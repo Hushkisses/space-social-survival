@@ -6,7 +6,7 @@
 - Draft PR: #28
 - Base: `dev/physical-ship-layout-v2`
 - Status: IMPLEMENTED / VALIDATION_PENDING
-- GitHub Actions: SUCCESS (Build #968; later validation build pending after command/test additions)
+- GitHub Actions: SUCCESS (Build #973)
 - Windows/Paper integrated validation: pending
 
 ## Goal
