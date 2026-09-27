@@ -14,13 +14,15 @@ public record PhysicalShipSnapshot(
         GeneratedMap generatedMap,
         Map<TileId, TileDefinition> definitions,
         Map<TileId, PhysicalTilePlacement> placements,
-        Map<PortalBlockKey, Location> portalDestinations
+        Map<PortalBlockKey, Location> portalDestinations,
+        Set<PhysicalDeckCell> corridorCells
 ) {
     public PhysicalShipSnapshot {
         Objects.requireNonNull(world, "world");
         Objects.requireNonNull(generatedMap, "generatedMap");
         definitions = Map.copyOf(definitions);
         placements = Map.copyOf(placements);
+        corridorCells = Set.copyOf(corridorCells);
 
         LinkedHashMap<PortalBlockKey, Location> copied = new LinkedHashMap<>();
         portalDestinations.forEach((key, value) -> copied.put(key, value.clone()));
@@ -38,6 +40,16 @@ public record PhysicalShipSnapshot(
     public Optional<Location> portalDestination(Location sourceBlock) {
         Location destination = portalDestinations.get(PortalBlockKey.of(sourceBlock));
         return destination == null ? Optional.empty() : Optional.of(destination.clone());
+    }
+
+    public boolean isCorridor(Location location) {
+        if (location.getWorld() == null || !location.getWorld().equals(world)) {
+            return false;
+        }
+        return corridorCells.contains(new PhysicalDeckCell(
+                location.getBlockX(),
+                location.getBlockZ()
+        ));
     }
 
     public Optional<TileId> tileAt(Location location) {
