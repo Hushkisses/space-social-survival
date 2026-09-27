@@ -1,140 +1,116 @@
-# MAP-V2 Cohesive Physical Ship Prototype
+# MAP-V3 Compact Ship Prototype
 
 ## Status
 
 - Experimental branch: `dev/physical-ship-layout-v2`
 - Draft PR: #27
-- Purpose: player spatial-feel evaluation
+- Purpose: rebuild the physical ship scale for a 6-10 player match
+- GitHub Actions: SUCCESS (Build #869)
 - Do not merge until playtest feedback accepts the direction.
 
-## Problem being tested
+## Why this is a reset
 
-The previous physical map represented every logical tile as an isolated square room placed on a grid. Connections were pressure-plate teleports.
+The previous prototypes were too large and reused the same physical world, which allowed older room shells to visually overlap newer layouts.
 
-Even when the logical graph was randomized, the player experience still felt like moving between independent rooms rather than exploring one spacecraft.
+MAP-V3 resets those assumptions:
 
-MAP-V2 tests a different physical presentation while preserving the current authoritative logical map.
+- new runtime world: `space_ship_compact_v3`
+- legacy 15x15 NBT room structures are disabled for this prototype
+- the complete compact ship envelope is cleared before every generation
+- corridor tiles are no longer spawned as independent rooms
+- physical corridors are only connection space between meaningful rooms
 
-## Prototype rules
+## Target scale
 
-### Two-deck compact layout
+Designed specifically for 6-10 players.
 
-The first prototype was still too horizontally stretched.
+Physical envelope:
 
-The current prototype compresses the ship into two functional decks:
+- X: 0 through 56
+- Z: -24 through 24
+- two decks
+- room sizes: 9x9, 11x11, or 13x13 depending on function
+- generated logical module count: 10-12
 
-- Upper deck:
-  - Bridge
-  - Habitation
-  - Medical
-  - Research
-  - selected auxiliary/airlock modules
-- Lower deck:
-  - Cargo
-  - Engineering
-  - maintenance/auxiliary modules
-  - selected airlock modules
+The goal is frequent player encounters without making role movement trivial.
 
-The upper `junction_1` and lower `junction_2` occupy the same horizontal footprint and form a central physical stairwell.
+## Layout
 
-The logical generator is now deck-aware as well. Normal logical links stay on the same deck; the central junction pair is the mandatory cross-deck spine. This prevents random logical edges from recreating very long cross-ship corridors.
+Upper deck:
 
-Module spacing was reduced and module size compressed so traversal distance is shorter while the total ship interior gains vertical volume.
+- Bridge
+- central atrium / stair core
+- Habitation
+- Medical
+- Research
+- selected auxiliary room / airlock
 
-### Power-dependent lighting
+Lower deck:
 
-Interior lighting now follows ship POWER:
+- central atrium / stair core
+- Cargo
+- Engineering
+- selected maintenance / auxiliary room / airlock
 
-- 70-100: normal white lighting, light level 15
-- 40-69: reduced yellow lighting, light level 11
-- 15-39: red emergency lighting, light level 7
-- 0-14: near-blackout gray lighting, light level 2
+`junction_1` and `junction_2` share the same X/Z footprint and form the only mandatory vertical spine.
 
-The renderer uses invisible Minecraft LIGHT blocks for actual brightness and separate fixture blocks for visible color.
+## Topology
 
-Lighting is checked by the existing one-second HUD update loop, but blocks are only rewritten when the power stage changes.
+The logical graph was simplified to match the compact physical layout.
 
-The opening default power of 35 therefore begins in emergency-red lighting instead of permanent darkness.
+Removed from generated room selection:
 
-### Semantic orientation
+- corridor_1 through corridor_5
+- junction_3
 
-Core spaces have a readable longitudinal relationship:
+Required meaningful spaces:
 
-- front / bow: Bridge
-- center: Habitation and Medical
-- center-to-aft: Research and Cargo
-- aft: Engineering
-- outer lanes: Auxiliary rooms and Airlocks
+- Bridge
+- Engineering
+- Medical
+- Research
+- Cargo
+- Habitation
+- upper atrium
+- lower atrium
 
-Optional modules still vary because the generated logical map selects a changing subset.
+Each seed adds only 2-4 optional auxiliary/airlock spaces.
 
-### Continuous movement
+This prevents room count from inflating the physical footprint.
 
-Generated logical connections are rendered as enclosed 3-block-wide physical corridors.
+## Lighting
 
-Normal room-to-room travel no longer teleports.
+Power-linked lighting remains:
 
-Connection access rules still use the existing connection controller at narrow physical door thresholds:
+- 70-100: normal white / light 15
+- 40-69: reduced yellow / light 11
+- 15-39: red emergency / light 7
+- 0-14: near-blackout / light 2
 
-- OPEN
-- POWER_REQUIRED
-- KEYCARD_REQUIRED
-- LOCKED
-- DISABLED
+Opening power 35 therefore starts under emergency lighting.
 
-Denied movement pushes the player back instead of teleporting.
+## Automated checks
 
-### Interior presentation
+Build #869 passes:
 
-Fallback modules and generated corridors now have:
+- full project tests/build
+- 100-seed compact topology generation
+- no independent corridor rooms
+- 10-12 generated modules
+- one mandatory cross-deck spine
+- no reused logical connection points
+- all physical rooms stay inside the compact envelope
+- rooms on the same deck do not overlap
 
-- floors
-- walls
-- ceilings
-- structural accent bands
-- embedded lighting
-- room labels with front / center / aft zone names
-- corridor floor stripes:
-  - blue: bow
-  - white: center
-  - red: aft
+## Playtest questions
 
-The goal is that players can learn the ship's direction from the world itself rather than only from a GUI.
+Focus only on scale and movement first:
 
-### Logical compatibility
-
-The existing generated graph remains authoritative for:
-
-- route distance
-- connection state
-- priority-route labels
-- incidents that affect connections
-- PDA route logic
-
-The physical renderer changes how that graph is experienced, not the game rules.
-
-## Evaluation questions
-
-During the playtest, focus on:
-
-1. Does this feel like moving inside one spacecraft rather than between isolated rooms?
-2. Can you roughly infer where Bridge vs Engineering should be?
-3. Do corridors feel like meaningful ship space instead of empty links?
-4. Does moving to a distant repair location feel like traversal/exploration?
-5. Are room entrances and route labels readable?
-6. Is the footprint too large or too small?
-7. Does the random connection graph create corridor spaghetti?
-8. Should the next iteration add:
-   - maintenance ducts,
-   - windows,
-   - locked shortcuts,
-   - discovered auxiliary rooms,
-   - stronger landmark architecture?
-
-## Current limitation
-
-This is deliberately a first spatial prototype.
-
-The logical topology is now generated by a cohesive two-deck generator rather than the previous fully random spanning-graph generator.
-
-The current limitation is visual/architectural variety: room shells and stair geometry are still fallback prototype construction. If the two-deck spatial direction is accepted, the next pass should focus on landmark architecture, maintenance ducts, windows, shortcuts and discovered auxiliary spaces rather than making the ship physically larger.
+1. Is the ship now small enough for 6-10 players?
+2. Do players encounter each other often enough?
+3. Is Bridge -> Engineering travel short enough?
+4. Does two-deck movement add space without making navigation annoying?
+5. Are 9x9-13x13 rooms large enough for facility gameplay?
+6. Does the central atrium feel like a useful landmark?
+7. Should optional rooms be even smaller or fewer?
+8. After the scale is accepted, should the next pass focus on architecture/visual identity?
