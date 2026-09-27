@@ -120,7 +120,6 @@ public final class FunctionalItemService {
                 )
         );
 
-        player.sendMessage("§a[시작 장비] §f" + itemType.displayName());
     }
 
     public void syncRadio(Player player) {
