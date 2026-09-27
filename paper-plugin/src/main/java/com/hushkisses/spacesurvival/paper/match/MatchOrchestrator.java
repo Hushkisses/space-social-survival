@@ -181,19 +181,6 @@ public final class MatchOrchestrator {
             online.teleportAsync(ship.bridgeSpawn());
             plugin.roleSelectionUi().giveMenuItem(online);
 
-            online.sendTitle(
-                    "§c긴급 귀환 임무",
-                    "§f직업을 선택하십시오",
-                    5,
-                    50,
-                    10
-            );
-            online.sendMessage("§6[상황] §f" + scenarioDefinition.publicBriefing());
-            online.sendMessage(
-                    "§e[시작] §f함선을 복구하고 귀환하십시오. "
-                            + "먼저 직업 후보 3개 중 하나를 선택하십시오."
-            );
-
             plugin.roleSelectionUi().open(online);
         }
 
