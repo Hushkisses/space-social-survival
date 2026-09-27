@@ -9,9 +9,9 @@ public final class CompactSingleDeckLayoutPlanner {
     public static final int FLOOR_Y = 80;
 
     public static final int SHIP_MIN_X = 0;
-    public static final int SHIP_MAX_X = 49;
-    public static final int SHIP_MIN_Z = -19;
-    public static final int SHIP_MAX_Z = 19;
+    public static final int SHIP_MAX_X = 60;
+    public static final int SHIP_MIN_Z = -23;
+    public static final int SHIP_MAX_Z = 23;
 
     private static final Map<String, Slot> SLOTS = slots();
 
@@ -24,7 +24,7 @@ public final class CompactSingleDeckLayoutPlanner {
             Slot slot = SLOTS.get(tileId.value());
             if (slot == null) {
                 throw new IllegalArgumentException(
-                        "No MAP-V4 slot for tile: " + tileId.value()
+                        "No MAP-V5 slot for tile: " + tileId.value()
                 );
             }
             placements.put(
@@ -45,24 +45,25 @@ public final class CompactSingleDeckLayoutPlanner {
     private static Map<String, Slot> slots() {
         LinkedHashMap<String, Slot> slots = new LinkedHashMap<>();
 
-        // Main skeleton. The hub sits in the middle; every core facility is within
-        // one short branch or side loop.
-        slots.put("bridge", new Slot(0, -4, 9));
-        slots.put("junction_1", new Slot(12, -5, 11));
+        // MAP-V5: restore generous room sizes, but keep rooms close together.
+        // The gaps between connected core rooms are generally 1-3 blocks.
+        slots.put("bridge", new Slot(0, -7, 15));
+        slots.put("junction_1", new Slot(18, -5, 11));
+        slots.put("engineering", new Slot(32, -7, 15));
 
-        slots.put("habitation", new Slot(12, -17, 9));
-        slots.put("medical", new Slot(12, 9, 9));
+        slots.put("habitation", new Slot(18, -21, 13));
+        slots.put("cargo", new Slot(34, -23, 13));
 
-        slots.put("cargo", new Slot(25, -17, 11));
-        slots.put("research", new Slot(25, 9, 9));
-        slots.put("engineering", new Slot(28, -5, 11));
+        slots.put("medical", new Slot(18, 9, 13));
+        slots.put("research", new Slot(34, 11, 13));
 
-        // Only three of these five are present in any match.
-        slots.put("auxiliary_1", new Slot(0, -17, 9));
-        slots.put("auxiliary_2", new Slot(0, 9, 9));
-        slots.put("auxiliary_3", new Slot(39, -17, 9));
-        slots.put("auxiliary_4", new Slot(37, 9, 9));
-        slots.put("airlock_1", new Slot(41, -4, 9));
+        // Exactly three of these are selected. They sit directly outside the
+        // core rooms rather than creating another corridor layer.
+        slots.put("auxiliary_1", new Slot(4, -23, 11));
+        slots.put("auxiliary_2", new Slot(4, 13, 11));
+        slots.put("auxiliary_3", new Slot(50, -23, 11));
+        slots.put("auxiliary_4", new Slot(50, 13, 11));
+        slots.put("airlock_1", new Slot(50, -5, 11));
 
         return Map.copyOf(slots);
     }
