@@ -64,7 +64,10 @@ public final class ShipNavigationListener implements Listener {
                     };
         } else if (snapshot.isCorridor(player.getLocation())) {
             name = "함선 주 통로";
-            category = corridorZone(player.getLocation().getBlockX());
+            category = corridorZone(
+                    player.getLocation().getBlockX(),
+                    player.getLocation().getBlockY()
+            );
         } else {
             lastArea.remove(player.getUniqueId());
             return;
@@ -87,10 +90,13 @@ public final class ShipNavigationListener implements Listener {
         );
     }
 
-    private static String corridorZone(int x) {
-        if (x < 40) return "선수 통로";
-        if (x < 100) return "중앙 데크";
-        return "후방 기관 통로";
+    private static String corridorZone(int x, int y) {
+        String deck = y >= CohesiveShipLayoutPlanner.UPPER_FLOOR_Y
+                ? "상부"
+                : "하부";
+        if (x < 30) return deck + " 선수 통로";
+        if (x < 70) return deck + " 중앙 통로";
+        return deck + " 후방 통로";
     }
 
     private static boolean changedBlock(PlayerMoveEvent event) {
