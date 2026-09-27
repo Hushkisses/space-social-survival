@@ -97,6 +97,8 @@ public final class MatchHudService {
         }
 
         var ship = plugin.shipState().snapshot();
+        shipWorldService.updateLighting(ship.power());
+
         CrisisStage crisis = plugin.gameRuntimeService().currentCrisisStage();
         ReturnStage returnStage = plugin.returnObjectiveService().stage();
         PublicProblem problem = guidanceResolver.resolve(
