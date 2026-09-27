@@ -136,6 +136,8 @@ public final class MatchOrchestrator {
             );
         }
 
+        shipWorldService.updateLighting(plugin.shipState().power());
+
         session.transitionTo(GamePhase.BRIEFING);
         status = MatchLifecycleStatus.BRIEFING;
 
