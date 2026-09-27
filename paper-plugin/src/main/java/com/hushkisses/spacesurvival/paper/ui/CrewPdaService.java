@@ -33,6 +33,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -294,7 +295,13 @@ public final class CrewPdaService implements Listener {
             return;
         }
 
-        Inventory inventory = Bukkit.createInventory(null, 54, MAP_TITLE);
+        MapInventoryHolder holder = new MapInventoryHolder();
+        String mapTitle = plugin.itemsAdderBridge()
+                .fontImage("spacesurvival:ship_map_gui", -8)
+                .map(image -> "§f" + image)
+                .orElse(MAP_TITLE);
+        Inventory inventory = Bukkit.createInventory(holder, 54, mapTitle);
+        holder.bind(inventory);
         TileId current = ship.tileAt(player.getLocation()).orElse(null);
         TileId target = mapTargetTile();
 
@@ -655,10 +662,12 @@ public final class CrewPdaService implements Listener {
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
         String title = event.getView().getTitle();
+        boolean mapInventory = event.getInventory().getHolder() instanceof MapInventoryHolder;
         if (!PERSONAL_TITLE.equals(title)
                 && !PUBLIC_TITLE.equals(title)
                 && !HELP_TITLE.equals(title)
-                && !MAP_TITLE.equals(title)) {
+                && !MAP_TITLE.equals(title)
+                && !mapInventory) {
             return;
         }
 
@@ -985,6 +994,22 @@ public final class CrewPdaService implements Listener {
             case BIO_SAMPLES -> "생체 샘플";
             case DATA_CORES -> "데이터 코어";
         };
+    }
+
+    private static final class MapInventoryHolder implements InventoryHolder {
+        private Inventory inventory;
+
+        private void bind(Inventory inventory) {
+            this.inventory = Objects.requireNonNull(inventory, "inventory");
+        }
+
+        @Override
+        public Inventory getInventory() {
+            if (inventory == null) {
+                throw new IllegalStateException("Map inventory is not bound yet");
+            }
+            return inventory;
+        }
     }
 
     private static String stripColor(String value) {
