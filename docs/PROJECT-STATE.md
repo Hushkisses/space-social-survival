@@ -28,6 +28,8 @@ Player Comprehension / Playability
 - Status: IMPLEMENTED / VALIDATION_PENDING
 - Development branch: `dev/PX-010-playability-harness`
 - Base branch: validated `dev/PX-009-terminal-state-ux`
+- Draft PR: #29
+- GitHub Actions full test/build: SUCCESS
 - PX-009 Windows/Paper validation passed on 2026-09-27.
 - Parent PR chain (#23 -> #24 -> #26 -> #27 -> #28) remains open and merge ordering must not be skipped.
 - Details:
@@ -249,6 +251,8 @@ Player Comprehension / Playability
 ## PX-010 1–3 Player End-to-End Playability Harness
 - Status: IMPLEMENTED / VALIDATION_PENDING
 - Development branch: `dev/PX-010-playability-harness`
+- Draft PR: #29
+- GitHub Actions full test/build: SUCCESS
 - non-production `/space playability start [seed]` accepts only 1–3 participants and uses the real match flow with the existing minimum-player bypass
 - `/space playability check` reports runtime/telemetry evidence for:
   - onboarding
