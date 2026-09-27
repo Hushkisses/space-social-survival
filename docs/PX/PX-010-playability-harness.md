@@ -158,3 +158,31 @@ Existing evidence remains authoritative for:
 16. reset and start a second match to exercise rematch stability.
 
 PX-010 remains `VALIDATION_PENDING` until the real Windows/Paper flow is reported working.
+
+
+## PX-010.1 Left Mission HUD prototype
+
+Player-facing game branding is now `람몽어스` in the active onboarding/HUD surfaces.
+
+When ItemsAdder is available, the normal opening/recovery loop uses a left-side custom HUD:
+
+- role not selected -> `직업을 선택하세요`
+- own role selected while other players are still choosing -> `승무원 선택 대기`
+- low power -> `전력 계통 복구 → 기관실 · 전력 셀 필요`
+- low hull -> `선체 균열 수리 · 수리 부품 확보 후 표시된 균열`
+- low reactor -> `원자로 안정화 → 기관실 · 연료 필요`
+- low oxygen -> `산소 계통 복구 → 생활구역 · 수리 부품`
+- navigation / return preparation -> compact `귀환 절차 진행` guidance
+- final hold -> `귀환 상태 유지`
+
+The right scoreboard is reduced to location / ship metrics / personal objective / PDA hint while the custom left mission HUD is active.
+
+Fallback policy:
+
+- ItemsAdder unavailable -> existing right-side urgent objective remains
+- required HUD image unavailable -> existing right-side urgent objective remains
+- complex facility-damage states currently stay on the vanilla right-side fallback rather than showing an inaccurate generic image
+
+The HUD uses ItemsAdder `CUSTOM` HUD API through the existing reflection-only bridge, so ItemsAdder remains optional.
+
+Because HUD assets changed, Windows validation requires `/iazip` after deploy/start.
