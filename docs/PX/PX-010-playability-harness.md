@@ -186,3 +186,27 @@ Fallback policy:
 The HUD uses ItemsAdder `CUSTOM` HUD API through the existing reflection-only bridge, so ItemsAdder remains optional.
 
 Because HUD assets changed, Windows validation requires `/iazip` after deploy/start.
+
+
+## PX-010.2 HUD visual correction
+
+Windows screenshot feedback showed the first left-HUD prototype was oversized, pushed too high, and competed with the right sidebar/chat.
+
+Correction:
+
+- ItemsAdder mission HUD render scale reduced from 240 to 150
+- vertical font-image position reduced from 225 to 150
+- custom HUD X offset moved from -145 to -220
+- right sidebar compressed to:
+  - current location
+  - two compact ship-metric rows
+  - one compact personal-objective row
+  - optional secret-mission indicator
+  - PDA hint
+- role-selection confirmation reduced to one chat line
+- starter-equipment duplicate chat line removed
+- mission activation guidance reduced to two chat lines
+- pre-role briefing reduced to situation + one start instruction
+- duplicate all-crew activation broadcast removed
+
+The left mission HUD remains the primary immediate-action surface; right sidebar and chat are now secondary.
