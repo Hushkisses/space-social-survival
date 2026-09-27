@@ -41,6 +41,13 @@ public final class FacilityInteractionListener implements Listener {
 
         event.setCancelled(true);
 
+        if (plugin.meetingGuiService().meetingActive()) {
+            event.getPlayer().sendMessage(
+                    "§e[회의] §f현재 회의가 진행 중입니다. 토론·투표가 끝난 뒤 시설 작업을 재개할 수 있습니다."
+            );
+            return;
+        }
+
         if (plugin.physicalSanctionService().accessRestricted(event.getPlayer())
                 || plugin.physicalSanctionService().ejected(event.getPlayer())) {
             event.getPlayer().sendMessage("§c[출입 제한] §f현재 시설 콘솔을 사용할 수 없습니다.");
