@@ -17,10 +17,17 @@ public final class CohesiveDeckMapGenerator {
             "research",
             "cargo",
             "habitation",
-            "corridor_1",
-            "corridor_2",
             "junction_1",
             "junction_2"
+    );
+
+    private static final List<String> OPTIONAL = List.of(
+            "auxiliary_1",
+            "auxiliary_2",
+            "auxiliary_3",
+            "auxiliary_4",
+            "airlock_1",
+            "airlock_2"
     );
 
     private static final Set<String> UPPER = Set.of(
@@ -28,9 +35,6 @@ public final class CohesiveDeckMapGenerator {
             "medical",
             "research",
             "habitation",
-            "corridor_1",
-            "corridor_4",
-            "corridor_5",
             "junction_1",
             "auxiliary_1",
             "auxiliary_2",
@@ -53,116 +57,109 @@ public final class CohesiveDeckMapGenerator {
 
         for (String id : REQUIRED) {
             if (!byId.containsKey(id)) {
-                throw new MapGenerationException("Missing required cohesive-deck tile: " + id);
+                throw new MapGenerationException("Missing compact-ship tile: " + id);
             }
         }
 
         int minTarget = Math.max(constraints.minTiles(), REQUIRED.size());
-        int maxTarget = Math.min(constraints.maxTiles(), byId.size());
+        int maxTarget = Math.min(
+                Math.min(constraints.maxTiles(), REQUIRED.size() + OPTIONAL.size()),
+                12
+        );
         if (maxTarget < minTarget) {
-            throw new MapGenerationException("Cohesive-deck target range is impossible");
+            throw new MapGenerationException("Compact ship target range is impossible");
         }
 
         int target = random.nextInt(minTarget, maxTarget + 1);
 
-        LinkedHashSet<String> selectedIds = new LinkedHashSet<>(REQUIRED);
-        ArrayList<String> optional = new ArrayList<>(byId.keySet());
-        optional.removeAll(selectedIds);
+        LinkedHashSet<String> selected = new LinkedHashSet<>(REQUIRED);
+        ArrayList<String> optional = new ArrayList<>(OPTIONAL);
         shuffle(optional, random);
 
         for (String id : optional) {
-            if (selectedIds.size() >= target) break;
-            selectedIds.add(id);
+            if (selected.size() >= target) break;
+            if (byId.containsKey(id)) {
+                selected.add(id);
+            }
         }
 
         LinkedHashMap<String, ArrayDeque<ConnectionPointDefinition>> points =
                 new LinkedHashMap<>();
-        for (String id : selectedIds) {
-            points.put(
-                    id,
-                    new ArrayDeque<>(byId.get(id).connectionPoints())
-            );
+        for (String id : selected) {
+            points.put(id, new ArrayDeque<>(byId.get(id).connectionPoints()));
         }
 
         ArrayList<GeneratedConnection> connections = new ArrayList<>();
         HashSet<String> pairs = new HashSet<>();
 
-        connect("bridge", "corridor_1", points, connections, pairs);
-        connect("corridor_1", "junction_1", points, connections, pairs);
+        // Upper deck compact loop around the command atrium.
+        connect("bridge", "junction_1", points, connections, pairs);
         connect("junction_1", "habitation", points, connections, pairs);
-        connect("junction_1", "medical", points, connections, pairs);
+        connect("habitation", "medical", points, connections, pairs);
         connect("medical", "research", points, connections, pairs);
+        connect("research", "junction_1", points, connections, pairs);
 
-        // The only mandatory inter-deck link. Physically this becomes the central stairwell.
+        // One vertical spine only.
         connect("junction_1", "junction_2", points, connections, pairs);
 
+        // Lower deck compact triangle.
         connect("junction_2", "cargo", points, connections, pairs);
-        connect("cargo", "corridor_2", points, connections, pairs);
-        connect("corridor_2", "engineering", points, connections, pairs);
+        connect("junction_2", "engineering", points, connections, pairs);
+        connect("cargo", "engineering", points, connections, pairs);
 
-        ArrayList<String> extras = new ArrayList<>(selectedIds);
+        ArrayList<String> extras = new ArrayList<>(selected);
         extras.removeAll(REQUIRED);
         shuffle(extras, random);
 
         for (String extra : extras) {
             boolean upper = upperDeck(extra);
-            List<String> parents = selectedIds.stream()
-                    .filter(id -> !id.equals(extra))
+            List<String> preferred = preferredParents(extra);
+            String parent = preferred.stream()
+                    .filter(selected::contains)
                     .filter(id -> upperDeck(id) == upper)
                     .filter(id -> !points.get(id).isEmpty())
                     .filter(id -> !pairs.contains(pairKey(id, extra)))
-                    .toList();
+                    .findFirst()
+                    .orElseGet(() -> selected.stream()
+                            .filter(id -> !id.equals(extra))
+                            .filter(id -> upperDeck(id) == upper)
+                            .filter(id -> !points.get(id).isEmpty())
+                            .filter(id -> !pairs.contains(pairKey(id, extra)))
+                            .findFirst()
+                            .orElseThrow(() -> new MapGenerationException(
+                                    "No compact parent available for " + extra
+                            )));
 
-            if (parents.isEmpty() || points.get(extra).isEmpty()) {
-                throw new MapGenerationException("No capacity to attach optional tile: " + extra);
-            }
-
-            ArrayList<String> shuffledParents = new ArrayList<>(parents);
-            shuffle(shuffledParents, random);
-            connect(extra, shuffledParents.getFirst(), points, connections, pairs);
-
-            if (!extra.startsWith("airlock_") && !points.get(extra).isEmpty()) {
-                List<String> secondParents = shuffledParents.stream()
-                        .filter(id -> !points.get(id).isEmpty())
-                        .filter(id -> !pairs.contains(pairKey(id, extra)))
-                        .toList();
-                if (!secondParents.isEmpty()) {
-                    connect(extra, secondParents.getFirst(), points, connections, pairs);
-                }
-            }
+            connect(extra, parent, points, connections, pairs);
         }
 
         GeneratedMap generated = new GeneratedMap(
-                selectedIds.stream().map(TileId::new).toList(),
+                selected.stream().map(TileId::new).toList(),
                 connections
         );
 
         if (!generated.isConnected()) {
-            throw new MapGenerationException("Cohesive-deck map must be connected");
+            throw new MapGenerationException("Compact ship map must be connected");
         }
         if (generated.deadEndCount() > constraints.maxDeadEnds()) {
             throw new MapGenerationException(
-                    "Cohesive-deck map exceeded dead-end limit: " + generated.deadEndCount()
+                    "Compact ship exceeded dead-end limit: " + generated.deadEndCount()
             );
         }
 
-        List<TileId> core = List.of(
-                new TileId("bridge"),
-                new TileId("engineering"),
-                new TileId("medical"),
-                new TileId("research"),
-                new TileId("cargo"),
-                new TileId("habitation")
-        );
-        for (int i = 0; i < core.size(); i++) {
-            for (int j = i + 1; j < core.size(); j++) {
-                if (generated.distance(core.get(i), core.get(j)) > constraints.maxCoreDistance()) {
-                    throw new MapGenerationException("Core distance exceeded cohesive-deck limit");
-                }
-            }
-        }
-
         return generated;
+    }
+
+    private static List<String> preferredParents(String id) {
+        return switch (id) {
+            case "auxiliary_1" -> List.of("habitation", "junction_1");
+            case "auxiliary_2" -> List.of("research", "medical");
+            case "airlock_1" -> List.of("research", "junction_1");
+            case "auxiliary_3" -> List.of("cargo", "junction_2");
+            case "auxiliary_4" -> List.of("engineering", "junction_2");
+            case "airlock_2" -> List.of("engineering", "cargo");
+            default -> List.of("junction_1", "junction_2");
+        };
     }
 
     private static boolean upperDeck(String id) {
