@@ -43,6 +43,7 @@ import com.hushkisses.spacesurvival.paper.facility.FacilityActionExecutor;
 import com.hushkisses.spacesurvival.paper.facility.FacilityInteractionListener;
 import com.hushkisses.spacesurvival.paper.facility.FacilityMenuService;
 import com.hushkisses.spacesurvival.paper.facility.FacilityTerminalRegistry;
+import com.hushkisses.spacesurvival.paper.hull.HullBreachService;
 import com.hushkisses.spacesurvival.paper.item.DefaultResourceItemProvider;
 import com.hushkisses.spacesurvival.paper.item.FunctionalItemListener;
 import com.hushkisses.spacesurvival.paper.item.FunctionalItemService;
@@ -112,6 +113,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private ResourceLedger resourceLedger;
     private ProcessingRegistry processingRegistry;
     private ProcessingService processingService;
+    private ItemsAdderBridge itemsAdderBridge;
     private ResourceItemProvider resourceItemProvider;
     private FunctionalItemService functionalItemService;
     private StarterKitService starterKitService;
@@ -167,6 +169,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     private PaperShipWorldService shipWorldService;
     private MatchOrchestrator matchOrchestrator;
     private ShipRouteService shipRouteService;
+    private HullBreachService hullBreachService;
     private LobbyReadyService lobbyReadyService;
     private MatchHudService matchHudService;
     private CrewPdaService crewPdaService;
@@ -194,7 +197,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         resourceLedger = new ResourceLedger();
         processingRegistry = DefaultProcessingCatalog.createRegistry();
         processingService = new ProcessingService();
-        ItemsAdderBridge itemsAdderBridge = new ItemsAdderBridge();
+        itemsAdderBridge = new ItemsAdderBridge();
         resourceItemProvider = new DefaultResourceItemProvider(itemsAdderBridge);
         functionalItemService = new FunctionalItemService(this, itemsAdderBridge);
         starterKitService = new StarterKitService(this, functionalItemService);
@@ -270,6 +273,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         );
         matchOrchestrator = new MatchOrchestrator(this, shipWorldService);
         shipRouteService = new ShipRouteService(this, shipWorldService);
+        hullBreachService = new HullBreachService(this, itemsAdderBridge);
         lobbyReadyService = new LobbyReadyService(this);
         matchHudService = new MatchHudService(this, shipWorldService);
         crewPdaService = new CrewPdaService(this, shipWorldService);
@@ -324,6 +328,10 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         );
         getServer().getPluginManager().registerEvents(
                 new ShipNavigationListener(this, shipWorldService),
+                this
+        );
+        getServer().getPluginManager().registerEvents(
+                hullBreachService,
                 this
         );
         getServer().getPluginManager().registerEvents(
@@ -410,6 +418,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public ResourceLedger resourceLedger() { return require(resourceLedger, "Resource ledger"); }
     public ProcessingRegistry processingRegistry() { return require(processingRegistry, "Processing registry"); }
     public ProcessingService processingService() { return require(processingService, "Processing service"); }
+    public ItemsAdderBridge itemsAdderBridge() { return require(itemsAdderBridge, "ItemsAdder bridge"); }
     public ResourceItemProvider resourceItemProvider() { return require(resourceItemProvider, "Resource item provider"); }
     public FunctionalItemService functionalItemService() { return require(functionalItemService, "Functional item service"); }
     public StarterKitService starterKitService() { return require(starterKitService, "Starter kit service"); }
@@ -451,6 +460,7 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
     public PaperShipWorldService shipWorldService() { return require(shipWorldService, "Ship world service"); }
     public MatchOrchestrator matchOrchestrator() { return require(matchOrchestrator, "Match orchestrator"); }
     public ShipRouteService shipRouteService() { return require(shipRouteService, "Ship route service"); }
+    public HullBreachService hullBreachService() { return require(hullBreachService, "Hull breach service"); }
     public LobbyReadyService lobbyReadyService() { return require(lobbyReadyService, "Lobby ready service"); }
     public MatchHudService matchHudService() { return require(matchHudService, "Match HUD service"); }
     public CrewPdaService crewPdaService() { return require(crewPdaService, "Crew PDA service"); }
