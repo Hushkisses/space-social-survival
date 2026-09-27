@@ -125,7 +125,7 @@ public final class CompactSingleDeckMapGenerator {
             case "auxiliary_2" -> "medical";
             case "auxiliary_3" -> "cargo";
             case "auxiliary_4" -> "research";
-            case "airlock_1" -> "cargo";
+            case "airlock_1" -> "engineering";
             default -> throw new MapGenerationException("Unknown optional room: " + id);
         };
     }
