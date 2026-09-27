@@ -258,11 +258,12 @@ public final class CrewPdaService implements Listener {
         ));
         inventory.setItem(30, item(
                 Material.IRON_PICKAXE,
-                "§f직업 장비",
+                "§f복구와 직업 장비",
                 List.of(
-                        "§7고급 행동에는 직업 권한뿐 아니라",
-                        "§7실제 장비 소지가 필요한 경우가 있습니다.",
-                        "§7장비를 잃으면 PDA에서 보유 여부를 다시 확인하십시오."
+                        "§7전력·원자로: 기관실",
+                        "§7산소·생명유지: 생활구역",
+                        "§7선체 균열: 화물실에서 수리 부품 수령 후 현장 우클릭",
+                        "§7고급 행동은 직업 권한·장비가 필요할 수 있습니다."
                 )
         ));
         inventory.setItem(32, item(
