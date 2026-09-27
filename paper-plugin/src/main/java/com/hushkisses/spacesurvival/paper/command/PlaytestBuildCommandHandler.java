@@ -99,15 +99,15 @@ public final class PlaytestBuildCommandHandler {
         try {
             MatchSetupSnapshot snapshot = plugin.matchOrchestrator().prepare(seed, true);
             plugin.telemetryService().event("playability", "px010-start");
-
-            sender.sendMessage("§6========== PX-010 플레이 가능성 검증 ==========");
-            sender.sendMessage("§a1~3인 개발 검증 매치를 준비했습니다.");
-            sender.sendMessage("§7참가자: §f" + lobby.playerCount() + "명");
-            sender.sendMessage("§7시드: §f" + seed);
-            sender.sendMessage("§7함선 모듈: §f" + snapshot.generatedMap().tileIds().size());
-            sender.sendMessage("§e이후에는 직업 선택·시설 작업·자원 사용·회의·귀환을 실제 플레이로 진행하십시오.");
-            sender.sendMessage("§7점검: §f/space playability check");
-            sender.sendMessage("§7강제 조건 도구: §f/space playability help");
+            plugin.getLogger().info(
+                    "PX-010 playability match prepared: players="
+                            + lobby.playerCount()
+                            + ", seed="
+                            + seed
+                            + ", modules="
+                            + snapshot.generatedMap().tileIds().size()
+            );
+            sender.sendMessage("§8[PX-010] §7검증 매치 준비 완료 · seed=" + seed);
         } catch (IllegalStateException exception) {
             sender.sendMessage("§cPX-010 검증 매치를 시작할 수 없습니다: " + exception.getMessage());
         }
@@ -120,8 +120,7 @@ public final class PlaytestBuildCommandHandler {
             return true;
         }
         plugin.matchOrchestrator().reset();
-        sender.sendMessage("§aPX-010 매치를 초기화했습니다.");
-        sender.sendMessage("§7재시작 안정성 검증을 위해 다시 /space playability start [seed] 를 실행할 수 있습니다.");
+        sender.sendMessage("§8[PX-010] §7매치 초기화 완료");
         return true;
     }
 
