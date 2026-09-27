@@ -44,7 +44,7 @@ public record PhysicalTilePlacement(
         int z = location.getBlockZ();
         return x >= minX && x < minX + size
                 && z >= minZ && z < minZ + size
-                && location.getBlockY() >= floorY
-                && location.getBlockY() <= floorY + 6;
+                && location.getBlockY() >= floorY - 4
+                && location.getBlockY() <= floorY + 12;
     }
 }

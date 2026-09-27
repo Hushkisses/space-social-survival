@@ -53,6 +53,7 @@ public final class ShipPortalListener implements Listener {
         if (plugin.physicalSanctionService().accessRestricted(player)
                 || plugin.physicalSanctionService().ejected(player)) {
             player.sendMessage("§c[출입 제한] §f현재 모듈 간 통로를 사용할 수 없습니다.");
+            event.setTo(from);
             return;
         }
 
@@ -73,6 +74,7 @@ public final class ShipPortalListener implements Listener {
         if (access != null && !access.allowed()) {
             cooldownUntil.put(player.getUniqueId(), now + 800L);
             player.sendMessage("§c[통로] §f" + denialMessage(access.denialReason()));
+            event.setTo(from);
             return;
         }
 

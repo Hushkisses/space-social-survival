@@ -19,7 +19,7 @@ public final class ShipNavigationListener implements Listener {
 
     private final SpaceSurvivalPlugin plugin;
     private final PaperShipWorldService shipWorldService;
-    private final Map<UUID, TileId> lastTile = new HashMap<>();
+    private final Map<UUID, String> lastArea = new HashMap<>();
 
     public ShipNavigationListener(
             SpaceSurvivalPlugin plugin,
@@ -37,7 +37,7 @@ public final class ShipNavigationListener implements Listener {
 
         Player player = event.getPlayer();
         if (!plugin.lobbyService().contains(PlayerId.of(player.getUniqueId()))) {
-            lastTile.remove(player.getUniqueId());
+            lastArea.remove(player.getUniqueId());
             return;
         }
 
@@ -47,22 +47,34 @@ public final class ShipNavigationListener implements Listener {
         }
 
         TileId tile = snapshot.tileAt(player.getLocation()).orElse(null);
-        TileId previous = lastTile.put(player.getUniqueId(), tile);
-        if (Objects.equals(previous, tile) || tile == null) {
+        String name;
+        String category;
+
+        if (tile != null) {
+            name = snapshot.tileDisplayName(tile);
+            var definition = snapshot.definitions().get(tile);
+            category = definition == null
+                    ? "함선 구역"
+                    : switch (definition.category()) {
+                        case CORE -> "핵심 시설";
+                        case CORRIDOR -> "연결 통로";
+                        case JUNCTION -> "교차 구역";
+                        case AIRLOCK -> "에어록";
+                        case AUXILIARY -> "보조 구역";
+                    };
+        } else if (snapshot.isCorridor(player.getLocation())) {
+            name = "함선 주 통로";
+            category = corridorZone(player.getLocation().getBlockX());
+        } else {
+            lastArea.remove(player.getUniqueId());
             return;
         }
 
-        String name = snapshot.tileDisplayName(tile);
-        var definition = snapshot.definitions().get(tile);
-        String category = definition == null
-                ? "함선 구역"
-                : switch (definition.category()) {
-                    case CORE -> "핵심 시설";
-                    case CORRIDOR -> "연결 통로";
-                    case JUNCTION -> "교차 구역";
-                    case AIRLOCK -> "에어록";
-                    case AUXILIARY -> "보조 구역";
-                };
+        String areaKey = name + "|" + category;
+        String previous = lastArea.put(player.getUniqueId(), areaKey);
+        if (Objects.equals(previous, areaKey)) {
+            return;
+        }
 
         player.sendActionBar(Component.text(
                 "현재 구역 · " + name + " · " + category
@@ -73,6 +85,12 @@ public final class ShipNavigationListener implements Listener {
                 0.35f,
                 1.25f
         );
+    }
+
+    private static String corridorZone(int x) {
+        if (x < 10) return "선수 통로";
+        if (x < 26) return "중앙 통로";
+        return "후방 통로";
     }
 
     private static boolean changedBlock(PlayerMoveEvent event) {

@@ -97,6 +97,8 @@ public final class MatchHudService {
         }
 
         var ship = plugin.shipState().snapshot();
+        shipWorldService.updateLighting(ship.power());
+
         CrisisStage crisis = plugin.gameRuntimeService().currentCrisisStage();
         ReturnStage returnStage = plugin.returnObjectiveService().stage();
         PublicProblem problem = guidanceResolver.resolve(
@@ -370,7 +372,12 @@ public final class MatchHudService {
         if (snapshot == null) return "미배치";
 
         TileId tileId = snapshot.tileAt(player.getLocation()).orElse(null);
-        return tileId == null ? "함선 외부" : snapshot.tileDisplayName(tileId);
+        if (tileId != null) {
+            return snapshot.tileDisplayName(tileId);
+        }
+        return snapshot.isCorridor(player.getLocation())
+                ? "함선 주 통로"
+                : "함선 외부";
     }
 
     private static double crisisProgress(CrisisStage stage) {

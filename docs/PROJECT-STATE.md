@@ -171,6 +171,49 @@ Player Comprehension / Playability
 - first blind 1~3 player 20-minute playability gate: not yet attempted
 - real 6~10 player balance test remains blocked on the PX playability gate
 
+## MAP-V5.2 GUI Slot Alignment
+- ItemsAdder PDA background rebuilt as a 176x114 image for the 5-row container header area
+- image nodes are authored directly on vanilla slot centers
+- font-image X offset corrected from -16 to -8
+- font-image y_position corrected from 48 to 14
+- font-image scale_ratio fixed to 114
+- player inventory area is no longer covered by the custom map background
+- dynamic current/target/optional markers remain normal inventory items and now share the same slot grid
+- GitHub Actions: SUCCESS (Build #950)
+- Windows/Paper visual validation: pending
+
+## MAP-V5.1 Dense Large-Room + Vertical Interior Prototype
+- experimental Draft PR #27 remains playtest-only
+- single-deck core geography remains stable
+- verticality is internal only: no second navigation deck
+- Bridge: raised command dais + forward viewport
+- Engineering: reactor pit + maintenance catwalk
+- Cargo: tall storage stacks
+- Central hub: glass machinery shaft
+- Medical / Research / Habitation: lighter vertical interior accents
+- PDA map can use ItemsAdder font-image GUI `spacesurvival:ship_map_gui` with vanilla fallback
+- quick-deploy decodes the tracked GUI image source automatically
+- GitHub Actions: SUCCESS (Build #926)
+- restored core room sizes: 13x13 to 15x15
+- central hub: 11x11
+- primary connected-room gaps: generally 1-3 blocks, enforced <= 3 in tests
+- exactly one Bridge / Engineering / Medical / Research / Cargo / Habitation
+- one central hub only
+- exactly three optional rooms per match
+- permanent floor routes:
+  - light blue Bridge
+  - red Engineering
+  - lime Habitation
+  - orange Cargo
+  - pink Medical
+  - purple Research
+- PDA map is now a physical-layout schematic rather than a node list
+- dynamic urgent route marker remains secondary only
+- world isolated as `space_ship_compact_v5`
+- power-responsive lighting retained
+- GitHub Actions: SUCCESS (Build #900)
+- Windows/Paper validation: pending
+
 ## PX-008 Meeting UX
 - GitHub Actions full test/build: SUCCESS (Build #815)
 - meeting is now staged as discussion -> voting -> result instead of opening the vote GUI immediately

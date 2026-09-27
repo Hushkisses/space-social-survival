@@ -49,3 +49,38 @@ After a deploy and server start:
 ```
 
 If the custom texture is visible, the SpaceSurvival -> ItemsAdder integration is active.
+
+
+## PDA map GUI
+
+MAP-V5.1 adds an optional ItemsAdder font-image background for the crew PDA ship map.
+
+Tracked source:
+
+```text
+dev-server/itemsadder-content/spacesurvival/configs/guis.yml
+dev-server/itemsadder-content/spacesurvival/textures/font/gui/ship_map_gui.png.b64
+```
+
+The PNG is tracked as base64 text so the GitHub text-file workflow can keep the asset reproducible.
+`dev-server/quick-deploy.bat` automatically decodes it to:
+
+```text
+dev-server/server/plugins/ItemsAdder/contents/spacesurvival/textures/font/gui/ship_map_gui.png
+```
+
+ItemsAdder font image ID:
+
+```text
+spacesurvival:ship_map_gui
+```
+
+After changing this asset:
+
+```text
+dev-server\quick-deploy.bat
+dev-server\start-dev.bat
+/iazip
+```
+
+When the font image is registered, the PDA map uses it as a GUI background. If ItemsAdder or the font image is unavailable, the plugin automatically falls back to the vanilla schematic inventory map.

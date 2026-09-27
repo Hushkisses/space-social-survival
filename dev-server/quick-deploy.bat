@@ -44,6 +44,17 @@ if exist "%IA_SOURCE%" (
         echo [SpaceSurvival] ItemsAdder content sync failed.
         exit /b 1
     )
+
+    for /R "%IA_TARGET%\textures" %%F in (*.png.b64) do (
+        powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+          "$src='%%~fF'; $dst=$src.Substring(0,$src.Length-4); [IO.File]::WriteAllBytes($dst,[Convert]::FromBase64String([IO.File]::ReadAllText($src)));"
+        if errorlevel 1 (
+            echo [SpaceSurvival] ItemsAdder image decode failed: %%~fF
+            exit /b 1
+        )
+        del /Q "%%~fF"
+    )
+
     echo [SpaceSurvival] ItemsAdder content sync complete.
 )
 

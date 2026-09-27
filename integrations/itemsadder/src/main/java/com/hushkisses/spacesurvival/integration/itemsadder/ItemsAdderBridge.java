@@ -8,6 +8,8 @@ import java.util.Optional;
 public final class ItemsAdderBridge {
 
     private static final String CUSTOM_STACK_CLASS = "dev.lone.itemsadder.api.CustomStack";
+    private static final String FONT_IMAGE_CLASS =
+            "dev.lone.itemsadder.api.FontImages.FontImageWrapper";
 
     public boolean isAvailable() {
         try {
@@ -15,6 +17,32 @@ public final class ItemsAdderBridge {
             return true;
         } catch (ClassNotFoundException exception) {
             return false;
+        }
+    }
+
+    public Optional<String> fontImage(String namespacedId, int pixelOffset) {
+        try {
+            Class<?> fontImageClass = Class.forName(FONT_IMAGE_CLASS);
+            Object wrapper = fontImageClass
+                    .getConstructor(String.class)
+                    .newInstance(namespacedId);
+
+            Method exists = fontImageClass.getMethod("exists");
+            Object existsResult = exists.invoke(wrapper);
+            if (!(existsResult instanceof Boolean available) || !available) {
+                return Optional.empty();
+            }
+
+            Method setOffset = fontImageClass.getMethod("setOffset", int.class);
+            Object shifted = setOffset.invoke(wrapper, pixelOffset);
+
+            Method getString = fontImageClass.getMethod("getString");
+            Object result = getString.invoke(shifted);
+            return result instanceof String value && !value.isBlank()
+                    ? Optional.of(value)
+                    : Optional.empty();
+        } catch (ReflectiveOperationException | LinkageError | IllegalArgumentException exception) {
+            return Optional.empty();
         }
     }
 
