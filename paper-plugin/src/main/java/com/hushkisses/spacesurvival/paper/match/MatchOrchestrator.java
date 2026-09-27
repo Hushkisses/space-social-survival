@@ -252,7 +252,7 @@ public final class MatchOrchestrator {
         status = MatchLifecycleStatus.ACTIVE;
 
         plugin.getServer().broadcastMessage(
-                "§a[우주 생존] §f모든 승무원의 직업 선택이 완료되어 임무가 시작되었습니다."
+                "§a[람몽어스] §f모든 승무원의 직업 선택이 완료되어 임무가 시작되었습니다."
         );
         return true;
     }
