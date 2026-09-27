@@ -295,7 +295,7 @@ public final class PlaytestBuildCommandHandler {
                 && lobby.playerCount() <= lobby.maxPlayers()
                 && !lobby.started();
 
-        sender.sendMessage("§6[우주 생존] §f첫 멀티 플레이테스트 준비 상태");
+        sender.sendMessage("§6[람몽어스] §f첫 멀티 플레이테스트 준비 상태");
         sender.sendMessage(
                 "§7참가자: "
                         + (playerReady ? "§a" : "§e")
@@ -447,7 +447,7 @@ public final class PlaytestBuildCommandHandler {
     private boolean telemetry(CommandSender sender, String[] args) {
         if (args.length < 2 || args[1].equalsIgnoreCase("status")) {
             var snapshot = plugin.telemetryService().snapshot();
-            sender.sendMessage("§6[우주 생존] §f텔레메트리 상태");
+            sender.sendMessage("§6[람몽어스] §f텔레메트리 상태");
             sender.sendMessage("§7활성: §f" + snapshot.active());
             sender.sendMessage("§7시드: §f" + snapshot.seed());
             sender.sendMessage("§7인원: §f" + snapshot.playerCount());
@@ -480,7 +480,7 @@ public final class PlaytestBuildCommandHandler {
 
     private boolean item(CommandSender sender, String[] args) {
         if (args.length < 2 || args[1].equalsIgnoreCase("list")) {
-            sender.sendMessage("§6[우주 생존] §f기능성 아이템");
+            sender.sendMessage("§6[람몽어스] §f기능성 아이템");
             for (FunctionalItemType type : FunctionalItemType.values()) {
                 sender.sendMessage(
                         "§7- §f"
