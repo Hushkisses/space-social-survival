@@ -134,6 +134,15 @@ public final class FacilityActionExecutor {
                     10,
                     "연료를 투입해 원자로/엔진 출력을 안정화했습니다."
             );
+            case "engineering.repair" -> {
+                if (!shared().remove(ResourceType.REPAIR_PARTS, 1)) {
+                    yield failure("기관실 설비 복구에 필요한 공용 수리 부품 1개가 부족합니다.");
+                }
+                plugin.facilityRegistry()
+                        .require(actionFacility("engineering"))
+                        .setStatus(FacilityStatus.NORMAL);
+                yield result("기관실 설비를 정상화했습니다. 선체 균열은 현장에서 별도로 수리해야 합니다.");
+            }
             case "engineering.diagnose" -> {
                 var diagnosis = plugin.engineeringFacilityService().diagnose();
                 yield result(
