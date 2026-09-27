@@ -1,11 +1,13 @@
 package com.hushkisses.spacesurvival.paper.ui;
 
+import com.hushkisses.spacesurvival.ending.ReturnRequirements;
 import com.hushkisses.spacesurvival.guidance.PlayerGuidanceResolver;
 import com.hushkisses.spacesurvival.guidance.PublicProblem;
 import com.hushkisses.spacesurvival.infection.InfectionStage;
 import com.hushkisses.spacesurvival.objective.ObjectiveInstance;
 import com.hushkisses.spacesurvival.objective.ObjectiveSlot;
 import com.hushkisses.spacesurvival.objective.ObjectiveStatus;
+import com.hushkisses.spacesurvival.map.tile.TileId;
 import com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin;
 import com.hushkisses.spacesurvival.paper.item.FunctionalItemType;
 import com.hushkisses.spacesurvival.paper.map.physical.PaperShipWorldService;
@@ -292,47 +294,71 @@ public final class CrewPdaService implements Listener {
         }
 
         Inventory inventory = Bukkit.createInventory(null, 54, MAP_TITLE);
-        var current = ship.tileAt(player.getLocation()).orElse(null);
-        var bridge = new com.hushkisses.spacesurvival.map.tile.TileId("bridge");
+        TileId current = ship.tileAt(player.getLocation()).orElse(null);
+        TileId target = mapTargetTile();
 
-        int slot = 0;
-        for (var tileId : ship.generatedMap().tileIds()) {
-            if (slot >= 45) break;
+        inventory.setItem(4, item(
+                Material.FILLED_MAP,
+                "§b함선 평면도",
+                List.of(
+                        "§7실제 함선의 상대 위치와 같은 배치입니다.",
+                        "§a● §7현재 위치  §e◆ §7긴급 목표",
+                        "",
+                        "§b청록 §7함교",
+                        "§c빨강 §7기관실",
+                        "§a초록 §7생활구역",
+                        "§6주황 §7화물실",
+                        "§d분홍 §7의료실",
+                        "§5보라 §7연구실"
+                )
+        ));
 
-            var definition = ship.definitions().get(tileId);
-            if (definition == null) continue;
+        // North / upper side of the schematic.
+        putMapRoom(inventory, ship, 9, new TileId("auxiliary_1"), current, target);
+        putMapRoom(inventory, ship, 13, new TileId("habitation"), current, target);
+        putMapRoom(inventory, ship, 16, new TileId("cargo"), current, target);
+        putMapRoom(inventory, ship, 17, new TileId("auxiliary_3"), current, target);
 
-            ArrayList<String> lore = new ArrayList<>();
-            lore.add("§7분류: §f" + tileCategoryName(definition.category()));
-            lore.add("§7함교 거리: §f" + ship.generatedMap().distance(tileId, bridge) + "칸");
-            if (tileId.equals(current)) {
-                lore.add("§a현재 위치");
-            }
-            lore.add("");
-            lore.add("§7연결:");
+        // Central spine.
+        putMapRoom(inventory, ship, 19, new TileId("bridge"), current, target);
+        putMapRoom(inventory, ship, 22, new TileId("junction_1"), current, target);
+        putMapRoom(inventory, ship, 25, new TileId("engineering"), current, target);
+        putMapRoom(inventory, ship, 26, new TileId("airlock_1"), current, target);
 
-            for (var adjacent : ship.generatedMap().adjacent(tileId)) {
-                lore.add(
-                        connectionColor(connectionState(tileId, adjacent))
-                                + "- "
-                                + ship.tileDisplayName(adjacent)
-                                + " §8["
-                                + connectionStateName(connectionState(tileId, adjacent))
-                                + "]"
-                );
-            }
+        // South / lower side of the schematic.
+        putMapRoom(inventory, ship, 27, new TileId("auxiliary_2"), current, target);
+        putMapRoom(inventory, ship, 31, new TileId("medical"), current, target);
+        putMapRoom(inventory, ship, 34, new TileId("research"), current, target);
+        putMapRoom(inventory, ship, 35, new TileId("auxiliary_4"), current, target);
 
-            inventory.setItem(
-                    slot++,
-                    item(
-                            tileMaterial(definition.category()),
-                            (tileId.equals(current) ? "§a▶ " : "§f")
-                                    + definition.displayName(),
-                            lore
-                    )
-            );
-        }
+        // The colored panes mirror permanent floor lines in the physical ship.
+        inventory.setItem(20, mapLine(Material.LIGHT_BLUE_STAINED_GLASS_PANE, "§b함교 노선"));
+        inventory.setItem(21, mapLine(Material.LIGHT_BLUE_STAINED_GLASS_PANE, "§b함교 노선"));
+        inventory.setItem(23, mapLine(Material.RED_STAINED_GLASS_PANE, "§c기관실 노선"));
+        inventory.setItem(24, mapLine(Material.RED_STAINED_GLASS_PANE, "§c기관실 노선"));
 
+        inventory.setItem(14, mapLine(Material.ORANGE_STAINED_GLASS_PANE, "§6화물 노선"));
+        inventory.setItem(15, mapLine(Material.ORANGE_STAINED_GLASS_PANE, "§6화물 노선"));
+        inventory.setItem(32, mapLine(Material.PURPLE_STAINED_GLASS_PANE, "§5연구 노선"));
+        inventory.setItem(33, mapLine(Material.PURPLE_STAINED_GLASS_PANE, "§5연구 노선"));
+
+        String currentName = current == null
+                ? "함선 주 통로"
+                : ship.tileDisplayName(current);
+        String targetName = ship.placements().containsKey(target)
+                ? ship.tileDisplayName(target)
+                : "현재 목표";
+
+        inventory.setItem(46, item(
+                Material.RECOVERY_COMPASS,
+                "§f현재/목표",
+                List.of(
+                        "§a● 현재: §f" + currentName,
+                        "§e◆ 목표: §f" + targetName,
+                        "",
+                        "§7중앙 허브와 바닥 색 노선을 기준으로 이동하십시오."
+                )
+        ));
         inventory.setItem(47, routeSummaryItem(player, ship));
         inventory.setItem(49, actionItem(
                 Material.ARROW,
@@ -340,7 +366,129 @@ public final class CrewPdaService implements Listener {
                 "personal",
                 List.of("§a클릭")
         ));
+
         player.openInventory(inventory);
+    }
+
+    private void putMapRoom(
+            Inventory inventory,
+            com.hushkisses.spacesurvival.paper.map.physical.PhysicalShipSnapshot ship,
+            int slot,
+            TileId tileId,
+            TileId current,
+            TileId target
+    ) {
+        if (!ship.placements().containsKey(tileId)) {
+            return;
+        }
+
+        var definition = ship.definitions().get(tileId);
+        if (definition == null) {
+            return;
+        }
+
+        boolean isCurrent = tileId.equals(current);
+        boolean isTarget = tileId.equals(target);
+
+        String prefix = "";
+        if (isCurrent) prefix += "§a● ";
+        if (isTarget) prefix += "§e◆ ";
+        if (prefix.isEmpty()) prefix = "§f";
+
+        ArrayList<String> lore = new ArrayList<>();
+        if (isCurrent) {
+            lore.add("§a현재 위치");
+        }
+        if (isTarget) {
+            lore.add("§e현재 긴급 목표");
+        }
+
+        lore.add("§7분류: §f" + tileCategoryName(definition.category()));
+
+        if (isCoreMapRoom(tileId)) {
+            lore.add("§7바닥 노선: " + mapRouteName(tileId));
+        }
+
+        lore.add("");
+        lore.add("§7인접 구역:");
+        for (TileId adjacent : ship.generatedMap().adjacent(tileId)) {
+            lore.add(
+                    connectionColor(connectionState(tileId, adjacent))
+                            + "- "
+                            + ship.tileDisplayName(adjacent)
+                            + " §8["
+                            + connectionStateName(connectionState(tileId, adjacent))
+                            + "]"
+            );
+        }
+
+        inventory.setItem(
+                slot,
+                item(
+                        schematicMaterial(tileId, definition.category()),
+                        prefix + definition.displayName(),
+                        lore
+                )
+        );
+    }
+
+    private static ItemStack mapLine(Material material, String name) {
+        return item(material, name, List.of("§7실제 함선 바닥의 색 노선과 같습니다."));
+    }
+
+    private TileId mapTargetTile() {
+        var ship = plugin.shipState().snapshot();
+        if (ship.hull() < ReturnRequirements.developmentDefaults().minHull()) {
+            TileId breach = plugin.hullBreachService()
+                    .primaryUnrepairedTile()
+                    .orElse(null);
+            if (breach != null) {
+                return breach;
+            }
+        }
+
+        return new TileId(currentProblem().targetFacility().value());
+    }
+
+    private static boolean isCoreMapRoom(TileId tileId) {
+        return switch (tileId.value()) {
+            case "bridge", "engineering", "medical", "research", "cargo", "habitation" -> true;
+            default -> false;
+        };
+    }
+
+    private static String mapRouteName(TileId tileId) {
+        return switch (tileId.value()) {
+            case "bridge" -> "§b청록";
+            case "engineering" -> "§c빨강";
+            case "habitation" -> "§a초록";
+            case "cargo" -> "§6주황";
+            case "medical" -> "§d분홍";
+            case "research" -> "§5보라";
+            default -> "§7없음";
+        };
+    }
+
+    private static Material schematicMaterial(
+            TileId tileId,
+            com.hushkisses.spacesurvival.map.tile.TileCategory category
+    ) {
+        return switch (tileId.value()) {
+            case "bridge" -> Material.LIGHT_BLUE_CONCRETE;
+            case "engineering" -> Material.RED_CONCRETE;
+            case "habitation" -> Material.LIME_CONCRETE;
+            case "cargo" -> Material.ORANGE_CONCRETE;
+            case "medical" -> Material.PINK_CONCRETE;
+            case "research" -> Material.PURPLE_CONCRETE;
+            case "junction_1" -> Material.YELLOW_CONCRETE;
+            default -> switch (category) {
+                case AIRLOCK -> Material.CYAN_CONCRETE;
+                case AUXILIARY -> Material.GREEN_CONCRETE;
+                case CORE -> Material.LIGHT_BLUE_CONCRETE;
+                case JUNCTION -> Material.YELLOW_CONCRETE;
+                case CORRIDOR -> Material.WHITE_CONCRETE;
+            };
+        };
     }
 
     private ItemStack routeSummaryItem(
