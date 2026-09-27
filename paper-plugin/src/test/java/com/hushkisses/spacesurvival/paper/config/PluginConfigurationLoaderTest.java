@@ -18,6 +18,8 @@ class PluginConfigurationLoaderTest {
 
         assertEquals(50, yaml.getInt("match.target-minutes"));
         assertEquals(300, yaml.getInt("return.hold-seconds"));
+        assertEquals(60, yaml.getInt("meeting.discussion-seconds"));
+        assertEquals(45, yaml.getInt("meeting.voting-seconds"));
 
         assertEquals(10, yaml.getInt("map.min-tiles"));
         assertEquals(14, yaml.getInt("map.max-tiles"));
@@ -60,6 +62,8 @@ class PluginConfigurationLoaderTest {
         YamlConfiguration yaml = new YamlConfiguration();
         yaml.set("match.target-minutes", 45);
         yaml.set("return.hold-seconds", 240);
+        yaml.set("meeting.discussion-seconds", 60);
+        yaml.set("meeting.voting-seconds", 45);
         yaml.set("map.min-tiles", 10);
         yaml.set("map.max-tiles", 14);
         yaml.set("map.max-dead-ends", 6);
