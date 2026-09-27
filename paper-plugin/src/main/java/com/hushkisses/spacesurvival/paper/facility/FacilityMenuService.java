@@ -342,6 +342,7 @@ public final class FacilityMenuService implements Listener {
         return switch (id) {
             case "engineering.power" -> List.of(new Requirement(ResourceType.POWER_CELLS, 1));
             case "engineering.engine" -> List.of(new Requirement(ResourceType.FUEL, 1));
+            case "engineering.repair" -> List.of(new Requirement(ResourceType.REPAIR_PARTS, 1));
             case "engineering.advanced_repair" -> List.of(new Requirement(ResourceType.REPAIR_PARTS, 2));
             case "medical.treat", "medical.clear_status", "medical.decontaminate",
                     "medical.advanced_treatment", "medical.suppress_infection" ->
@@ -369,6 +370,7 @@ public final class FacilityMenuService implements Listener {
             case "bridge.long_range_comms" -> "장거리 통신 계통 정상화";
             case "engineering.power" -> "전력 +15";
             case "engineering.engine" -> "원자로/엔진 안정도 +10";
+            case "engineering.repair" -> "기관실 손상 상태 정상화 · 선체 수치는 변하지 않음";
 
             case "engineering.diagnose" -> "정밀 함선 상태 진단";
             case "engineering.redistribute" -> "전력 +8";
