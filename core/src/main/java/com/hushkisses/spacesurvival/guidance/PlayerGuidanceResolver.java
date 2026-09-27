@@ -152,7 +152,7 @@ public final class PlayerGuidanceResolver {
                     damaged.displayName() + " 손상",
                     damaged.id(),
                     "수리 부품 1개",
-                    "기관실 콘솔에서 [핵심 수리]를 실행하십시오"
+                    "기관실 콘솔에서 [기관실 설비 복구]를 실행하십시오"
             );
         }
         if (damaged.id().equals(DefaultFacilityCatalog.MEDICAL)) {
