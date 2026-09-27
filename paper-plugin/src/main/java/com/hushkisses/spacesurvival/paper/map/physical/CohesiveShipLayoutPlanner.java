@@ -6,8 +6,9 @@ import java.util.*;
 
 public final class CohesiveShipLayoutPlanner {
 
-    public static final int MODULE_SIZE = 15;
-    public static final int FLOOR_Y = 80;
+    public static final int MODULE_SIZE = 13;
+    public static final int LOWER_FLOOR_Y = 80;
+    public static final int UPPER_FLOOR_Y = 88;
 
     private static final Map<String, Slot> SEMANTIC_SLOTS = semanticSlots();
 
@@ -37,7 +38,7 @@ public final class CohesiveShipLayoutPlanner {
             for (TileId tileId : fallback) {
                 Slot slot = index < available.size()
                         ? available.get(index++)
-                        : new Slot(168 + index * 24, 0);
+                        : new Slot(90 + index * 18, LOWER_FLOOR_Y, 0);
                 placements.put(tileId, placement(tileId, slot));
             }
         }
@@ -45,11 +46,16 @@ public final class CohesiveShipLayoutPlanner {
         return Collections.unmodifiableMap(placements);
     }
 
+    public static boolean upperDeck(TileId tileId) {
+        Slot slot = SEMANTIC_SLOTS.get(tileId.value());
+        return slot != null && slot.floorY == UPPER_FLOOR_Y;
+    }
+
     private static PhysicalTilePlacement placement(TileId tileId, Slot slot) {
         return new PhysicalTilePlacement(
                 tileId,
                 slot.x,
-                FLOOR_Y,
+                slot.floorY,
                 slot.z,
                 MODULE_SIZE
         );
@@ -58,50 +64,43 @@ public final class CohesiveShipLayoutPlanner {
     private static Map<String, Slot> semanticSlots() {
         LinkedHashMap<String, Slot> slots = new LinkedHashMap<>();
 
-        // 선수 / 지휘 구역
-        slots.put("bridge", new Slot(0, 0));
-        slots.put("corridor_1", new Slot(24, 0));
-        slots.put("junction_1", new Slot(48, 0));
+        // 상부 데크: 지휘 / 생활 / 의료 / 연구
+        slots.put("bridge", new Slot(0, UPPER_FLOOR_Y, 0));
+        slots.put("corridor_1", new Slot(18, UPPER_FLOOR_Y, 0));
+        slots.put("junction_1", new Slot(36, UPPER_FLOOR_Y, 0));
+        slots.put("habitation", new Slot(54, UPPER_FLOOR_Y, -18));
+        slots.put("medical", new Slot(54, UPPER_FLOOR_Y, 18));
+        slots.put("research", new Slot(72, UPPER_FLOOR_Y, 18));
+        slots.put("corridor_4", new Slot(72, UPPER_FLOOR_Y, -18));
+        slots.put("corridor_5", new Slot(90, UPPER_FLOOR_Y, 18));
+        slots.put("auxiliary_1", new Slot(90, UPPER_FLOOR_Y, -18));
+        slots.put("auxiliary_2", new Slot(72, UPPER_FLOOR_Y, 36));
+        slots.put("airlock_1", new Slot(108, UPPER_FLOOR_Y, -18));
 
-        // 중앙 생활 / 의료 구역
-        slots.put("habitation", new Slot(48, -36));
-        slots.put("medical", new Slot(48, 36));
-        slots.put("corridor_4", new Slot(72, -36));
-        slots.put("corridor_5", new Slot(72, 36));
-
-        // 중앙-후방 연결 구역
-        slots.put("corridor_2", new Slot(72, 0));
-        slots.put("junction_2", new Slot(96, 0));
-
-        // 후방 작업 / 연구 구역
-        slots.put("cargo", new Slot(108, -36));
-        slots.put("research", new Slot(108, 36));
-        slots.put("corridor_3", new Slot(120, 0));
-        slots.put("engineering", new Slot(144, 0));
-
-        // 외곽 정비 / 탐험 구역
-        slots.put("auxiliary_1", new Slot(36, -72));
-        slots.put("auxiliary_2", new Slot(36, 72));
-        slots.put("junction_3", new Slot(84, -72));
-        slots.put("auxiliary_3", new Slot(108, -72));
-        slots.put("auxiliary_4", new Slot(108, 72));
-        slots.put("airlock_1", new Slot(144, -72));
-        slots.put("airlock_2", new Slot(144, 72));
+        // 하부 데크: 화물 / 기관 / 에어록 / 정비
+        // junction_2 is directly under junction_1 and becomes the central stairwell.
+        slots.put("junction_2", new Slot(36, LOWER_FLOOR_Y, 0));
+        slots.put("cargo", new Slot(54, LOWER_FLOOR_Y, -18));
+        slots.put("corridor_2", new Slot(54, LOWER_FLOOR_Y, 0));
+        slots.put("engineering", new Slot(72, LOWER_FLOOR_Y, 0));
+        slots.put("corridor_3", new Slot(90, LOWER_FLOOR_Y, 0));
+        slots.put("junction_3", new Slot(72, LOWER_FLOOR_Y, -18));
+        slots.put("auxiliary_3", new Slot(90, LOWER_FLOOR_Y, -18));
+        slots.put("auxiliary_4", new Slot(90, LOWER_FLOOR_Y, 18));
+        slots.put("airlock_2", new Slot(108, LOWER_FLOOR_Y, 0));
 
         return Map.copyOf(slots);
     }
 
     private static List<Slot> fallbackSlots() {
         return List.of(
-                new Slot(12, -72),
-                new Slot(12, 72),
-                new Slot(60, -72),
-                new Slot(60, 72),
-                new Slot(132, -36),
-                new Slot(132, 36)
+                new Slot(108, UPPER_FLOOR_Y, 18),
+                new Slot(108, UPPER_FLOOR_Y, 36),
+                new Slot(108, LOWER_FLOOR_Y, 18),
+                new Slot(108, LOWER_FLOOR_Y, -18)
         );
     }
 
-    private record Slot(int x, int z) {
+    private record Slot(int x, int floorY, int z) {
     }
 }
