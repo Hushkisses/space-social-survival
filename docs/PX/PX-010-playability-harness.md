@@ -4,7 +4,9 @@
 
 - Branch: `dev/PX-010-playability-harness`
 - Base: validated PX-009 branch head
+- Draft PR: #29
 - Status: IMPLEMENTED / VALIDATION_PENDING
+- GitHub Actions full test/build: SUCCESS
 - Windows/Paper integrated validation: pending
 
 ## Goal
