@@ -21,14 +21,19 @@ class CohesiveShipLayoutPlannerTest {
 
         Map<TileId, PhysicalTilePlacement> layout = planner.plan(ids, 1004L);
 
-        int bridgeX = layout.get(new TileId("bridge")).minX();
-        int habitationX = layout.get(new TileId("habitation")).minX();
-        int cargoX = layout.get(new TileId("cargo")).minX();
-        int engineeringX = layout.get(new TileId("engineering")).minX();
+        PhysicalTilePlacement bridge = layout.get(new TileId("bridge"));
+        PhysicalTilePlacement habitation = layout.get(new TileId("habitation"));
+        PhysicalTilePlacement cargo = layout.get(new TileId("cargo"));
+        PhysicalTilePlacement engineering = layout.get(new TileId("engineering"));
 
-        assertTrue(bridgeX < habitationX);
-        assertTrue(habitationX < cargoX);
-        assertTrue(cargoX < engineeringX);
+        assertTrue(bridge.minX() < habitation.minX());
+        assertTrue(habitation.minX() <= cargo.minX());
+        assertTrue(cargo.minX() < engineering.minX());
+
+        assertEquals(CohesiveShipLayoutPlanner.UPPER_FLOOR_Y, bridge.floorY());
+        assertEquals(CohesiveShipLayoutPlanner.UPPER_FLOOR_Y, habitation.floorY());
+        assertEquals(CohesiveShipLayoutPlanner.LOWER_FLOOR_Y, cargo.floorY());
+        assertEquals(CohesiveShipLayoutPlanner.LOWER_FLOOR_Y, engineering.floorY());
     }
 
     @Test
@@ -80,9 +85,14 @@ class CohesiveShipLayoutPlannerTest {
         int secondMaxX = second.minX() + second.size() - 1;
         int secondMaxZ = second.minZ() + second.size() - 1;
 
+        int firstMaxY = first.floorY() + 6;
+        int secondMaxY = second.floorY() + 6;
+
         return first.minX() <= secondMaxX
                 && firstMaxX >= second.minX()
                 && first.minZ() <= secondMaxZ
-                && firstMaxZ >= second.minZ();
+                && firstMaxZ >= second.minZ()
+                && first.floorY() <= secondMaxY
+                && firstMaxY >= second.floorY();
     }
 }
