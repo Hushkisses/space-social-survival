@@ -171,6 +171,22 @@ Player Comprehension / Playability
 - first blind 1~3 player 20-minute playability gate: not yet attempted
 - real 6~10 player balance test remains blocked on the PX playability gate
 
+## MAP-V4 Dense Single-Deck Prototype
+- experimental Draft PR #27 remains playtest-only
+- removed multi-deck topology after playtest feedback
+- physical world: `space_ship_compact_v4`
+- single deck, 49x39 maximum envelope
+- exactly one Bridge / Engineering / Medical / Research / Cargo / Habitation
+- one central hub only
+- exactly three optional small rooms per match
+- independent corridor rooms are no longer generated
+- floating route holograms removed
+- physical hub signs + room signs are primary navigation
+- recommended route uses small lime doorway-floor markers only
+- power-responsive lighting retained and emergency visibility increased
+- GitHub Actions: SUCCESS (Build #885)
+- Windows/Paper validation: pending
+
 ## PX-008 Meeting UX
 - GitHub Actions full test/build: SUCCESS (Build #815)
 - meeting is now staged as discussion -> voting -> result instead of opening the vote GUI immediately
