@@ -104,6 +104,11 @@ public final class MatchHudService {
                 ship,
                 plugin.facilityRegistry().snapshots()
         );
+
+        if (ship.hull() < ReturnRequirements.developmentDefaults().minHull()) {
+            shipWorldService.activeSnapshot()
+                    .ifPresent(plugin.hullBreachService()::ensureRepairTarget);
+        }
         TileId routeTarget = priorityRouteTarget(problem, ship);
         String targetFacility = priorityTargetName(problem, routeTarget);
         shipWorldService.updatePriorityRoute(routeTarget);
