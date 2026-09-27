@@ -766,11 +766,20 @@ public final class MeetingGuiService implements Listener {
     private void transition(Player player, Runnable opener) {
         UUID uuid = player.getUniqueId();
         transitioningInventory.add(uuid);
-        opener.run();
-        plugin.getServer().getScheduler().runTask(
-                plugin,
-                () -> transitioningInventory.remove(uuid)
-        );
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            if (!player.isOnline()
+                    || phase != MeetingUxPhase.VOTING
+                    || !hasActiveVote()) {
+                transitioningInventory.remove(uuid);
+                return;
+            }
+
+            opener.run();
+            plugin.getServer().getScheduler().runTask(
+                    plugin,
+                    () -> transitioningInventory.remove(uuid)
+            );
+        });
     }
 
     private void cancelPhaseTask() {
