@@ -268,6 +268,14 @@ public final class MatchHudService {
         UUID playerId = player.getUniqueId();
         String previous = missionHudStates.get(playerId);
 
+        if (fontImageId == null) {
+            if (previous != null) {
+                plugin.itemsAdderBridge().hideCustomHud(player, MISSION_HUD_ID);
+                missionHudStates.remove(playerId);
+            }
+            return false;
+        }
+
         if (fontImageId.equals(previous)) {
             return true;
         }
@@ -319,29 +327,12 @@ public final class MatchHudService {
         }
 
         return switch (returnStage) {
-            case NAVIGATION -> "spacesurvival:mission_navigation";
-            case RETURN_PREPARATION -> "spacesurvival:mission_return_prepare";
+            case NAVIGATION, RETURN_PREPARATION -> "spacesurvival:mission_return";
             case FINAL_HOLD -> "spacesurvival:mission_final_hold";
-            case COMPLETED -> "spacesurvival:mission_completed";
-            case FAILED -> "spacesurvival:mission_failed";
-            case SURVIVAL_SYSTEMS -> {
-                if (title.equals("생존 기반 복구 완료")) {
-                    yield "spacesurvival:mission_return_start";
-                }
-                yield missionHudForFacility(problem.targetFacility().value());
-            }
-        };
-    }
-
-    private static String missionHudForFacility(String facilityId) {
-        return switch (facilityId) {
-            case "engineering" -> "spacesurvival:mission_engineering";
-            case "bridge" -> "spacesurvival:mission_bridge";
-            case "medical" -> "spacesurvival:mission_medical";
-            case "cargo" -> "spacesurvival:mission_cargo";
-            case "habitation" -> "spacesurvival:mission_habitation";
-            case "research" -> "spacesurvival:mission_research";
-            default -> "spacesurvival:mission_bridge";
+            case COMPLETED, FAILED -> null;
+            case SURVIVAL_SYSTEMS -> title.equals("생존 기반 복구 완료")
+                    ? "spacesurvival:mission_return"
+                    : null;
         };
     }
 
