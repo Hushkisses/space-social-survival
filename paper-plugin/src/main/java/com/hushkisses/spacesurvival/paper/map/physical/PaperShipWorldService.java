@@ -199,13 +199,17 @@ public final class PaperShipWorldService {
 
     public void updatePriorityRoute(FacilityId facilityId) {
         Objects.requireNonNull(facilityId, "facilityId");
+        updatePriorityRoute(new TileId(facilityId.value()));
+    }
+
+    public void updatePriorityRoute(TileId target) {
+        Objects.requireNonNull(target, "target");
 
         PhysicalShipSnapshot ship = activeSnapshot;
         if (ship == null) {
             return;
         }
 
-        TileId target = new TileId(facilityId.value());
         if (!ship.generatedMap().tileIds().contains(target)) {
             clearPriorityRoute();
             return;
