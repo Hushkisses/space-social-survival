@@ -134,26 +134,6 @@ public final class FacilityActionExecutor {
                     10,
                     "연료를 투입해 원자로/엔진 출력을 안정화했습니다."
             );
-            case "engineering.repair" -> {
-                if (!shared().remove(ResourceType.REPAIR_PARTS, 1)) {
-                    yield failure("공용 수리 부품이 부족합니다.");
-                }
-                int value = plugin.engineeringFacilityService().adjust(ShipMetric.HULL, 12);
-                if (plugin.facilityRegistry().require(actionFacility("engineering")).status()
-                        == FacilityStatus.DAMAGED) {
-                    plugin.facilityRegistry().require(actionFacility("engineering"))
-                            .setStatus(FacilityStatus.NORMAL);
-                }
-                yield result("핵심 수리를 완료했습니다. 선체 안정도: " + value + "%");
-            }
-            case "engineering.oxygen" -> {
-                if (!shared().remove(ResourceType.REPAIR_PARTS, 1)) {
-                    yield failure("산소 계통 복구에 필요한 공용 수리 부품 1개가 부족합니다.");
-                }
-                int value = plugin.engineeringFacilityService().adjust(ShipMetric.OXYGEN, 15);
-                plugin.gameEventRuntimeState().setFlag("local_oxygen_drop", false);
-                yield result("산소 계통을 복구했습니다. 산소: " + value + "%");
-            }
             case "engineering.diagnose" -> {
                 var diagnosis = plugin.engineeringFacilityService().diagnose();
                 yield result(
@@ -168,18 +148,19 @@ public final class FacilityActionExecutor {
             }
             case "engineering.advanced_repair" -> {
                 if (!shared().remove(ResourceType.REPAIR_PARTS, 2)) {
-                    yield failure("고급 수리에 필요한 수리 부품 2개가 부족합니다.");
+                    yield failure("기관계 고급 정비에 필요한 수리 부품 2개가 부족합니다.");
                 }
-                int hull = plugin.engineeringFacilityService().adjust(ShipMetric.HULL, 25);
                 int reactor = plugin.engineeringFacilityService().adjust(ShipMetric.REACTOR, 15);
                 plugin.facilityRegistry().require(actionFacility("engineering"))
                         .setStatus(FacilityStatus.NORMAL);
                 int doors = connections.openAllFaultedConnections();
                 plugin.gameEventRuntimeState().setFlag("door_fault", false);
                 yield result(
-                        "고급 수리 완료 — 선체 " + hull
-                                + "% / 원자로 " + reactor
-                                + "% / 복구된 통로 " + doors + "개"
+                        "기관계 고급 정비 완료 — 원자로 "
+                                + reactor
+                                + "% / 복구된 통로 "
+                                + doors
+                                + "개"
                 );
             }
 
@@ -232,6 +213,17 @@ public final class FacilityActionExecutor {
                     "공용 재고: " + shared().snapshot()
             );
             case "cargo.deposit" -> depositCarriedResources(player);
+            case "cargo.withdraw_repair" -> {
+                if (!shared().remove(ResourceType.REPAIR_PARTS, 1)) {
+                    yield failure("공용 수리 부품이 부족합니다.");
+                }
+                plugin.resourcePhysicalItemService().give(
+                        player,
+                        ResourceType.REPAIR_PARTS,
+                        1
+                );
+                yield result("현장 수리용 수리 부품 1개를 수령했습니다.");
+            }
             case "cargo.process" -> process("circuit_salvage");
             case "cargo.repair" -> {
                 if (!shared().remove(ResourceType.REPAIR_PARTS, 1)) {
@@ -251,6 +243,18 @@ public final class FacilityActionExecutor {
             case "cargo.efficient_process" -> process("power_cell_refurbish");
 
             case "habitation.supply" -> transferSupply(player);
+            case "habitation.oxygen" -> {
+                if (!shared().remove(ResourceType.REPAIR_PARTS, 1)) {
+                    yield failure("생명유지 계통 복구에 필요한 공용 수리 부품 1개가 부족합니다.");
+                }
+                int value = Math.min(
+                        100,
+                        plugin.shipState().oxygen() + 15
+                );
+                plugin.shipState().set(ShipMetric.OXYGEN, value);
+                plugin.gameEventRuntimeState().setFlag("local_oxygen_drop", false);
+                yield result("생명유지 계통을 복구했습니다. 산소: " + value + "%");
+            }
             case "habitation.maintenance" -> {
                 if (!shared().remove(ResourceType.REPAIR_PARTS, 1)) {
                     yield failure("정비에 사용할 수리 부품이 없습니다.");
