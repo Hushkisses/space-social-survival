@@ -176,3 +176,59 @@ Evaluate these first:
 4. Does the PDA map immediately explain the ship's shape?
 5. Does the ship feel dense enough for 6-10 players without feeling cramped?
 6. Should the central hub remain, or should rooms connect even more directly?
+
+
+## MAP-V5.1 Vertical Interior Pass
+
+The V5 navigation graph and room positions are unchanged.
+
+Verticality is now added **inside** rooms instead of adding navigable ship decks:
+
+- Bridge
+  - 9-block interior height
+  - raised command dais
+  - forward tinted viewport
+  - command-console silhouettes
+- Engineering
+  - 11-block interior height
+  - 3-block-deep reactor pit
+  - visible reactor core
+  - safety rail
+  - lower maintenance descent
+  - upper maintenance catwalk
+- Cargo
+  - 10-block interior height
+  - tall container stacks
+  - elevated storage shelf
+- Central hub
+  - 9-block interior height
+  - glass machinery shaft extending below the main deck
+- Research
+  - 8-block interior height
+  - vertical sample column
+  - raised observation edge
+- Medical
+  - raised isolation / observation strip
+- Habitation
+  - perimeter bunk structures with an open central lounge volume
+
+Core navigation remains single-deck. A player never needs to understand a second ship floor to locate a facility.
+
+The upper room shell steps inward above the normal wall height, giving the interior a more hull-like section instead of a uniform rectangular box.
+
+## MAP-V5.1 ItemsAdder PDA map
+
+The PDA map has an optional ItemsAdder font-image background:
+
+`spacesurvival:ship_map_gui`
+
+The plugin accesses `FontImageWrapper` through the existing reflection-only ItemsAdder bridge so gameplay has no hard ItemsAdder dependency.
+
+Behavior:
+
+- font image available -> custom image-backed PDA map
+- font image unavailable -> vanilla schematic inventory map
+
+Dynamic current-location, urgent-target, room and connection information remains server-authoritative and is rendered as inventory items over the background image.
+
+The map background asset is automatically decoded/deployed by `quick-deploy.bat`.
