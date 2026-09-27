@@ -140,7 +140,7 @@ During an active discussion or voting phase, facility console work is paused so 
 ## Automated validation
 
 - configuration migration coverage includes the meeting timing defaults.
-- full GitHub Actions test/build required.
+- GitHub Actions full test/build: SUCCESS (Build #808).
 - Windows/Paper integrated validation required before COMPLETE.
 
 ## Manual Windows/Paper validation
@@ -168,6 +168,6 @@ During an active discussion or voting phase, facility console work is paused so 
 ## Completion state
 
 - Code: IMPLEMENTED
-- CI: pending until the current branch run completes
+- CI: SUCCESS (Build #808)
 - Windows/Paper: VALIDATION_PENDING
 - COMPLETE: not yet
