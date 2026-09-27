@@ -280,6 +280,11 @@ Player Comprehension / Playability
   - vanilla right-sidebar urgent objective remains as fallback
   - complex facility-damage states deliberately retain the vanilla fallback for this first pass
   - ItemsAdder assets changed; `/iazip` required for Windows visual validation
+  - first screenshot correction:
+    - left HUD scale/vertical placement reduced
+    - left HUD shifted further left
+    - right sidebar compressed
+    - onboarding/activation chat reduced to remove duplicate guidance
 - Windows/Paper integrated validation: pending
 - Details: `docs/PX/PX-010-playability-harness.md`
 
