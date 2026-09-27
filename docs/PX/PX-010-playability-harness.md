@@ -124,7 +124,7 @@ Existing evidence remains authoritative for:
 - `incident.total`
 - `meeting.resolved`
 - `death.total`
-- `sanction.*`
+- `sanction.physical.total`
 - final result runtime
 - telemetry saved-file path
 
