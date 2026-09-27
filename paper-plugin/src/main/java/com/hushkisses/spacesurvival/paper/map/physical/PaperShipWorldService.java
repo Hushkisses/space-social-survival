@@ -1,7 +1,7 @@
 package com.hushkisses.spacesurvival.paper.map.physical;
 
 import com.hushkisses.spacesurvival.facility.FacilityId;
-import com.hushkisses.spacesurvival.map.generation.ConstrainedRandomMapGenerator;
+import com.hushkisses.spacesurvival.map.generation.CohesiveDeckMapGenerator;
 import com.hushkisses.spacesurvival.map.generation.GeneratedConnection;
 import com.hushkisses.spacesurvival.map.generation.GeneratedMap;
 import com.hushkisses.spacesurvival.map.generation.MapGenerationConstraints;
@@ -14,6 +14,7 @@ import com.hushkisses.spacesurvival.paper.facility.FacilityTerminalRegistry;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.*;
+import org.bukkit.block.data.type.Light;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -26,12 +27,11 @@ public final class PaperShipWorldService {
 
     public static final String WORLD_NAME = "space_ship_dev";
 
-    private static final int FLOOR_Y = CohesiveShipLayoutPlanner.FLOOR_Y;
     private static final int ROOM_HEIGHT = 5;
     private static final int CORRIDOR_HALF_WIDTH = 1;
-    private static final int CLEAR_MARGIN = 12;
+    private static final int CLEAR_MARGIN = 8;
 
-    private final ConstrainedRandomMapGenerator generator = new ConstrainedRandomMapGenerator();
+    private final CohesiveDeckMapGenerator generator = new CohesiveDeckMapGenerator();
     private final CohesiveShipLayoutPlanner layoutPlanner = new CohesiveShipLayoutPlanner();
     private final ShipModuleStructureLoader structureLoader;
     private final FacilityTerminalRegistry terminals;
@@ -40,7 +40,9 @@ public final class PaperShipWorldService {
     private PhysicalShipSnapshot activeSnapshot;
     private Map<TileId, StructurePlacementResult> structurePlacements = Map.of();
     private final Map<RouteDirection, TextDisplay> portalLabels = new LinkedHashMap<>();
+    private final Set<LightPoint> lightPoints = new LinkedHashSet<>();
     private TileId highlightedRouteTarget;
+    private LightingStage lightingStage;
 
     public PaperShipWorldService(
             JavaPlugin plugin,
@@ -83,7 +85,9 @@ public final class PaperShipWorldService {
         terminals.clear();
         connections.reset();
         portalLabels.clear();
+        lightPoints.clear();
         highlightedRouteTarget = null;
+        lightingStage = null;
 
         LinkedHashMap<TileId, StructurePlacementResult> placementResults =
                 new LinkedHashMap<>();
@@ -93,13 +97,20 @@ public final class PaperShipWorldService {
 
             StructurePlacementResult structure = structureLoader.placeIfAvailable(
                     tileId,
-                    new Location(world, placement.minX(), FLOOR_Y, placement.minZ()),
+                    new Location(
+                            world,
+                            placement.minX(),
+                            placement.floorY(),
+                            placement.minZ()
+                    ),
                     new Random(seed ^ tileId.value().hashCode())
             );
             placementResults.put(tileId, structure);
 
             if (!structure.placed()) {
                 renderModule(world, placement, definitions.get(tileId));
+            } else {
+                registerRoomLight(placement);
             }
 
             renderRoomLabel(world, placement, definitions.get(tileId));
@@ -119,6 +130,18 @@ public final class PaperShipWorldService {
             PhysicalTilePlacement first = placements.get(connection.first().tileId());
             PhysicalTilePlacement second = placements.get(connection.second().tileId());
 
+            if (first.floorY() != second.floorY()) {
+                VerticalConnector vertical = renderVerticalConnector(world, first, second);
+                corridorCells.addAll(vertical.corridorCells());
+                renderedConnections.add(new RenderedConnection(
+                        connection,
+                        vertical.firstThreshold(),
+                        vertical.secondThreshold()
+                ));
+                connectionIndex++;
+                continue;
+            }
+
             Doorway firstDoor = doorwayToward(world, first, second);
             Doorway secondDoor = doorwayToward(world, second, first);
 
@@ -133,8 +156,8 @@ public final class PaperShipWorldService {
             corridorCells.addAll(expandCorridor(centerPath));
             renderedConnections.add(new RenderedConnection(
                     connection,
-                    firstDoor,
-                    secondDoor
+                    firstDoor.threshold(),
+                    secondDoor.threshold()
             ));
             connectionIndex++;
         }
@@ -151,20 +174,20 @@ public final class PaperShipWorldService {
 
         for (RenderedConnection rendered : renderedConnections) {
             GeneratedConnection connection = rendered.connection();
-            Doorway firstDoor = rendered.firstDoor();
-            Doorway secondDoor = rendered.secondDoor();
+            Location firstThreshold = rendered.firstThreshold();
+            Location secondThreshold = rendered.secondThreshold();
 
-            carveDoorway(firstDoor.threshold());
-            carveDoorway(secondDoor.threshold());
-            renderConnectionThreshold(firstDoor.threshold());
-            renderConnectionThreshold(secondDoor.threshold());
+            carveDoorway(firstThreshold);
+            carveDoorway(secondThreshold);
+            renderConnectionThreshold(firstThreshold);
+            renderConnectionThreshold(secondThreshold);
 
             TextDisplay firstLabel = renderPortalDestinationLabel(
-                    firstDoor.threshold(),
+                    firstThreshold,
                     definitions.get(connection.second().tileId())
             );
             TextDisplay secondLabel = renderPortalDestinationLabel(
-                    secondDoor.threshold(),
+                    secondThreshold,
                     definitions.get(connection.first().tileId())
             );
 
@@ -187,17 +210,13 @@ public final class PaperShipWorldService {
                 );
             }
 
-            // MAP-V2: normal module travel is physical walking.
-            // The map remains empty so ShipPortalListener performs access checks
-            // at the threshold without teleporting the player.
             connections.register(
                     connectionId++,
                     connection,
-                    firstDoor.threshold(),
-                    secondDoor.threshold()
+                    firstThreshold,
+                    secondThreshold
             );
         }
-
 
         structurePlacements = Collections.unmodifiableMap(placementResults);
 
@@ -223,6 +242,30 @@ public final class PaperShipWorldService {
 
     public ShipModuleStructureLoader structureLoader() {
         return structureLoader;
+    }
+
+    public void updateLighting(int power) {
+        if (activeSnapshot == null) {
+            return;
+        }
+
+        LightingStage next = LightingStage.fromPower(power);
+        if (next == lightingStage) {
+            return;
+        }
+        lightingStage = next;
+
+        World world = activeSnapshot.world();
+        for (LightPoint point : lightPoints) {
+            world.getBlockAt(point.x(), point.fixtureY(), point.z())
+                    .setType(next.fixture(), false);
+
+            var block = world.getBlockAt(point.x(), point.lightY(), point.z());
+            block.setType(Material.LIGHT, false);
+            Light data = (Light) block.getBlockData();
+            data.setLevel(next.lightLevel());
+            block.setBlockData(data, false);
+        }
     }
 
     public void updatePriorityRoute(FacilityId facilityId) {
@@ -291,6 +334,12 @@ public final class PaperShipWorldService {
         }
     }
 
+    public String deckName(Location location) {
+        return location.getBlockY() >= CohesiveShipLayoutPlanner.UPPER_FLOOR_Y
+                ? "상부 데크"
+                : "하부 데크";
+    }
+
     private static void clearNavigationDisplays(World world) {
         world.getEntitiesByClass(TextDisplay.class).stream()
                 .filter(entity -> entity.getScoreboardTags().contains("spacesurvival_nav"))
@@ -309,9 +358,13 @@ public final class PaperShipWorldService {
         display.addScoreboardTag("spacesurvival_nav");
         display.setBillboard(Display.Billboard.CENTER);
 
+        String deck = placement.floorY() == CohesiveShipLayoutPlanner.UPPER_FLOOR_Y
+                ? "상부"
+                : "하부";
         String zone = zoneName(placement.minX());
+
         display.text(
-                Component.text(zone + " · ", NamedTextColor.DARK_GRAY)
+                Component.text(deck + " " + zone + " · ", NamedTextColor.DARK_GRAY)
                         .append(Component.text("◆ ", accentColor(definition.category())))
                         .append(Component.text(definition.displayName(), NamedTextColor.WHITE))
         );
@@ -381,6 +434,7 @@ public final class PaperShipWorldService {
 
         world.setDifficulty(Difficulty.PEACEFUL);
         world.setTime(18000L);
+        world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
         return world;
     }
 
@@ -389,17 +443,24 @@ public final class PaperShipWorldService {
             Collection<PhysicalTilePlacement> placements
     ) {
         Bounds bounds = bounds(placements, CLEAR_MARGIN);
+        int minY = placements.stream()
+                .mapToInt(PhysicalTilePlacement::floorY)
+                .min().orElse(CohesiveShipLayoutPlanner.LOWER_FLOOR_Y) - 1;
+        int maxY = placements.stream()
+                .mapToInt(PhysicalTilePlacement::floorY)
+                .max().orElse(CohesiveShipLayoutPlanner.UPPER_FLOOR_Y)
+                + ROOM_HEIGHT + 3;
 
         for (int x = bounds.minX(); x <= bounds.maxX(); x++) {
             for (int z = bounds.minZ(); z <= bounds.maxZ(); z++) {
-                for (int y = FLOOR_Y - 1; y <= FLOOR_Y + ROOM_HEIGHT + 3; y++) {
+                for (int y = minY; y <= maxY; y++) {
                     world.getBlockAt(x, y, z).setType(Material.AIR, false);
                 }
             }
         }
     }
 
-    private static void renderModule(
+    private void renderModule(
             World world,
             PhysicalTilePlacement placement,
             TileDefinition definition
@@ -439,8 +500,7 @@ public final class PaperShipWorldService {
         int cz = center.getBlockZ();
 
         world.getBlockAt(cx, floor, cz).setType(zoneStripe(placement.minX()), false);
-        world.getBlockAt(cx, floor + ROOM_HEIGHT, cz)
-                .setType(Material.SEA_LANTERN, false);
+        registerLightPoint(cx, floor + ROOM_HEIGHT - 1, floor + ROOM_HEIGHT, cz);
 
         world.getBlockAt(minX + 2, floor + 1, minZ + 2)
                 .setType(Material.IRON_BLOCK, false);
@@ -448,52 +508,71 @@ public final class PaperShipWorldService {
                 .setType(Material.IRON_BLOCK, false);
     }
 
-    private static void renderCorridorNetwork(
+    private void registerRoomLight(PhysicalTilePlacement placement) {
+        Location center = placement.center(
+                activeSnapshot == null ? resolveWorld() : activeSnapshot.world()
+        );
+        registerLightPoint(
+                center.getBlockX(),
+                placement.floorY() + ROOM_HEIGHT - 1,
+                placement.floorY() + ROOM_HEIGHT,
+                center.getBlockZ()
+        );
+    }
+
+    private void renderCorridorNetwork(
             World world,
             Set<PhysicalDeckCell> corridorCells,
             Set<PhysicalDeckCell> centerLines,
             Collection<PhysicalTilePlacement> placements
     ) {
         for (PhysicalDeckCell cell : corridorCells) {
-            if (insideAnyRoom(cell.x(), cell.z(), placements)) {
+            if (insideAnyRoom(cell.x(), cell.floorY(), cell.z(), placements)) {
                 continue;
             }
 
+            int floorY = cell.floorY();
             Material floor = centerLines.contains(cell)
                     ? zoneStripe(cell.x())
                     : Material.SMOOTH_STONE;
 
-            world.getBlockAt(cell.x(), FLOOR_Y, cell.z()).setType(floor, false);
-            world.getBlockAt(cell.x(), FLOOR_Y + ROOM_HEIGHT, cell.z())
+            world.getBlockAt(cell.x(), floorY, cell.z()).setType(floor, false);
+            world.getBlockAt(cell.x(), floorY + ROOM_HEIGHT, cell.z())
                     .setType(Material.POLISHED_DEEPSLATE, false);
 
-            for (int y = FLOOR_Y + 1; y < FLOOR_Y + ROOM_HEIGHT; y++) {
+            for (int y = floorY + 1; y < floorY + ROOM_HEIGHT; y++) {
                 world.getBlockAt(cell.x(), y, cell.z()).setType(Material.AIR, false);
             }
 
             if (centerLines.contains(cell)
-                    && Math.floorMod(cell.x() * 31 + cell.z() * 17, 19) == 0) {
-                world.getBlockAt(cell.x(), FLOOR_Y + ROOM_HEIGHT, cell.z())
-                        .setType(Material.SEA_LANTERN, false);
+                    && Math.floorMod(cell.x() * 31 + cell.z() * 17, 11) == 0) {
+                registerLightPoint(
+                        cell.x(),
+                        floorY + ROOM_HEIGHT - 1,
+                        floorY + ROOM_HEIGHT,
+                        cell.z()
+                );
             }
         }
 
         int[][] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
         for (PhysicalDeckCell cell : corridorCells) {
+            int floorY = cell.floorY();
+
             for (int[] direction : directions) {
                 int x = cell.x() + direction[0];
                 int z = cell.z() + direction[1];
-                PhysicalDeckCell neighbor = new PhysicalDeckCell(x, z);
+                PhysicalDeckCell neighbor = new PhysicalDeckCell(x, floorY, z);
 
                 if (corridorCells.contains(neighbor)
-                        || insideAnyRoom(x, z, placements)) {
+                        || insideAnyRoom(x, floorY, z, placements)) {
                     continue;
                 }
 
-                for (int y = FLOOR_Y + 1; y < FLOOR_Y + ROOM_HEIGHT; y++) {
+                for (int y = floorY + 1; y < floorY + ROOM_HEIGHT; y++) {
                     world.getBlockAt(x, y, z)
                             .setType(
-                                    y == FLOOR_Y + 2
+                                    y == floorY + 2
                                             ? Material.IRON_BLOCK
                                             : Material.DEEPSLATE_TILES,
                                     false
@@ -533,36 +612,106 @@ public final class PaperShipWorldService {
         int centerZ = fromCenter.getBlockZ();
         int maxX = from.minX() + from.size() - 1;
         int maxZ = from.minZ() + from.size() - 1;
+        int floorY = from.floorY();
 
         if (Math.abs(dx) >= Math.abs(dz)) {
             if (dx >= 0) {
-                Location threshold = new Location(world, maxX, FLOOR_Y + 1, centerZ);
+                Location threshold = new Location(world, maxX, floorY + 1, centerZ);
                 return new Doorway(
                         threshold,
-                        new PhysicalDeckCell(maxX + 1, centerZ)
+                        new PhysicalDeckCell(maxX + 1, floorY, centerZ)
                 );
             }
 
-            Location threshold = new Location(world, from.minX(), FLOOR_Y + 1, centerZ);
+            Location threshold = new Location(world, from.minX(), floorY + 1, centerZ);
             return new Doorway(
                     threshold,
-                    new PhysicalDeckCell(from.minX() - 1, centerZ)
+                    new PhysicalDeckCell(from.minX() - 1, floorY, centerZ)
             );
         }
 
         if (dz >= 0) {
-            Location threshold = new Location(world, centerX, FLOOR_Y + 1, maxZ);
+            Location threshold = new Location(world, centerX, floorY + 1, maxZ);
             return new Doorway(
                     threshold,
-                    new PhysicalDeckCell(centerX, maxZ + 1)
+                    new PhysicalDeckCell(centerX, floorY, maxZ + 1)
             );
         }
 
-        Location threshold = new Location(world, centerX, FLOOR_Y + 1, from.minZ());
+        Location threshold = new Location(world, centerX, floorY + 1, from.minZ());
         return new Doorway(
                 threshold,
-                new PhysicalDeckCell(centerX, from.minZ() - 1)
+                new PhysicalDeckCell(centerX, floorY, from.minZ() - 1)
         );
+    }
+
+    private VerticalConnector renderVerticalConnector(
+            World world,
+            PhysicalTilePlacement first,
+            PhysicalTilePlacement second
+    ) {
+        PhysicalTilePlacement lower = first.floorY() < second.floorY() ? first : second;
+        PhysicalTilePlacement upper = first.floorY() < second.floorY() ? second : first;
+
+        int centerZ = lower.minZ() + lower.size() / 2;
+        int startX = lower.minX() + 2;
+        int endX = startX + 7;
+
+        LinkedHashSet<PhysicalDeckCell> cells = new LinkedHashSet<>();
+
+        for (int i = 0; i < 8; i++) {
+            int x = startX + i;
+            int stepY = lower.floorY() + 1 + i;
+
+            world.getBlockAt(x, stepY, centerZ)
+                    .setType(Material.POLISHED_ANDESITE, false);
+
+            for (int clearY = stepY + 1; clearY <= stepY + 2; clearY++) {
+                world.getBlockAt(x, clearY, centerZ).setType(Material.AIR, false);
+            }
+
+            for (int side : new int[]{-1, 1}) {
+                for (int wallY = stepY; wallY <= stepY + 2; wallY++) {
+                    world.getBlockAt(x, wallY, centerZ + side)
+                            .setType(Material.IRON_BARS, false);
+                }
+            }
+        }
+
+        Location lowerThreshold = new Location(
+                world,
+                startX - 1,
+                lower.floorY() + 1,
+                centerZ
+        );
+        Location upperThreshold = new Location(
+                world,
+                endX + 1,
+                upper.floorY() + 1,
+                centerZ
+        );
+
+        for (int x = startX - 1; x <= endX + 1; x++) {
+            cells.add(new PhysicalDeckCell(x, lower.floorY(), centerZ));
+            cells.add(new PhysicalDeckCell(x, upper.floorY(), centerZ));
+        }
+
+        registerLightPoint(
+                startX + 2,
+                lower.floorY() + ROOM_HEIGHT - 1,
+                lower.floorY() + ROOM_HEIGHT,
+                centerZ
+        );
+        registerLightPoint(
+                endX - 1,
+                upper.floorY() + ROOM_HEIGHT - 1,
+                upper.floorY() + ROOM_HEIGHT,
+                centerZ
+        );
+
+        return first == lower
+                ? new VerticalConnector(lowerThreshold, upperThreshold, cells)
+                : new VerticalConnector(upperThreshold, lowerThreshold, cells);
     }
 
     private static List<PhysicalDeckCell> routeCorridor(
@@ -571,6 +720,10 @@ public final class PaperShipWorldService {
             Collection<PhysicalTilePlacement> placements,
             long seed
     ) {
+        if (start.floorY() != end.floorY()) {
+            throw new IllegalArgumentException("Flat corridor endpoints must share a deck");
+        }
+
         List<PhysicalDeckCell> xFirst = orthogonalPath(start, end, true);
         List<PhysicalDeckCell> zFirst = orthogonalPath(start, end, false);
 
@@ -594,25 +747,26 @@ public final class PaperShipWorldService {
         ArrayList<PhysicalDeckCell> path = new ArrayList<>();
         int x = start.x();
         int z = start.z();
-        path.add(new PhysicalDeckCell(x, z));
+        int floorY = start.floorY();
+        path.add(new PhysicalDeckCell(x, floorY, z));
 
         if (xFirst) {
             while (x != end.x()) {
                 x += Integer.compare(end.x(), x);
-                path.add(new PhysicalDeckCell(x, z));
+                path.add(new PhysicalDeckCell(x, floorY, z));
             }
             while (z != end.z()) {
                 z += Integer.compare(end.z(), z);
-                path.add(new PhysicalDeckCell(x, z));
+                path.add(new PhysicalDeckCell(x, floorY, z));
             }
         } else {
             while (z != end.z()) {
                 z += Integer.compare(end.z(), z);
-                path.add(new PhysicalDeckCell(x, z));
+                path.add(new PhysicalDeckCell(x, floorY, z));
             }
             while (x != end.x()) {
                 x += Integer.compare(end.x(), x);
-                path.add(new PhysicalDeckCell(x, z));
+                path.add(new PhysicalDeckCell(x, floorY, z));
             }
         }
 
@@ -628,7 +782,7 @@ public final class PaperShipWorldService {
         int blocked = 0;
         for (PhysicalDeckCell cell : path) {
             if (cell.equals(start) || cell.equals(end)) continue;
-            if (insideAnyRoom(cell.x(), cell.z(), placements)) {
+            if (insideAnyRoom(cell.x(), cell.floorY(), cell.z(), placements)) {
                 blocked++;
             }
         }
@@ -656,6 +810,7 @@ public final class PaperShipWorldService {
             for (int[] direction : directions) {
                 PhysicalDeckCell next = new PhysicalDeckCell(
                         current.x() + direction[0],
+                        current.floorY(),
                         current.z() + direction[1]
                 );
 
@@ -668,7 +823,12 @@ public final class PaperShipWorldService {
                 if (previous.containsKey(next)) continue;
                 if (!next.equals(end)
                         && !next.equals(start)
-                        && insideAnyRoom(next.x(), next.z(), placements)) {
+                        && insideAnyRoom(
+                                next.x(),
+                                next.floorY(),
+                                next.z(),
+                                placements
+                        )) {
                     continue;
                 }
 
@@ -698,6 +858,7 @@ public final class PaperShipWorldService {
                 for (int dz = -CORRIDOR_HALF_WIDTH; dz <= CORRIDOR_HALF_WIDTH; dz++) {
                     expanded.add(new PhysicalDeckCell(
                             center.x() + dx,
+                            center.floorY(),
                             center.z() + dz
                     ));
                 }
@@ -708,10 +869,14 @@ public final class PaperShipWorldService {
 
     private static boolean insideAnyRoom(
             int x,
+            int floorY,
             int z,
             Collection<PhysicalTilePlacement> placements
     ) {
         for (PhysicalTilePlacement placement : placements) {
+            if (placement.floorY() != floorY) {
+                continue;
+            }
             if (x >= placement.minX()
                     && x < placement.minX() + placement.size()
                     && z >= placement.minZ()
@@ -727,10 +892,9 @@ public final class PaperShipWorldService {
 
         int x = threshold.getBlockX();
         int z = threshold.getBlockZ();
+        int baseY = threshold.getBlockY();
 
-        // Two-block-high doorway keeps the access plate unavoidable;
-        // players cannot simply jump over a locked/disabled threshold.
-        for (int y = FLOOR_Y + 1; y <= FLOOR_Y + 2; y++) {
+        for (int y = baseY; y <= baseY + 1; y++) {
             threshold.getWorld().getBlockAt(x, y, z).setType(Material.AIR, false);
         }
     }
@@ -745,6 +909,15 @@ public final class PaperShipWorldService {
 
         world.getBlockAt(x, y - 1, z).setType(Material.GOLD_BLOCK, false);
         world.getBlockAt(x, y, z).setType(Material.LIGHT_WEIGHTED_PRESSURE_PLATE, false);
+    }
+
+    private void registerLightPoint(
+            int x,
+            int lightY,
+            int fixtureY,
+            int z
+    ) {
+        lightPoints.add(new LightPoint(x, lightY, fixtureY, z));
     }
 
     private static Bounds bounds(
@@ -769,14 +942,14 @@ public final class PaperShipWorldService {
     }
 
     private static String zoneName(int x) {
-        if (x < 40) return "선수";
-        if (x < 100) return "중앙";
+        if (x < 30) return "선수";
+        if (x < 70) return "중앙";
         return "후방";
     }
 
     private static Material zoneStripe(int x) {
-        if (x < 40) return Material.LIGHT_BLUE_CONCRETE;
-        if (x < 100) return Material.WHITE_CONCRETE;
+        if (x < 30) return Material.LIGHT_BLUE_CONCRETE;
+        if (x < 70) return Material.WHITE_CONCRETE;
         return Material.RED_CONCRETE;
     }
 
@@ -803,8 +976,15 @@ public final class PaperShipWorldService {
 
     private record RenderedConnection(
             GeneratedConnection connection,
-            Doorway firstDoor,
-            Doorway secondDoor
+            Location firstThreshold,
+            Location secondThreshold
+    ) {
+    }
+
+    private record VerticalConnector(
+            Location firstThreshold,
+            Location secondThreshold,
+            Set<PhysicalDeckCell> corridorCells
     ) {
     }
 
@@ -814,6 +994,44 @@ public final class PaperShipWorldService {
             int minZ,
             int maxZ
     ) {
+    }
+
+    private record LightPoint(
+            int x,
+            int lightY,
+            int fixtureY,
+            int z
+    ) {
+    }
+
+    private enum LightingStage {
+        NORMAL(15, Material.WHITE_STAINED_GLASS),
+        REDUCED(11, Material.YELLOW_STAINED_GLASS),
+        EMERGENCY(7, Material.RED_STAINED_GLASS),
+        BLACKOUT(2, Material.GRAY_STAINED_GLASS);
+
+        private final int lightLevel;
+        private final Material fixture;
+
+        LightingStage(int lightLevel, Material fixture) {
+            this.lightLevel = lightLevel;
+            this.fixture = fixture;
+        }
+
+        private int lightLevel() {
+            return lightLevel;
+        }
+
+        private Material fixture() {
+            return fixture;
+        }
+
+        private static LightingStage fromPower(int power) {
+            if (power >= 70) return NORMAL;
+            if (power >= 40) return REDUCED;
+            if (power >= 15) return EMERGENCY;
+            return BLACKOUT;
+        }
     }
 
     private static Material accent(TileCategory category) {
