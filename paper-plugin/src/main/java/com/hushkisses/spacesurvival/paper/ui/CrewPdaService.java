@@ -102,7 +102,7 @@ public final class CrewPdaService implements Listener {
     public void open(Player player) {
         PlayerId playerId = PlayerId.of(player.getUniqueId());
         if (!plugin.lobbyService().contains(playerId)) {
-            player.sendMessage("§c현재 우주 생존 게임 참가자가 아닙니다.");
+            player.sendMessage("§c현재 람몽어스 게임 참가자가 아닙니다.");
             return;
         }
 
