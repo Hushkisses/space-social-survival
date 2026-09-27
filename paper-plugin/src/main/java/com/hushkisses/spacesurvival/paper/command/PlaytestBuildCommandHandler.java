@@ -168,12 +168,8 @@ public final class PlaytestBuildCommandHandler {
         boolean incidentExperienced = counter(counters, "incident.total") > 0;
         boolean meetingResolved = counter(counters, "meeting.resolved") > 0;
 
-        boolean sanctionExperienced = counters.entrySet().stream()
-                .anyMatch(entry -> entry.getKey().startsWith("sanction.")
-                        && !entry.getKey().equals("sanction.no_action")
-                        && entry.getValue() > 0);
         boolean terminalState = counter(counters, "death.total") > 0
-                || sanctionExperienced;
+                || counter(counters, "sanction.physical.total") > 0;
 
         boolean resultProduced = plugin.matchResultRuntimeService().lastResult().isPresent();
         boolean telemetrySaved = telemetry.lastSavedFile() != null;
