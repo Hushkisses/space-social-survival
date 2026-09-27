@@ -79,7 +79,8 @@ public final class ResourcePhysicalItemService {
 
     public static String usedAt(ResourceType type) {
         return switch (type) {
-            case REPAIR_PARTS, POWER_CELLS, FUEL -> "기관실";
+            case REPAIR_PARTS -> "화물실 수령 · 선체 균열/생활구역/시설 수리";
+            case POWER_CELLS, FUEL -> "기관실";
             case MEDICAL_SUPPLIES -> "의료실";
             case BIO_SAMPLES, DATA_CORES -> "연구실";
             case CIRCUITS -> "화물실 가공";
@@ -102,6 +103,48 @@ public final class ResourcePhysicalItemService {
         } catch (IllegalArgumentException exception) {
             return Optional.empty();
         }
+    }
+
+    public int count(Player player, ResourceType type) {
+        Objects.requireNonNull(player, "player");
+        Objects.requireNonNull(type, "type");
+
+        int total = 0;
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (typeOf(item).orElse(null) == type) {
+                total += item.getAmount();
+            }
+        }
+        return total;
+    }
+
+    public boolean remove(Player player, ResourceType type, int amount) {
+        Objects.requireNonNull(player, "player");
+        Objects.requireNonNull(type, "type");
+        if (amount < 1) throw new IllegalArgumentException("amount");
+
+        if (count(player, type) < amount) {
+            return false;
+        }
+
+        int remaining = amount;
+        ItemStack[] contents = player.getInventory().getContents();
+        for (int slot = 0; slot < contents.length && remaining > 0; slot++) {
+            ItemStack item = contents[slot];
+            if (typeOf(item).orElse(null) != type) continue;
+
+            int take = Math.min(remaining, item.getAmount());
+            remaining -= take;
+
+            if (take == item.getAmount()) {
+                player.getInventory().setItem(slot, null);
+            } else {
+                item.setAmount(item.getAmount() - take);
+                player.getInventory().setItem(slot, item);
+            }
+        }
+
+        return remaining == 0;
     }
 
     public Map<ResourceType, Integer> removeAllFrom(Player player) {
