@@ -15,6 +15,7 @@ import org.bukkit.*;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.Rotatable;
 import org.bukkit.block.data.type.Light;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.plugin.java.JavaPlugin;
 
