@@ -257,7 +257,7 @@ public final class IncidentPresentationService {
             case "mass_infection" -> "의료실 격리 상태와 감염 대응 절차 확인";
             case "reactor_runaway" -> "기관실에서 원자로 안정화 및 수리";
             case "total_power_failure" -> "기관실 상태 복구 후 전력 셀 투입";
-            case "local_oxygen_drop" -> "수리 부품 1개를 입고한 뒤 기관실 [산소 계통 복구] 실행";
+            case "local_oxygen_drop" -> "수리 부품 1개를 준비해 생활구역 [생명유지 계통 복구] 실행";
             case "small_fire", "hull_breach" -> "수리 부품을 준비해 기관실에서 선체 복구";
             case "comms_noise" -> "항법/통신 담당이 함교에서 장거리 통신 복구";
             case "alien_intrusion" -> "주변을 경계하고 보안·연구 장비로 대응";
