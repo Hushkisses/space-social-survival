@@ -17,7 +17,7 @@ class CohesiveDeckMapGeneratorTest {
             new MapGenerationConstraints(10, 14, 6, 6, 500);
 
     @Test
-    void generatesStableConnectedTwoDeckTopologyAcrossSeeds() {
+    void generatesCompactConnectedTopologyAcrossSeeds() {
         for (int seed = 0; seed < 100; seed++) {
             GeneratedMap generated = generator.generate(
                     DefaultTileCatalog.create(),
@@ -27,7 +27,7 @@ class CohesiveDeckMapGeneratorTest {
 
             assertTrue(generated.isConnected(), "seed=" + seed);
             assertTrue(generated.tileIds().size() >= 10, "seed=" + seed);
-            assertTrue(generated.tileIds().size() <= 14, "seed=" + seed);
+            assertTrue(generated.tileIds().size() <= 12, "seed=" + seed);
             assertTrue(generated.deadEndCount() <= 6, "seed=" + seed);
 
             for (TileId core : Set.of(
@@ -36,15 +36,23 @@ class CohesiveDeckMapGeneratorTest {
                     new TileId("medical"),
                     new TileId("research"),
                     new TileId("cargo"),
-                    new TileId("habitation")
+                    new TileId("habitation"),
+                    new TileId("junction_1"),
+                    new TileId("junction_2")
             )) {
                 assertTrue(generated.tileIds().contains(core), "seed=" + seed);
             }
+
+            assertTrue(
+                    generated.tileIds().stream()
+                            .noneMatch(id -> id.value().startsWith("corridor_")),
+                    "independent corridor rooms must not return, seed=" + seed
+            );
         }
     }
 
     @Test
-    void usesOnlyOneMandatoryCrossDeckSpine() {
+    void usesSingleVerticalSpine() {
         GeneratedMap generated = generator.generate(
                 DefaultTileCatalog.create(),
                 constraints,
@@ -66,17 +74,19 @@ class CohesiveDeckMapGeneratorTest {
 
     @Test
     void neverReusesConnectionPoints() {
-        GeneratedMap generated = generator.generate(
-                DefaultTileCatalog.create(),
-                constraints,
-                new Random(77)
-        );
+        for (int seed = 0; seed < 100; seed++) {
+            GeneratedMap generated = generator.generate(
+                    DefaultTileCatalog.create(),
+                    constraints,
+                    new Random(seed)
+            );
 
-        Set<Object> endpoints = new HashSet<>();
-        generated.connections().forEach(connection -> {
-            assertTrue(endpoints.add(connection.first()));
-            assertTrue(endpoints.add(connection.second()));
-        });
+            Set<Object> endpoints = new HashSet<>();
+            generated.connections().forEach(connection -> {
+                assertTrue(endpoints.add(connection.first()), "seed=" + seed);
+                assertTrue(endpoints.add(connection.second()), "seed=" + seed);
+            });
+        }
     }
 
     private static boolean pair(
@@ -96,9 +106,6 @@ class CohesiveDeckMapGeneratorTest {
                 "medical",
                 "research",
                 "habitation",
-                "corridor_1",
-                "corridor_4",
-                "corridor_5",
                 "junction_1",
                 "auxiliary_1",
                 "auxiliary_2",
