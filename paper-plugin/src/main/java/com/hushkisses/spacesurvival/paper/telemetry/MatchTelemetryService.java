@@ -125,6 +125,7 @@ public final class MatchTelemetryService {
                 playerCount,
                 scenario,
                 startedAt,
+                endedAt,
                 counters,
                 events.size(),
                 lastSavedFile == null ? null : lastSavedFile.getAbsolutePath()
