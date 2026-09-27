@@ -90,6 +90,8 @@ public final class ItemsAdderBridge {
             hudClass.getMethod("setFontImages", List.class)
                     .invoke(hud, List.of(fontImage));
             hudClass.getMethod("setVisible", boolean.class).invoke(hud, true);
+            holderClass.getMethod("recalculateOffsets").invoke(holder);
+            holderClass.getMethod("sendUpdate").invoke(holder);
             return true;
         } catch (ReflectiveOperationException | LinkageError | IllegalArgumentException exception) {
             return false;
@@ -115,6 +117,8 @@ public final class ItemsAdderBridge {
             }
 
             hudClass.getMethod("setVisible", boolean.class).invoke(hud, false);
+            holderClass.getMethod("recalculateOffsets").invoke(holder);
+            holderClass.getMethod("sendUpdate").invoke(holder);
             return true;
         } catch (ReflectiveOperationException | LinkageError | IllegalArgumentException exception) {
             return false;
