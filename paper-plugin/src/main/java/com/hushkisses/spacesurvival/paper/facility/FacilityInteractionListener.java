@@ -1,6 +1,7 @@
 package com.hushkisses.spacesurvival.paper.facility;
 
 import com.hushkisses.spacesurvival.facility.FacilityId;
+import com.hushkisses.spacesurvival.player.PlayerId;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.EventPriority;
@@ -40,6 +41,25 @@ public final class FacilityInteractionListener implements Listener {
         }
 
         event.setCancelled(true);
+
+        PlayerId playerId = PlayerId.of(event.getPlayer().getUniqueId());
+        if (plugin.deathService().isDead(playerId)) {
+            boolean infectedForm = plugin.infectedPlayerService()
+                    .isInfectedForm(playerId);
+            event.getPlayer().sendMessage(
+                    infectedForm
+                            ? "§4[감염체] §f감염체 상태에서는 시설 콘솔을 조작할 수 없습니다."
+                            : "§7[사망 상태] §f사망 상태에서는 시설 콘솔을 조작할 수 없습니다."
+            );
+            return;
+        }
+
+        if (plugin.physicalSanctionService().detained(event.getPlayer())) {
+            event.getPlayer().sendMessage(
+                    "§6[감금] §f감금 상태에서는 시설 작업을 수행할 수 없습니다."
+            );
+            return;
+        }
 
         if (plugin.meetingGuiService().meetingActive()) {
             event.getPlayer().sendMessage(
