@@ -6,7 +6,6 @@ import com.hushkisses.spacesurvival.role.RoleId;
 import com.hushkisses.spacesurvival.role.RoleRegistry;
 import com.hushkisses.spacesurvival.role.selection.RoleSelectionResult;
 import com.hushkisses.spacesurvival.role.selection.RoleSelectionService;
-import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -81,9 +80,6 @@ public final class OpeningUiListener implements Listener {
             case SELECTED -> {
                 RoleDefinition role = roleRegistry.require(roleId);
                 player.closeInventory();
-                player.sendActionBar(
-                        Component.text("직업 확정 · " + role.displayName())
-                );
                 roleSelectionUi.removeMenuItem(player);
                 crewPdaService.open(player);
                 selectionChanged.run();
@@ -143,9 +139,6 @@ public final class OpeningUiListener implements Listener {
         }
 
         event.setCancelled(true);
-        event.getPlayer().sendActionBar(
-                Component.text("직업 선택 아이템은 직업을 고르기 전까지 버릴 수 없습니다.")
-        );
     }
 
     @EventHandler
@@ -162,9 +155,7 @@ public final class OpeningUiListener implements Listener {
             return;
         }
 
-        player.sendActionBar(
-                Component.text("직업 선택 필요 · 핫바의 네더별을 우클릭하면 다시 열 수 있습니다.")
-        );
+
     }
 
 }
