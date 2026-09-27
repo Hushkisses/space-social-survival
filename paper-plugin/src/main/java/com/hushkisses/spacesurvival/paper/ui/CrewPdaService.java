@@ -295,16 +295,123 @@ public final class CrewPdaService implements Listener {
             return;
         }
 
+        var mapImage = plugin.itemsAdderBridge()
+                .fontImage("spacesurvival:ship_map_gui", -16);
+        boolean imageMode = mapImage.isPresent()
+                && plugin.itemsAdderBridge()
+                .createItem("spacesurvival:map_hotspot")
+                .isPresent();
+
         MapInventoryHolder holder = new MapInventoryHolder();
-        String mapTitle = plugin.itemsAdderBridge()
-                .fontImage("spacesurvival:ship_map_gui", -8)
-                .map(image -> "§f" + image)
-                .orElse(MAP_TITLE);
-        Inventory inventory = Bukkit.createInventory(holder, 54, mapTitle);
+        String mapTitle = imageMode
+                ? "§f" + mapImage.orElseThrow()
+                : MAP_TITLE;
+        Inventory inventory = Bukkit.createInventory(
+                holder,
+                imageMode ? 45 : 54,
+                mapTitle
+        );
         holder.bind(inventory);
+
         TileId current = ship.tileAt(player.getLocation()).orElse(null);
         TileId target = mapTargetTile();
 
+        if (imageMode) {
+            renderImageMap(inventory, ship, current, target, player);
+        } else {
+            renderVanillaMap(inventory, ship, current, target, player);
+        }
+
+        player.openInventory(inventory);
+    }
+
+    private void renderImageMap(
+            Inventory inventory,
+            com.hushkisses.spacesurvival.paper.map.physical.PhysicalShipSnapshot ship,
+            TileId current,
+            TileId target,
+            Player player
+    ) {
+        Map<TileId, Integer> slots = mapSlots();
+
+        for (Map.Entry<TileId, Integer> entry : slots.entrySet()) {
+            TileId tileId = entry.getKey();
+            if (!ship.placements().containsKey(tileId)) {
+                continue;
+            }
+
+            boolean isCurrent = tileId.equals(current);
+            boolean isTarget = tileId.equals(target);
+
+            String markerId;
+            if (isCurrent && isTarget) {
+                markerId = "spacesurvival:map_current_target_marker";
+            } else if (isCurrent) {
+                markerId = "spacesurvival:map_current_marker";
+            } else if (isTarget) {
+                markerId = "spacesurvival:map_target_marker";
+            } else if (!isCoreMapRoom(tileId)
+                    && !tileId.value().equals("junction_1")) {
+                markerId = "spacesurvival:map_optional_marker";
+            } else {
+                markerId = "spacesurvival:map_hotspot";
+            }
+
+            inventory.setItem(
+                    entry.getValue(),
+                    imageMapMarker(ship, tileId, markerId, isCurrent, isTarget)
+            );
+        }
+
+        String currentName = current == null
+                ? "함선 주 통로"
+                : ship.tileDisplayName(current);
+        String targetName = ship.placements().containsKey(target)
+                ? ship.tileDisplayName(target)
+                : "현재 목표";
+
+        inventory.setItem(
+                36,
+                themedMapItem(
+                        "spacesurvival:map_info_button",
+                        item(
+                                Material.RECOVERY_COMPASS,
+                                "§f현재/목표",
+                                List.of(
+                                        "§b● 현재: §f" + currentName,
+                                        "§e◆ 목표: §f" + targetName,
+                                        "",
+                                        "§7지도 색상은 실제 바닥 노선과 같습니다."
+                                )
+                        )
+                )
+        );
+        inventory.setItem(
+                38,
+                themedMapItem(
+                        "spacesurvival:map_route_button",
+                        routeSummaryItem(player, ship)
+                )
+        );
+        inventory.setItem(
+                40,
+                themedMapActionItem(
+                        "spacesurvival:map_back_button",
+                        Material.ARROW,
+                        "§a개인 정보로 돌아가기",
+                        "personal",
+                        List.of("§a클릭")
+                )
+        );
+    }
+
+    private void renderVanillaMap(
+            Inventory inventory,
+            com.hushkisses.spacesurvival.paper.map.physical.PhysicalShipSnapshot ship,
+            TileId current,
+            TileId target,
+            Player player
+    ) {
         inventory.setItem(4, item(
                 Material.FILLED_MAP,
                 "§b함선 평면도",
@@ -321,30 +428,25 @@ public final class CrewPdaService implements Listener {
                 )
         ));
 
-        // North / upper side of the schematic.
         putMapRoom(inventory, ship, 9, new TileId("auxiliary_1"), current, target);
         putMapRoom(inventory, ship, 13, new TileId("habitation"), current, target);
         putMapRoom(inventory, ship, 16, new TileId("cargo"), current, target);
         putMapRoom(inventory, ship, 17, new TileId("auxiliary_3"), current, target);
 
-        // Central spine.
         putMapRoom(inventory, ship, 19, new TileId("bridge"), current, target);
         putMapRoom(inventory, ship, 22, new TileId("junction_1"), current, target);
         putMapRoom(inventory, ship, 25, new TileId("engineering"), current, target);
         putMapRoom(inventory, ship, 26, new TileId("airlock_1"), current, target);
 
-        // South / lower side of the schematic.
         putMapRoom(inventory, ship, 27, new TileId("auxiliary_2"), current, target);
         putMapRoom(inventory, ship, 31, new TileId("medical"), current, target);
         putMapRoom(inventory, ship, 34, new TileId("research"), current, target);
         putMapRoom(inventory, ship, 35, new TileId("auxiliary_4"), current, target);
 
-        // The colored panes mirror permanent floor lines in the physical ship.
         inventory.setItem(20, mapLine(Material.LIGHT_BLUE_STAINED_GLASS_PANE, "§b함교 노선"));
         inventory.setItem(21, mapLine(Material.LIGHT_BLUE_STAINED_GLASS_PANE, "§b함교 노선"));
         inventory.setItem(23, mapLine(Material.RED_STAINED_GLASS_PANE, "§c기관실 노선"));
         inventory.setItem(24, mapLine(Material.RED_STAINED_GLASS_PANE, "§c기관실 노선"));
-
         inventory.setItem(14, mapLine(Material.ORANGE_STAINED_GLASS_PANE, "§6화물 노선"));
         inventory.setItem(15, mapLine(Material.ORANGE_STAINED_GLASS_PANE, "§6화물 노선"));
         inventory.setItem(32, mapLine(Material.PURPLE_STAINED_GLASS_PANE, "§5연구 노선"));
@@ -374,8 +476,111 @@ public final class CrewPdaService implements Listener {
                 "personal",
                 List.of("§a클릭")
         ));
+    }
 
-        player.openInventory(inventory);
+    private Map<TileId, Integer> mapSlots() {
+        LinkedHashMap<TileId, Integer> slots = new LinkedHashMap<>();
+        slots.put(new TileId("auxiliary_1"), 9);
+        slots.put(new TileId("habitation"), 13);
+        slots.put(new TileId("cargo"), 16);
+        slots.put(new TileId("auxiliary_3"), 17);
+        slots.put(new TileId("bridge"), 19);
+        slots.put(new TileId("junction_1"), 22);
+        slots.put(new TileId("engineering"), 25);
+        slots.put(new TileId("airlock_1"), 26);
+        slots.put(new TileId("auxiliary_2"), 27);
+        slots.put(new TileId("medical"), 31);
+        slots.put(new TileId("research"), 34);
+        slots.put(new TileId("auxiliary_4"), 35);
+        return slots;
+    }
+
+    private ItemStack imageMapMarker(
+            com.hushkisses.spacesurvival.paper.map.physical.PhysicalShipSnapshot ship,
+            TileId tileId,
+            String markerId,
+            boolean isCurrent,
+            boolean isTarget
+    ) {
+        var definition = ship.definitions().get(tileId);
+        if (definition == null) {
+            return themedMapItem(
+                    markerId,
+                    item(Material.PAPER, "§f" + tileId.value(), List.of())
+            );
+        }
+
+        ArrayList<String> lore = new ArrayList<>();
+        if (isCurrent) {
+            lore.add("§b● 현재 위치");
+        }
+        if (isTarget) {
+            lore.add("§e◆ 현재 긴급 목표");
+        }
+        lore.add("§7분류: §f" + tileCategoryName(definition.category()));
+        if (isCoreMapRoom(tileId)) {
+            lore.add("§7바닥 노선: " + mapRouteName(tileId));
+        }
+        lore.add("");
+        lore.add("§7인접 구역:");
+        for (TileId adjacent : ship.generatedMap().adjacent(tileId)) {
+            lore.add(
+                    connectionColor(connectionState(tileId, adjacent))
+                            + "- "
+                            + ship.tileDisplayName(adjacent)
+                            + " §8["
+                            + connectionStateName(connectionState(tileId, adjacent))
+                            + "]"
+            );
+        }
+
+        return themedMapItem(
+                markerId,
+                item(
+                        Material.PAPER,
+                        (isCurrent ? "§b● " : "")
+                                + (isTarget ? "§e◆ " : "")
+                                + "§f"
+                                + definition.displayName(),
+                        lore
+                )
+        );
+    }
+
+    private ItemStack themedMapItem(String namespacedId, ItemStack fallback) {
+        ItemStack result = plugin.itemsAdderBridge()
+                .createItem(namespacedId)
+                .orElseGet(fallback::clone);
+
+        ItemMeta source = fallback.getItemMeta();
+        ItemMeta target = result.getItemMeta();
+        target.setDisplayName(source.getDisplayName());
+        target.setLore(source.getLore());
+        result.setItemMeta(target);
+        return result;
+    }
+
+    private ItemStack themedMapActionItem(
+            String namespacedId,
+            Material fallbackMaterial,
+            String name,
+            String action,
+            List<String> lore
+    ) {
+        ItemStack result = plugin.itemsAdderBridge()
+                .createItem(namespacedId)
+                .orElseGet(() -> new ItemStack(fallbackMaterial));
+
+        ItemMeta meta = result.getItemMeta();
+        meta.setDisplayName(name);
+        meta.setLore(lore);
+        meta.getPersistentDataContainer().set(
+                actionKey,
+                PersistentDataType.STRING,
+                action
+        );
+        result.setItemMeta(meta);
+        return result;
     }
 
     private void putMapRoom(
