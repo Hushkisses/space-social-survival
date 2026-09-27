@@ -81,7 +81,9 @@ public final class OpeningUiListener implements Listener {
             case SELECTED -> {
                 RoleDefinition role = roleRegistry.require(roleId);
                 player.closeInventory();
-                player.sendMessage("§a[람몽어스] §f직업 확정 · §e" + role.displayName());
+                player.sendActionBar(
+                        Component.text("직업 확정 · " + role.displayName())
+                );
                 roleSelectionUi.removeMenuItem(player);
                 crewPdaService.open(player);
                 selectionChanged.run();
