@@ -75,16 +75,17 @@ class CohesiveDeckMapGeneratorTest {
     @Test
     void neverReusesConnectionPoints() {
         for (int seed = 0; seed < 100; seed++) {
+            int currentSeed = seed;
             GeneratedMap generated = generator.generate(
                     DefaultTileCatalog.create(),
                     constraints,
-                    new Random(seed)
+                    new Random(currentSeed)
             );
 
             Set<Object> endpoints = new HashSet<>();
             generated.connections().forEach(connection -> {
-                assertTrue(endpoints.add(connection.first()), "seed=" + seed);
-                assertTrue(endpoints.add(connection.second()), "seed=" + seed);
+                assertTrue(endpoints.add(connection.first()), "seed=" + currentSeed);
+                assertTrue(endpoints.add(connection.second()), "seed=" + currentSeed);
             });
         }
     }
