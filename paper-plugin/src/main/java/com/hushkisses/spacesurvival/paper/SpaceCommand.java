@@ -166,7 +166,7 @@ final class SpaceCommand implements CommandExecutor {
 
         return switch (args[1].toLowerCase()) {
             case "list" -> {
-                sender.sendMessage("§6[우주 생존] §f시설 목록");
+                sender.sendMessage("§6[람몽어스] §f시설 목록");
                 for (FacilityStateSnapshot snapshot : plugin.facilityRegistry().snapshots()) {
                     sender.sendMessage(
                             "§7- §f"
@@ -214,7 +214,7 @@ final class SpaceCommand implements CommandExecutor {
             return true;
         }
 
-        sender.sendMessage("§6[우주 생존] §f시설 상태");
+        sender.sendMessage("§6[람몽어스] §f시설 상태");
         sender.sendMessage("§7시설: §f" + snapshot.displayName() + " §8(" + snapshot.id() + ")");
         sender.sendMessage(
                 "§7상태: "
@@ -346,7 +346,7 @@ final class SpaceCommand implements CommandExecutor {
 
     private void sendShipStatus(CommandSender sender) {
         ShipStateSnapshot ship = plugin.shipState().snapshot();
-        sender.sendMessage("§6[우주 생존] §f우주선 핵심 상태");
+        sender.sendMessage("§6[람몽어스] §f우주선 핵심 상태");
         sender.sendMessage("§7전력: §f" + ship.power() + "%");
         sender.sendMessage("§7산소: §f" + ship.oxygen() + "%");
         sender.sendMessage("§7선체 안정도: §f" + ship.hull() + "%");
@@ -406,7 +406,7 @@ final class SpaceCommand implements CommandExecutor {
                 .snapshot()
                 .orElse(null);
 
-        sender.sendMessage("§6[우주 생존] §f게임 런타임 상태");
+        sender.sendMessage("§6[람몽어스] §f게임 런타임 상태");
 
         if (snapshot == null) {
             sender.sendMessage("§7타이머: §e시작 전");
@@ -565,7 +565,7 @@ final class SpaceCommand implements CommandExecutor {
             return true;
         }
 
-        sender.sendMessage("§6[우주 생존] §f직업 후보 3개");
+        sender.sendMessage("§6[람몽어스] §f직업 후보 3개");
         for (RoleId roleId : set.candidates()) {
             RoleDefinition role = plugin.roleRegistry().require(roleId);
             sender.sendMessage(
@@ -624,7 +624,7 @@ final class SpaceCommand implements CommandExecutor {
     }
 
     private void sendRoleStatus(CommandSender sender) {
-        sender.sendMessage("§6[우주 생존] §f직업 선택 상태");
+        sender.sendMessage("§6[람몽어스] §f직업 선택 상태");
         sender.sendMessage(
                 "§7후보 생성 인원: §f"
                         + plugin.roleSelectionService().preparedPlayerCount()
@@ -734,7 +734,7 @@ final class SpaceCommand implements CommandExecutor {
     private void sendLobbyStatus(CommandSender sender) {
         LobbySnapshot snapshot = plugin.lobbyService().snapshot();
 
-        sender.sendMessage("§6[우주 생존] §f대기실 상태");
+        sender.sendMessage("§6[람몽어스] §f대기실 상태");
         sender.sendMessage(
                 "§7참가 인원: §f"
                         + snapshot.playerCount()
@@ -780,7 +780,7 @@ final class SpaceCommand implements CommandExecutor {
             CommandSender sender,
             MapDebugService.DebugMapResult result
     ) {
-        sender.sendMessage("§6[우주 생존] §f논리 맵 생성 결과");
+        sender.sendMessage("§6[람몽어스] §f논리 맵 생성 결과");
         sender.sendMessage("§7시드: §f" + result.seed());
         sender.sendMessage("§7타일: §f" + result.map().tileIds().size());
         sender.sendMessage("§7연결: §f" + result.map().connections().size());
@@ -798,7 +798,7 @@ final class SpaceCommand implements CommandExecutor {
     }
 
     private void sendStatus(CommandSender sender) {
-        sender.sendMessage("§6[우주 생존] §f개발 서버 상태");
+        sender.sendMessage("§6[람몽어스] §f개발 서버 상태");
         sender.sendMessage("§7플러그인: §a정상");
         sender.sendMessage("§7버전: §f" + plugin.getPluginMeta().getVersion());
         sender.sendMessage("§7코어: §f" + BootstrapMarker.moduleName());
