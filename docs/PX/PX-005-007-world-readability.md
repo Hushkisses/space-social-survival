@@ -6,6 +6,35 @@ Make the existing game readable without adding content volume. This batch focuse
 
 ## PX-005 Incident Presentation / Response Feedback
 
+### PX-005.2 Distributed physical recovery
+
+Playtest feedback showed that repairing power, oxygen, hull and reactor from the same Engineering GUI made the opening recovery flat and removed the reason to traverse the random ship.
+
+The recovery loop is now split:
+
+- Engineering:
+  - Power Cell -> power
+  - Fuel -> reactor/engine
+  - Repair Parts -> Engineering facility state only
+  - advanced machinery maintenance does not directly restore hull
+- Habitation:
+  - `생명유지 계통 복구` consumes shared Repair Parts x1
+  - restores oxygen +15
+- Cargo:
+  - `현장 수리 부품 수령` converts shared Repair Parts x1 into a physically carried Repair Part
+- Hull:
+  - two physical breach targets are created in generated rooms at match setup
+  - breach repair requires a carried Repair Part and direct right-click interaction
+  - each repair restores hull +8
+  - if later incidents push hull below threshold after all breaches were repaired, another breach target is generated
+
+Hull breach presentation:
+
+- vanilla fallback: cracked-stone-brick ItemDisplay + red/yellow TextDisplay
+- optional ItemsAdder visual: `spacesurvival:hull_breach`
+- gameplay does not depend on ItemsAdder
+- the priority-route hologram points to an unrepaired breach room while hull is the highest-priority problem
+
 Implemented:
 
 - Small incidents now present as:
@@ -127,6 +156,7 @@ Implemented:
 ## Automated validation
 
 - GitHub Actions Build #667: SUCCESS
+- Distributed recovery / physical hull repair Build #786: SUCCESS
 - Playtest correction Build #707: SUCCESS
 - Priority-route hologram Build #719: SUCCESS
 - Test: SUCCESS
