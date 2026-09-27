@@ -33,6 +33,8 @@ public final class MatchOrchestrator {
 
     private MatchLifecycleStatus status = MatchLifecycleStatus.IDLE;
     private MatchSetupSnapshot setupSnapshot;
+    private int developmentStartCount;
+    private int resetCount;
 
     public MatchOrchestrator(
             SpaceSurvivalPlugin plugin,
@@ -164,6 +166,11 @@ public final class MatchOrchestrator {
         plugin.telemetryService().add("initial.ship.hull", openingShip.hull());
         plugin.telemetryService().add("initial.ship.reactor", openingShip.reactor());
         plugin.telemetryService().event("match", "briefing");
+        plugin.telemetryService().add("playability.onboarding.shown", players.size());
+        if (developmentBypassMinimum) {
+            plugin.telemetryService().event("playability", "development-harness");
+            developmentStartCount++;
+        }
 
         for (PlayerId playerId : players) {
             Player online = plugin.getServer().getPlayer(playerId.value());
@@ -228,6 +235,17 @@ public final class MatchOrchestrator {
 
         plugin.starterKitService().giveRoleKits();
         plugin.crewPdaService().giveToParticipants();
+
+        int participantCount = plugin.lobbyService().snapshot().playerCount();
+        long privateObjectives = plugin.lobbyService().snapshot().players().stream()
+                .filter(playerId -> plugin.objectiveEngine()
+                        .objective(playerId, com.hushkisses.spacesurvival.objective.ObjectiveSlot.BASE)
+                        .isPresent())
+                .count();
+        plugin.telemetryService().add("playability.role.selected", participantCount);
+        plugin.telemetryService().add("playability.starter.granted", participantCount);
+        plugin.telemetryService().add("playability.private_objective.available", privateObjectives);
+
         plugin.gameRuntimeService().start();
         plugin.incidentDirector().start(setupSnapshot.seed());
         plugin.telemetryService().event("match", "active");
@@ -252,6 +270,7 @@ public final class MatchOrchestrator {
     }
 
     public void reset() {
+        resetCount++;
         plugin.incidentDirector().stop();
         plugin.telemetryService().finish("reset");
         if (plugin.gameRuntimeService().isRunning()) {
@@ -273,6 +292,13 @@ public final class MatchOrchestrator {
         return Optional.ofNullable(setupSnapshot);
     }
 
+    public int developmentStartCount() {
+        return developmentStartCount;
+    }
+
+    public int resetCount() {
+        return resetCount;
+    }
 
     private void applyStartingRecoveryState(MatchSetupConfig config) {
         plugin.shipState().set(ShipMetric.POWER, config.startingPower());
