@@ -30,7 +30,7 @@ public final class MatchHudService {
 
     private static final String OBJECTIVE_NAME = "space_hud";
     private static final String MISSION_HUD_ID = "spacesurvival:mission_hud";
-    private static final int MISSION_HUD_X_OFFSET = -145;
+    private static final int MISSION_HUD_X_OFFSET = -220;
 
     private final SpaceSurvivalPlugin plugin;
     private final PaperShipWorldService shipWorldService;
@@ -160,26 +160,24 @@ public final class MatchHudService {
         );
 
         ArrayList<String> lines = new ArrayList<>();
-        lines.add("§7위치 §f" + compact(currentArea(player), 20));
+        lines.add("§7위치 §f" + compact(currentArea(player), 16));
         lines.add(shipMetricLineOne());
         lines.add(shipMetricLineTwo());
-        lines.add("§8────────────");
-        lines.add("§b§l개인 목표");
-        lines.addAll(personalObjectiveLines(playerId));
+        lines.add("§8──────────");
+        lines.add(personalObjectiveCompactLine(playerId));
 
         if (plugin.objectiveEngine().objective(playerId, ObjectiveSlot.SECRET).isPresent()) {
-            lines.add("§d비밀 임무 있음 §8· PDA 확인");
+            lines.add("§d비밀 임무 §8· PDA");
         }
 
         if (!customMissionHud) {
-            lines.add("§8────────────§r");
-            lines.add("§e§l긴급 목표");
-            lines.add(priorityColor(crisis) + compact(problem.title(), 26));
-            lines.add("§7목표 §f" + compact(targetFacility, 20));
-            lines.add("§7필요 §f" + compact(problem.need(), 24));
+            lines.add("§8──────────§r");
+            lines.add("§e긴급 §f" + compact(problem.title(), 18));
+            lines.add("§7→ §f" + compact(targetFacility, 14)
+                    + " §8· §7" + compact(problem.need(), 14));
         }
 
-        lines.add("§8PDA 우클릭 · 상세");
+        lines.add("§8PDA 우클릭");
 
         if (!lines.equals(hud.lines)) {
             for (String oldLine : hud.lines) {
@@ -455,18 +453,17 @@ public final class MatchHudService {
         return "§a";
     }
 
-    private List<String> personalObjectiveLines(PlayerId playerId) {
+    private String personalObjectiveCompactLine(PlayerId playerId) {
         var objective = plugin.objectiveEngine()
                 .objective(playerId, ObjectiveSlot.BASE)
                 .orElse(null);
 
         if (objective == null) {
-            return List.of("§7아직 배정되지 않았습니다.");
+            return "§b개인 §7미배정";
         }
 
-        String title = "§f" + compact(objective.definition().title(), 24);
-        String progress = switch (objective.status()) {
-            case ACTIVE -> "§7진행 §f"
+        String state = switch (objective.status()) {
+            case ACTIVE -> "§7"
                     + objective.progress()
                     + "/"
                     + objective.definition().targetProgress();
@@ -474,7 +471,10 @@ public final class MatchHudService {
             case FAILED -> "§c실패";
         };
 
-        return List.of(title, progress);
+        return "§b개인 §f"
+                + compact(objective.definition().title(), 14)
+                + " "
+                + state;
     }
 
     private String currentArea(Player player) {
