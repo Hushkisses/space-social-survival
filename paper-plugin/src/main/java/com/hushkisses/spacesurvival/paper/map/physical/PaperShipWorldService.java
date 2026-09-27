@@ -83,6 +83,7 @@ public final class PaperShipWorldService {
         World world = resolveWorld();
         normalizeWorld(world);
         clearLegacyDisplays(world);
+        clearLooseItems(world);
         clearBuildArea(world);
 
         terminals.clear();
@@ -396,6 +397,27 @@ public final class PaperShipWorldService {
 
         normalizeWorld(world);
         return world;
+    }
+
+    private static void clearLooseItems(World world) {
+        int minX = CompactSingleDeckLayoutPlanner.SHIP_MIN_X - 8;
+        int maxX = CompactSingleDeckLayoutPlanner.SHIP_MAX_X + 8;
+        int minZ = CompactSingleDeckLayoutPlanner.SHIP_MIN_Z - 8;
+        int maxZ = CompactSingleDeckLayoutPlanner.SHIP_MAX_Z + 8;
+        int minY = FLOOR_Y - ENGINEERING_PIT_DEPTH - 4;
+        int maxY = FLOOR_Y + MAX_INTERIOR_HEIGHT + 4;
+
+        world.getEntitiesByClass(Item.class).stream()
+                .filter(item -> {
+                    Location location = item.getLocation();
+                    return location.getX() >= minX
+                            && location.getX() <= maxX
+                            && location.getY() >= minY
+                            && location.getY() <= maxY
+                            && location.getZ() >= minZ
+                            && location.getZ() <= maxZ;
+                })
+                .forEach(Item::remove);
     }
 
     private static void clearBuildArea(World world) {
