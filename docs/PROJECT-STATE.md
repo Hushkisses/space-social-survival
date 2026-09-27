@@ -68,6 +68,10 @@ Player Comprehension / Playability
 
 ## PX-003 Common Objective HUD / Next Action Guidance
 - added core PlayerGuidanceResolver
+- compact ship health returned to the sidebar without restoring stage/crisis clutter:
+  - power / oxygen
+  - hull / reactor
+  - color-coded against current return thresholds
 - PX-003.1 presentation polish:
   - persistent guidance moved from center ActionBar to a compact right-side scoreboard
   - scoreboard prioritizes the viewing player's base personal objective and progress
@@ -81,6 +85,11 @@ Player Comprehension / Playability
 
 ## PX-004 Facility Work UX
 - existing FacilityActionExecutor remains authoritative
+- recovery responsibilities are now distributed:
+  - Engineering: power / reactor / engineering-facility repair / advanced machinery maintenance
+  - Habitation: oxygen and life-support recovery
+  - Cargo: deposit/process resources and withdraw physical field-repair parts
+  - Hull: no longer repaired from an Engineering GUI; physical breach points must be repaired in the damaged room
 - facility GUI now exposes:
   - facility status/description
   - relevant ship metrics
@@ -94,6 +103,12 @@ Player Comprehension / Playability
   - safe predicted effects
 
 ## PX-005 Incident Presentation / Response Feedback
+- physical hull-repair loop added:
+  - two deterministic breach points are created with each generated ship
+  - each breach consumes one physically carried Repair Part and restores hull +8
+  - if hull later falls below the survival threshold after all current breaches are repaired, another breach is generated
+  - urgent route holograms point toward the current unrepaired breach room when hull is the priority
+  - fallback breach visual is vanilla; optional ItemsAdder id `spacesurvival:hull_breach` is used automatically when available
 - small incidents use Korean chat + ActionBar + sound with affected area and response hint
 - major incidents use title/subtitle + alarm + temporary boss bar
 - persistent next action remains in the existing HUD
@@ -140,6 +155,7 @@ Player Comprehension / Playability
 - PX-005/006 playtest correction CI: SUCCESS (Build #707)
 - PX-006 priority-route hologram CI: SUCCESS (Build #719)
 - opening recovery + personal-objective HUD CI: SUCCESS (Build #740)
+- distributed recovery / physical hull repair / compact ship status CI: SUCCESS (Build #786)
 - PX-001~004 Windows/Paper integrated validation: pending
 - PT-011~015 Windows/Paper integrated validation: still pending
 - first blind 1~3 player 20-minute playability gate: not yet attempted
