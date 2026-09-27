@@ -1,5 +1,6 @@
 package com.hushkisses.spacesurvival.paper.ui;
 
+import com.hushkisses.spacesurvival.ending.ReturnRequirements;
 import com.hushkisses.spacesurvival.ending.ReturnStage;
 import com.hushkisses.spacesurvival.guidance.PlayerGuidanceResolver;
 import com.hushkisses.spacesurvival.guidance.PublicProblem;
@@ -103,11 +104,9 @@ public final class MatchHudService {
                 ship,
                 plugin.facilityRegistry().snapshots()
         );
-        String targetFacility = plugin.facilityRegistry()
-                .require(problem.targetFacility())
-                .definition()
-                .displayName();
-        shipWorldService.updatePriorityRoute(problem.targetFacility());
+        TileId routeTarget = priorityRouteTarget(problem, ship);
+        String targetFacility = priorityTargetName(problem, routeTarget);
+        shipWorldService.updatePriorityRoute(routeTarget);
 
         Set<UUID> activePlayers = new HashSet<>();
 
@@ -145,6 +144,8 @@ public final class MatchHudService {
 
         ArrayList<String> lines = new ArrayList<>();
         lines.add("§7위치 §f" + compact(currentArea(player), 20));
+        lines.add(shipMetricLineOne());
+        lines.add(shipMetricLineTwo());
         lines.add("§8────────────");
         lines.add("§b§l개인 목표");
         lines.addAll(personalObjectiveLines(playerId));
@@ -282,6 +283,60 @@ public final class MatchHudService {
     }
 
 
+
+
+    private TileId priorityRouteTarget(
+            PublicProblem problem,
+            com.hushkisses.spacesurvival.ship.ShipStateSnapshot ship
+    ) {
+        ReturnRequirements requirements = ReturnRequirements.developmentDefaults();
+        if (ship.hull() < requirements.minHull()) {
+            TileId breach = plugin.hullBreachService()
+                    .primaryUnrepairedTile()
+                    .orElse(null);
+            if (breach != null) {
+                return breach;
+            }
+        }
+        return new TileId(problem.targetFacility().value());
+    }
+
+    private String priorityTargetName(PublicProblem problem, TileId target) {
+        PhysicalShipSnapshot snapshot = shipWorldService.activeSnapshot().orElse(null);
+        if (snapshot != null
+                && plugin.hullBreachService().primaryUnrepairedTile()
+                .filter(target::equals)
+                .isPresent()) {
+            return snapshot.tileDisplayName(target) + " 균열";
+        }
+
+        return plugin.facilityRegistry()
+                .require(problem.targetFacility())
+                .definition()
+                .displayName();
+    }
+
+    private String shipMetricLineOne() {
+        var ship = plugin.shipState().snapshot();
+        ReturnRequirements req = ReturnRequirements.developmentDefaults();
+        return "§7함선 "
+                + "전력 " + metricColor(ship.power(), req.minPower()) + ship.power()
+                + " §7산소 " + metricColor(ship.oxygen(), req.minOxygen()) + ship.oxygen();
+    }
+
+    private String shipMetricLineTwo() {
+        var ship = plugin.shipState().snapshot();
+        ReturnRequirements req = ReturnRequirements.developmentDefaults();
+        return "§7     "
+                + "선체 " + metricColor(ship.hull(), req.minHull()) + ship.hull()
+                + " §7원자로 " + metricColor(ship.reactor(), req.minReactor()) + ship.reactor();
+    }
+
+    private static String metricColor(int value, int minimum) {
+        if (value < minimum) return "§c";
+        if (value < Math.min(100, minimum + 20)) return "§e";
+        return "§a";
+    }
 
     private List<String> personalObjectiveLines(PlayerId playerId) {
         var objective = plugin.objectiveEngine()
