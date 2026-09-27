@@ -618,8 +618,11 @@ public final class PaperShipWorldService {
             }
         }
         for (int y = FLOOR_Y - 4; y <= FLOOR_Y + roomHeight - 2; y++) {
+            if (y == FLOOR_Y) {
+                continue;
+            }
             world.getBlockAt(cx, y, cz).setType(
-                    y % 3 == 0 ? Material.SEA_LANTERN : Material.CHAIN,
+                    y % 3 == 0 ? Material.SEA_LANTERN : Material.IRON_BARS,
                     false
             );
         }
@@ -694,7 +697,7 @@ public final class PaperShipWorldService {
     ) {
         int cx = placement.minX() + placement.size() / 2;
         int cz = placement.minZ() + placement.size() / 2;
-        world.getBlockAt(cx, FLOOR_Y + 1, cz).setType(Material.CHAIN, false);
+        world.getBlockAt(cx, FLOOR_Y + 1, cz).setType(Material.IRON_BARS, false);
     }
 
     private static int roomHeight(TileId tileId) {
