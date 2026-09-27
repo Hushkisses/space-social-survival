@@ -218,9 +218,10 @@ public final class CrewPdaService implements Listener {
                 Material.LIGHT_WEIGHTED_PRESSURE_PLATE,
                 "§e함선 이동",
                 List.of(
-                        "§7금색/노란색/빨간색 연결 패드는",
-                        "§7다른 함선 모듈로 이동하는 통로입니다.",
-                        "§7막힌 통로는 상태나 권한 조건을 확인하십시오."
+                        "§7핵심 시설은 중앙 허브 주변에 촘촘히 배치되어 있습니다.",
+                        "§7바닥 색 노선과 중앙 허브 표지판을 따라 이동하십시오.",
+                        "§7PDA 함선 지도는 실제 방의 상대 위치와 같은 평면도입니다.",
+                        "§7막힌 문은 상태나 권한 조건을 확인하십시오."
                 )
         ));
         inventory.setItem(12, item(
