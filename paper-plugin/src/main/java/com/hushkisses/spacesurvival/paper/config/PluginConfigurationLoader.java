@@ -43,6 +43,11 @@ public final class PluginConfigurationLoader {
                 yaml.getInt("return.hold-seconds")
         );
 
+        MeetingUxConfig meetingUx = new MeetingUxConfig(
+                yaml.getInt("meeting.discussion-seconds"),
+                yaml.getInt("meeting.voting-seconds")
+        );
+
         MatchSetupConfig matchSetup = new MatchSetupConfig(
                 yaml.getInt("map.min-tiles"),
                 yaml.getInt("map.max-tiles"),
@@ -71,7 +76,7 @@ public final class PluginConfigurationLoader {
                 yaml.getInt("incident.major-second-max-seconds")
         );
 
-        return new PluginConfiguration(game, balance, matchSetup);
+        return new PluginConfiguration(game, balance, matchSetup, meetingUx);
     }
 
     static boolean applyBalanceDefaults(YamlConfiguration yaml) {
@@ -109,6 +114,8 @@ public final class PluginConfigurationLoader {
         LinkedHashMap<String, Integer> defaults = new LinkedHashMap<>();
         defaults.put("match.target-minutes", 45);
         defaults.put("return.hold-seconds", 240);
+        defaults.put("meeting.discussion-seconds", 60);
+        defaults.put("meeting.voting-seconds", 45);
         defaults.put("map.min-tiles", 10);
         defaults.put("map.max-tiles", 14);
         defaults.put("map.max-dead-ends", 6);

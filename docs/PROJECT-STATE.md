@@ -23,7 +23,17 @@ Player Comprehension / Playability
 - PT-001 through PT-005 Playtest Integration — COMPLETE
 - PT-006 through PT-010 First Multiplayer Playtest Build — COMPLETE_FOR_PLAYTEST
 
-## Current batch
+## Current active development
+- PX-008 Meeting UX
+- Status: IMPLEMENTED / VALIDATION_PENDING
+- Development branch: dev/PX-008-010-social-terminal-playability
+- Base branch: dev/PX-001-004-player-comprehension
+- Draft PR: #26
+- Parent PX-001~007 / PR #24 remains IMPLEMENTED / VALIDATION_PENDING and must not be skipped during merge ordering.
+- Details:
+  - docs/PX/PX-008-meeting-ux.md
+
+## Parent PX batch
 - PX-001 through PX-007 Player Comprehension + World Readability
 - Status: IMPLEMENTED / VALIDATION_PENDING
 - Development branch: dev/PX-001-004-player-comprehension
@@ -161,8 +171,21 @@ Player Comprehension / Playability
 - first blind 1~3 player 20-minute playability gate: not yet attempted
 - real 6~10 player balance test remains blocked on the PX playability gate
 
-## Next batch after validation
-- PX-008 through PX-010 Social / Terminal-State / Playability Gate
+## PX-008 Meeting UX
+- GitHub Actions full test/build: SUCCESS (Build #815)
+- meeting is now staged as discussion -> voting -> result instead of opening the vote GUI immediately
+- voting interaction is target-first: select a player first, then choose what sanction to apply; NO_ACTION remains available without a target
+- meeting reason and participant list are explicitly presented
+- discussion/voting timers are configurable in balance.yml
+- BossBar shows phase/countdown; voting shows completion count without revealing vote content
+- severe target sanctions require an extra confirmation step
+- existing sanction execution prerequisites remain authoritative and execution success/failure is presented separately
+- facility work is paused during discussion/voting
+- Windows/Paper integrated validation: pending
+
+## Next after PX-008 validation
+- PX-009 Death / Detention / Ejection UX
+- PX-010 1-3 Player End-to-End Playability Harness
 - do not expand roles/objectives/events/scenarios for content volume before the PX exit gate
 
 ## Environment

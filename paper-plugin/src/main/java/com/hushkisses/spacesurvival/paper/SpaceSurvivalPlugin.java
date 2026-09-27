@@ -391,6 +391,9 @@ public final class SpaceSurvivalPlugin extends JavaPlugin {
         if (matchHudService != null) {
             matchHudService.stop();
         }
+        if (meetingGuiService != null) {
+            meetingGuiService.stop();
+        }
         if (incidentDirector != null) {
             incidentDirector.stop();
         }
