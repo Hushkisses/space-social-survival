@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 public final class PaperShipWorldService {
 
-    public static final String WORLD_NAME = "space_ship_dev";
+    public static final String WORLD_NAME = "space_ship_compact_v3";
 
     private static final int ROOM_HEIGHT = 5;
     private static final int CORRIDOR_HALF_WIDTH = 1;
@@ -79,8 +79,11 @@ public final class PaperShipWorldService {
                 layoutPlanner.plan(generated.tileIds(), seed);
 
         World world = resolveWorld();
+        world.setDifficulty(Difficulty.PEACEFUL);
+        world.setTime(18000L);
+        world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
         clearNavigationDisplays(world);
-        clearBuildArea(world, placements.values());
+        clearBuildArea(world);
 
         terminals.clear();
         connections.reset();
@@ -95,24 +98,18 @@ public final class PaperShipWorldService {
         for (TileId tileId : generated.tileIds()) {
             PhysicalTilePlacement placement = placements.get(tileId);
 
-            StructurePlacementResult structure = structureLoader.placeIfAvailable(
+            // MAP-V3 deliberately does not load the legacy 15x15 NBT modules.
+            // Spatial scale comes first; new structures can be authored after this
+            // compact footprint is accepted in playtest.
+            placementResults.put(
                     tileId,
-                    new Location(
-                            world,
-                            placement.minX(),
-                            placement.floorY(),
-                            placement.minZ()
-                    ),
-                    new Random(seed ^ tileId.value().hashCode())
+                    new StructurePlacementResult(
+                            false,
+                            "MAP-V3",
+                            "compact procedural room"
+                    )
             );
-            placementResults.put(tileId, structure);
-
-            if (!structure.placed()) {
-                renderModule(world, placement, definitions.get(tileId));
-            } else {
-                registerRoomLight(placement);
-            }
-
+            renderModule(world, placement, definitions.get(tileId));
             renderRoomLabel(world, placement, definitions.get(tileId));
 
             FacilityId facilityId = coreFacility(tileId);
@@ -438,21 +435,18 @@ public final class PaperShipWorldService {
         return world;
     }
 
-    private static void clearBuildArea(
-            World world,
-            Collection<PhysicalTilePlacement> placements
-    ) {
-        Bounds bounds = bounds(placements, CLEAR_MARGIN);
-        int minY = placements.stream()
-                .mapToInt(PhysicalTilePlacement::floorY)
-                .min().orElse(CohesiveShipLayoutPlanner.LOWER_FLOOR_Y) - 1;
-        int maxY = placements.stream()
-                .mapToInt(PhysicalTilePlacement::floorY)
-                .max().orElse(CohesiveShipLayoutPlanner.UPPER_FLOOR_Y)
-                + ROOM_HEIGHT + 3;
+    private static void clearBuildArea(World world) {
+        int minX = CohesiveShipLayoutPlanner.SHIP_MIN_X - 6;
+        int maxX = CohesiveShipLayoutPlanner.SHIP_MAX_X + 6;
+        int minZ = CohesiveShipLayoutPlanner.SHIP_MIN_Z - 6;
+        int maxZ = CohesiveShipLayoutPlanner.SHIP_MAX_Z + 6;
+        int minY = CohesiveShipLayoutPlanner.LOWER_FLOOR_Y - 1;
+        int maxY = CohesiveShipLayoutPlanner.UPPER_FLOOR_Y + ROOM_HEIGHT + 2;
 
-        for (int x = bounds.minX(); x <= bounds.maxX(); x++) {
-            for (int z = bounds.minZ(); z <= bounds.maxZ(); z++) {
+        // Fixed envelope: omitted optional rooms from an earlier seed cannot leave
+        // stale blocks behind.
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
                 for (int y = minY; y <= maxY; y++) {
                     world.getBlockAt(x, y, z).setType(Material.AIR, false);
                 }
