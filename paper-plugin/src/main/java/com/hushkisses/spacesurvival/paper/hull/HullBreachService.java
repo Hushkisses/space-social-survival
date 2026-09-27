@@ -46,6 +46,53 @@ public final class HullBreachService implements Listener {
         Objects.requireNonNull(ship, "ship");
         clear(ship);
 
+        ArrayList<TileId> candidates = candidateTiles(ship);
+
+        Collections.shuffle(candidates, new Random(seed ^ 0x48B3A2D5L));
+        int count = Math.min(BREACH_COUNT, candidates.size());
+
+        for (int i = 0; i < count; i++) {
+            spawnBreach(ship, candidates.get(i), i + 1);
+        }
+    }
+
+
+    public void ensureRepairTarget(PhysicalShipSnapshot ship) {
+        Objects.requireNonNull(ship, "ship");
+        if (unresolvedCount() > 0) {
+            return;
+        }
+
+        ArrayList<TileId> candidates = candidateTiles(ship);
+        if (candidates.isEmpty()) {
+            return;
+        }
+
+        Set<TileId> previouslyUsed = new HashSet<>();
+        for (Breach breach : byInteraction.values()) {
+            previouslyUsed.add(breach.tileId);
+        }
+
+        List<TileId> fresh = candidates.stream()
+                .filter(tileId -> !previouslyUsed.contains(tileId))
+                .toList();
+        List<TileId> pool = fresh.isEmpty() ? candidates : fresh;
+
+        Random random = new Random(
+                ship.seed()
+                        ^ 0x17C43B21L
+                        ^ ((long) byInteraction.size() * 31L)
+        );
+        TileId selected = pool.get(random.nextInt(pool.size()));
+        spawnBreach(ship, selected, byInteraction.size() + 1);
+
+        plugin.getServer().broadcastMessage(
+                "§c[선체 경보] §f추가 균열이 감지되었습니다: §e"
+                        + ship.tileDisplayName(selected)
+        );
+    }
+
+    private ArrayList<TileId> candidateTiles(PhysicalShipSnapshot ship) {
         ArrayList<TileId> candidates = new ArrayList<>();
         for (TileId tileId : ship.generatedMap().tileIds()) {
             String id = tileId.value();
@@ -57,13 +104,7 @@ public final class HullBreachService implements Listener {
             }
             candidates.add(tileId);
         }
-
-        Collections.shuffle(candidates, new Random(seed ^ 0x48B3A2D5L));
-        int count = Math.min(BREACH_COUNT, candidates.size());
-
-        for (int i = 0; i < count; i++) {
-            spawnBreach(ship, candidates.get(i), i + 1);
-        }
+        return candidates;
     }
 
     public Optional<TileId> primaryUnrepairedTile() {
