@@ -66,7 +66,10 @@ Existing local balance files are migrated with these defaults without overwritin
 After discussion:
 
 - title/sound announces voting.
-- every online participant receives the sanction-choice GUI.
+- every online participant first receives a **target-selection GUI**.
+- the player flow is now: **who -> what sanction**, which is more direct than choosing a sanction before a person.
+- `NO_ACTION` remains available from the target-selection screen without selecting a player.
+- after a player is selected, the sanction-choice GUI is shown for that target.
 - BossBar shows:
   - voting phase
   - completed vote count
@@ -88,9 +91,13 @@ The GUI also explains execution prerequisites where they are already part of the
 
 ### 4. Target selection / confirmation
 
-For sanctions requiring a target:
+The first voting screen is a player-head selector.
 
-- a player-head target selector is shown.
+After choosing a participant:
+
+- the next screen asks what should happen to that specific player.
+- medical check / disarm can be recorded directly after sanction selection.
+- the voter can back out and pick a different player before recording a vote.
 
 For higher-impact sanctions:
 
@@ -140,7 +147,7 @@ During an active discussion or voting phase, facility console work is paused so 
 ## Automated validation
 
 - configuration migration coverage includes the meeting timing defaults.
-- GitHub Actions full test/build: SUCCESS (Build #808).
+- GitHub Actions full test/build: SUCCESS (Build #815, target-first voting flow).
 - Windows/Paper integrated validation required before COMPLETE.
 
 ## Manual Windows/Paper validation
