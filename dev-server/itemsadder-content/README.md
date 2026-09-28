@@ -110,3 +110,10 @@ dev-server\quick-deploy.bat
 dev-server\start-dev.bat
 /iazip
 ```
+
+
+### Mission HUD deploy note
+
+The old 112x54 resize step was removed because it blurred baked Korean text.
+
+`quick-deploy.bat` now crops the mission source PNG to the visible 176x84 panel without resampling. `guis.yml` renders it with `scale_ratio: 84`.
