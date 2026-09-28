@@ -249,3 +249,67 @@ Resource caches themselves only place resource items inside barrels.
 The previous ship rebuild cleared blocks/displays but not dropped `Item` entities. That allowed loose resources from an earlier test run to remain around newly generated caches.
 
 Before rendering a new ship, dropped item entities inside the ship build envelope are now removed. Current-match death/resource drops are unaffected until the next ship rebuild.
+
+
+## PX-010.4 Playtest readability / role-dependency pass
+
+Windows playtest feedback identified additional gameplay-readability issues.
+
+### Wider room entrances
+
+Physical module thresholds are now 3 blocks wide and 3 blocks high.
+
+- all three floor threshold blocks are registered with the same physical connection,
+- power/keycard/lock access rules still apply across the entire opening,
+- the central route marker remains unchanged.
+
+This removes the claustrophobic single-block doorway without bypassing connection restrictions.
+
+### Facility menu simplification
+
+Facility menus now use a 27-slot action-first layout.
+
+Persistent top information is reduced to:
+
+- facility status,
+- current team priority problem.
+
+The following low-value informational controls are hidden from the player menu while their internal action definitions remain available for compatibility:
+
+- bridge objective/status inspection,
+- cargo store/sort/inventory/rare-resource inspection,
+- habitation personal locker,
+- research sample/data conversion controls.
+
+Visible controls are actions that directly change state or perform a meaningful role action.
+
+### Hull breach repair paths
+
+A physical hull breach can now be repaired in either of two ways:
+
+1. any living player may consume one carried `REPAIR_PARTS`,
+2. an Engineer with `ADVANCED_REPAIR` capability and the Engineering Multitool repairs without consuming a part.
+
+Repair parts therefore remain an emergency universal fallback, but repeated breaches create a strong long-term dependency on the Engineer role.
+
+Telemetry now separates:
+
+- `hull.breach.repaired.engineer_tool`
+- `hull.breach.repaired.repair_part`
+
+### Deferred bio/data resources
+
+`BIO_SAMPLES` and `DATA_CORES` are temporarily removed from normal generated emergency-cache loot.
+
+The types and existing internal actions are not deleted.
+
+Planned direction for a later ticket:
+
+- Data Core: recover trustworthy but limited sabotage/damage logs,
+- sabotage-trace details, information scope, and meeting visibility are intentionally not implemented in PX-010.
+
+### HUD pixel preservation
+
+The previous 112x54 destructive downsample was removed.
+
+During Windows deploy the source mission HUD image is now only cropped to its native visible 176x84 panel bounds. ItemsAdder renders that panel at `scale_ratio: 84`, avoiding the prior pre-resize blur.
