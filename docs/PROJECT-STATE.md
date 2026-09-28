@@ -293,6 +293,14 @@ Player Comprehension / Playability
     - PX-010 start/reset success output is console-only for player-issued commands
     - right sidebar title changed to `함선 상태` to avoid duplicate branding
     - stale dropped items inside the ship envelope are cleared before a new ship render
+  - playtest readability/gameplay pass:
+    - room/module thresholds widened to 3x3 while preserving full-width connection access checks
+    - facility GUI reduced to status + priority problem + meaningful action controls
+    - inventory/status-only facility actions hidden from player menus
+    - hull breaches support repair-part fallback or Engineer + Engineering Multitool repair
+    - bio samples and data cores removed from normal emergency-cache loot pending concrete loops
+    - Data Core sabotage-log recovery recorded as a future direction only; not implemented yet
+    - destructive 112x54 HUD downsample removed; deploy now crops to native 176x84 panel bounds
 - Windows/Paper integrated validation: pending
 - Details: `docs/PX/PX-010-playability-harness.md`
 
