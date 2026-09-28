@@ -56,11 +56,11 @@ if exist "%IA_SOURCE%" (
     )
 
     if exist "%IA_TARGET%\textures\font\hud" (
-        echo [SpaceSurvival] Normalizing mission HUD images for crisp rendering...
+        echo [SpaceSurvival] Cropping mission HUD images to native panel bounds...
         powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-          "$ErrorActionPreference='Stop'; Add-Type -AssemblyName System.Drawing; try { Get-ChildItem '%IA_TARGET%\textures\font\hud' -Filter 'mission_*.png' | ForEach-Object { $path=$_.FullName; $tmp=$path + '.normalized.tmp.png'; $src=[Drawing.Bitmap]::new($path); try { $cropHeight=[Math]::Min(84,$src.Height); $cropRect=[Drawing.Rectangle]::new(0,0,$src.Width,$cropHeight); $crop=$src.Clone($cropRect,$src.PixelFormat); try { $dst=[Drawing.Bitmap]::new(112,54); try { $g=[Drawing.Graphics]::FromImage($dst); try { $g.CompositingMode=[Drawing.Drawing2D.CompositingMode]::SourceCopy; $g.CompositingQuality=[Drawing.Drawing2D.CompositingQuality]::HighQuality; $g.InterpolationMode=[Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic; $g.SmoothingMode=[Drawing.Drawing2D.SmoothingMode]::HighQuality; $g.PixelOffsetMode=[Drawing.Drawing2D.PixelOffsetMode]::HighQuality; $g.DrawImage($crop,[Drawing.Rectangle]::new(0,0,112,54),0,0,$crop.Width,$crop.Height,[Drawing.GraphicsUnit]::Pixel); } finally { $g.Dispose() }; $dst.Save($tmp,[Drawing.Imaging.ImageFormat]::Png); } finally { $dst.Dispose() } } finally { $crop.Dispose() } } finally { $src.Dispose() }; Move-Item -LiteralPath $tmp -Destination $path -Force } } catch { Write-Error $_; exit 1 }"
+          "$ErrorActionPreference='Stop'; Add-Type -AssemblyName System.Drawing; try { Get-ChildItem '%IA_TARGET%\textures\font\hud' -Filter 'mission_*.png' | ForEach-Object { $path=$_.FullName; $tmp=$path + '.cropped.tmp.png'; $src=[Drawing.Bitmap]::new($path); try { $cropWidth=[Math]::Min(176,$src.Width); $cropHeight=[Math]::Min(84,$src.Height); $rect=[Drawing.Rectangle]::new(0,0,$cropWidth,$cropHeight); $crop=$src.Clone($rect,$src.PixelFormat); try { $crop.Save($tmp,[Drawing.Imaging.ImageFormat]::Png); } finally { $crop.Dispose() } } finally { $src.Dispose() }; Move-Item -LiteralPath $tmp -Destination $path -Force } } catch { Write-Error $_; exit 1 }"
         if errorlevel 1 (
-            echo [SpaceSurvival] Mission HUD normalization failed.
+            echo [SpaceSurvival] Mission HUD crop failed.
             exit /b 1
         )
     )
