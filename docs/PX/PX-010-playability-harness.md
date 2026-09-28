@@ -313,3 +313,17 @@ Planned direction for a later ticket:
 The previous 112x54 destructive downsample was removed.
 
 During Windows deploy the source mission HUD image is now only cropped to its native visible 176x84 panel bounds. ItemsAdder renders that panel at `scale_ratio: 84`, avoiding the prior pre-resize blur.
+
+
+## PX-010.5 HUD size + ItemsAdder compatibility correction
+
+Windows visual validation showed that the native 176x84 HUD panel was readable but too large at `scale_ratio: 84`.
+
+Correction:
+
+- source HUD panel remains 176x84 (no destructive 112x54 pre-resize),
+- ItemsAdder display scale returns to `scale_ratio: 54`,
+- vertical position returns to `y_position: 52`,
+- therefore the HUD is physically smaller while retaining more source pixels than the previous blurry 112x54 implementation.
+
+ItemsAdder pack generation also reported unsupported/problematic vanilla base materials for CLOCK, SPYGLASS, COMPASS, and RECOVERY_COMPASS. SpaceSurvival custom-item configs now use the stable PAPER base material for those custom models while keeping their custom IDs/resources and gameplay behavior unchanged.
