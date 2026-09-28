@@ -136,18 +136,6 @@ public final class ResourceWorldService {
             units += amount;
         }
 
-        if (random.nextDouble() < 0.28) {
-            inventory.setItem(slot++, items.create(ResourceType.BIO_SAMPLES, 1));
-            stacks++;
-            units++;
-        }
-
-        if (random.nextDouble() < 0.18) {
-            inventory.setItem(slot, items.create(ResourceType.DATA_CORES, 1));
-            stacks++;
-            units++;
-        }
-
         return new FillResult(stacks, units);
     }
 
