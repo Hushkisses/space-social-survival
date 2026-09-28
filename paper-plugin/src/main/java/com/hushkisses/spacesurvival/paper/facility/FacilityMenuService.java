@@ -39,10 +39,12 @@ public final class FacilityMenuService implements Listener {
 
     public void open(Player player, FacilityId facilityId) {
         var facility = plugin.facilityRegistry().require(facilityId);
-        List<FacilityActionDefinition> actions =
-                plugin.facilityActionRegistry().forFacility(facilityId);
+        List<FacilityActionDefinition> actions = visibleActions(
+                facilityId,
+                plugin.facilityActionRegistry().forFacility(facilityId)
+        );
 
-        int size = 36;
+        int size = 27;
         FacilityMenuHolder holder = new FacilityMenuHolder(
                 facilityId,
                 size,
@@ -55,23 +57,9 @@ public final class FacilityMenuService implements Listener {
                 facility.definition().description(),
                 facility.status()
         ));
-        inventory.setItem(1, metricsItem(facilityId));
-        inventory.setItem(2, problemItem(facilityId));
-        inventory.setItem(3, sharedResourcesItem(facilityId));
-        inventory.setItem(4, carriedResourcesItem(player, facilityId));
-        inventory.setItem(5, equipmentSummaryItem(player, actions));
-        inventory.setItem(8, item(
-                Material.KNOWLEDGE_BOOK,
-                "§b작업 안내",
-                List.of(
-                        "§7초록/기본 아이콘: 현재 실행 가능",
-                        "§7별 아이콘: 직업 고급 기능",
-                        "§7장벽 아이콘: 조건 부족",
-                        "§8소지 자원은 화물실 입고 후 공용 자원으로 사용됩니다."
-                )
-        ));
+        inventory.setItem(4, problemItem(facilityId));
 
-        int slot = 18;
+        int slot = 9;
         for (FacilityActionDefinition action : actions) {
             if (slot >= size) break;
 
@@ -124,16 +112,64 @@ public final class FacilityMenuService implements Listener {
                     (result.success() ? "§a[시설] §f" : "§c[시설] §f")
                             + result.message()
             );
-            plugin.matchHudService().flashAction(
-                    player,
-                    result.success(),
-                    result.message()
-            );
 
             if (!plugin.meetingGuiService().hasActiveVote()) {
                 open(player, facilityId);
             }
         });
+    }
+
+    private static List<FacilityActionDefinition> visibleActions(
+            FacilityId facilityId,
+            List<FacilityActionDefinition> actions
+    ) {
+        Set<String> visible = switch (facilityId.value()) {
+            case "bridge" -> Set.of(
+                    "bridge.meeting",
+                    "bridge.return",
+                    "bridge.destination",
+                    "bridge.long_range_comms"
+            );
+            case "engineering" -> Set.of(
+                    "engineering.power",
+                    "engineering.engine",
+                    "engineering.repair",
+                    "engineering.diagnose",
+                    "engineering.redistribute",
+                    "engineering.advanced_repair"
+            );
+            case "medical" -> Set.of(
+                    "medical.treat",
+                    "medical.clear_status",
+                    "medical.infection_test",
+                    "medical.decontaminate",
+                    "medical.precise_test",
+                    "medical.advanced_treatment",
+                    "medical.suppress_infection"
+            );
+            case "research" -> Set.of(
+                    "research.precise_bio",
+                    "research.alien_life",
+                    "research.event_cause"
+            );
+            case "cargo" -> Set.of(
+                    "cargo.deposit",
+                    "cargo.withdraw_repair",
+                    "cargo.process",
+                    "cargo.repair",
+                    "cargo.efficient_process"
+            );
+            case "habitation" -> Set.of(
+                    "habitation.supply",
+                    "habitation.oxygen",
+                    "habitation.maintenance"
+            );
+            default -> Set.of();
+        };
+
+        return actions.stream()
+                .filter(action -> visible.contains(action.id().value()))
+                .toList();
     }
 
     private ItemStack metricsItem(FacilityId facilityId) {
@@ -418,7 +454,7 @@ public final class FacilityMenuService implements Listener {
         return item(
                 material,
                 "§f" + name + " §7— " + statusName(status),
-                List.of("§7" + description)
+                List.of("§8필요한 작업만 아래에서 선택하십시오.")
         );
     }
 
