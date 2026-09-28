@@ -13,64 +13,64 @@ font_images:
   mission_select_role:
     path: font/hud/mission_select_role.png
     suggest_in_command: false
-    scale_ratio: 54
-    y_position: 52
+    scale_ratio: 84
+    y_position: 82
     shadow:
       enabled: false
 
   mission_wait_crew:
     path: font/hud/mission_wait_crew.png
     suggest_in_command: false
-    scale_ratio: 54
-    y_position: 52
+    scale_ratio: 84
+    y_position: 82
     shadow:
       enabled: false
 
   mission_power:
     path: font/hud/mission_power.png
     suggest_in_command: false
-    scale_ratio: 54
-    y_position: 52
+    scale_ratio: 84
+    y_position: 82
     shadow:
       enabled: false
 
   mission_hull:
     path: font/hud/mission_hull.png
     suggest_in_command: false
-    scale_ratio: 54
-    y_position: 52
+    scale_ratio: 84
+    y_position: 82
     shadow:
       enabled: false
 
   mission_reactor:
     path: font/hud/mission_reactor.png
     suggest_in_command: false
-    scale_ratio: 54
-    y_position: 52
+    scale_ratio: 84
+    y_position: 82
     shadow:
       enabled: false
 
   mission_oxygen:
     path: font/hud/mission_oxygen.png
     suggest_in_command: false
-    scale_ratio: 54
-    y_position: 52
+    scale_ratio: 84
+    y_position: 82
     shadow:
       enabled: false
 
   mission_return:
     path: font/hud/mission_return.png
     suggest_in_command: false
-    scale_ratio: 54
-    y_position: 52
+    scale_ratio: 84
+    y_position: 82
     shadow:
       enabled: false
 
   mission_final_hold:
     path: font/hud/mission_final_hold.png
     suggest_in_command: false
-    scale_ratio: 54
-    y_position: 52
+    scale_ratio: 84
+    y_position: 82
     shadow:
       enabled: false
 
