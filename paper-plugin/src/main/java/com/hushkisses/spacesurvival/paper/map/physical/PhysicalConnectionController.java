@@ -27,21 +27,42 @@ public final class PhysicalConnectionController {
             Location firstPad,
             Location secondPad
     ) {
+        register(
+                id,
+                connection,
+                List.of(firstPad),
+                List.of(secondPad)
+        );
+    }
+
+    public void register(
+            int id,
+            GeneratedConnection connection,
+            Collection<Location> firstPads,
+            Collection<Location> secondPads
+    ) {
         if (connections.containsKey(id)) {
             throw new IllegalArgumentException("Duplicate physical connection id: " + id);
         }
+        if (firstPads == null || firstPads.isEmpty()
+                || secondPads == null || secondPads.isEmpty()) {
+            throw new IllegalArgumentException("Physical connection pads must not be empty");
+        }
+
+        List<Location> first = firstPads.stream().map(Location::clone).toList();
+        List<Location> second = secondPads.stream().map(Location::clone).toList();
 
         RuntimeConnection runtime = new RuntimeConnection(
                 id,
                 Objects.requireNonNull(connection, "connection"),
-                firstPad.clone(),
-                secondPad.clone(),
+                first,
+                second,
                 ConnectionState.OPEN
         );
 
         connections.put(id, runtime);
-        pads.put(PortalBlockKey.of(firstPad), id);
-        pads.put(PortalBlockKey.of(secondPad), id);
+        first.forEach(pad -> pads.put(PortalBlockKey.of(pad), id));
+        second.forEach(pad -> pads.put(PortalBlockKey.of(pad), id));
         render(runtime);
     }
 
@@ -125,8 +146,8 @@ public final class PhysicalConnectionController {
             case LOCKED, DISABLED -> Material.RED_CONCRETE;
         };
 
-        setIndicator(runtime.firstPad, indicator);
-        setIndicator(runtime.secondPad, indicator);
+        runtime.firstPads.forEach(pad -> setIndicator(pad, indicator));
+        runtime.secondPads.forEach(pad -> setIndicator(pad, indicator));
     }
 
     private static void setIndicator(Location pad, Material material) {
@@ -141,21 +162,21 @@ public final class PhysicalConnectionController {
     private static final class RuntimeConnection {
         private final int id;
         private final GeneratedConnection connection;
-        private final Location firstPad;
-        private final Location secondPad;
+        private final List<Location> firstPads;
+        private final List<Location> secondPads;
         private ConnectionState state;
 
         private RuntimeConnection(
                 int id,
                 GeneratedConnection connection,
-                Location firstPad,
-                Location secondPad,
+                List<Location> firstPads,
+                List<Location> secondPads,
                 ConnectionState state
         ) {
             this.id = id;
             this.connection = connection;
-            this.firstPad = firstPad;
-            this.secondPad = secondPad;
+            this.firstPads = List.copyOf(firstPads);
+            this.secondPads = List.copyOf(secondPads);
             this.state = state;
         }
     }
