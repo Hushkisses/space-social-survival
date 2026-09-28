@@ -55,16 +55,6 @@ if exist "%IA_SOURCE%" (
         del /Q "%%~fF"
     )
 
-    if exist "%IA_TARGET%\textures\font\hud" (
-        echo [SpaceSurvival] Cropping mission HUD images to native panel bounds...
-        powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-          "$ErrorActionPreference='Stop'; Add-Type -AssemblyName System.Drawing; try { Get-ChildItem '%IA_TARGET%\textures\font\hud' -Filter 'mission_*.png' | ForEach-Object { $path=$_.FullName; $tmp=$path + '.cropped.tmp.png'; $src=[Drawing.Bitmap]::new($path); try { $cropWidth=[Math]::Min(176,$src.Width); $cropHeight=[Math]::Min(84,$src.Height); $rect=[Drawing.Rectangle]::new(0,0,$cropWidth,$cropHeight); $crop=$src.Clone($rect,$src.PixelFormat); try { $crop.Save($tmp,[Drawing.Imaging.ImageFormat]::Png); } finally { $crop.Dispose() } } finally { $src.Dispose() }; Move-Item -LiteralPath $tmp -Destination $path -Force } } catch { Write-Error $_; exit 1 }"
-        if errorlevel 1 (
-            echo [SpaceSurvival] Mission HUD crop failed.
-            exit /b 1
-        )
-    )
-
     echo [SpaceSurvival] ItemsAdder content sync complete.
 )
 
