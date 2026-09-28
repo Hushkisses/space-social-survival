@@ -149,8 +149,7 @@ public final class FacilityMenuService implements Listener {
             );
             case "research" -> Set.of(
                     "research.precise_bio",
-                    "research.alien_life",
-                    "research.event_cause"
+                    "research.alien_life"
             );
             case "cargo" -> Set.of(
                     "cargo.deposit",
