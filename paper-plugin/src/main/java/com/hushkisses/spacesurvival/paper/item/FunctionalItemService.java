@@ -58,7 +58,7 @@ public final class FunctionalItemService {
 
     public static String purpose(FunctionalItemType type) {
         return switch (type) {
-            case ENGINEERING_MULTITOOL -> "정밀 진단·전력 재배분·기관계 고급 정비에 필요합니다.";
+            case ENGINEERING_MULTITOOL -> "선체 균열 수리·정밀 진단·전력 재배분·기관계 고급 정비에 사용합니다.";
             case MEDICAL_SCANNER -> "정밀 감염 검사·고급 치료·감염 억제에 필요합니다.";
             case SECURITY_KEYCARD -> "보안 시스템과 제한 통로 접근에 사용하는 인증 장비입니다.";
             case RESEARCH_SCANNER -> "정밀 생체 분석·외계 생명체 연구·사건 원인 분석에 필요합니다.";
@@ -69,7 +69,7 @@ public final class FunctionalItemService {
 
     public static String usedAt(FunctionalItemType type) {
         return switch (type) {
-            case ENGINEERING_MULTITOOL -> "기관실";
+            case ENGINEERING_MULTITOOL -> "기관실 / 선체 균열";
             case MEDICAL_SCANNER -> "의료실";
             case SECURITY_KEYCARD -> "보안 통로 / 보안 집행";
             case RESEARCH_SCANNER -> "연구실";
