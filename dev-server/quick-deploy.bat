@@ -56,6 +56,10 @@ if exist "%IA_SOURCE%" (
     )
 
     echo [SpaceSurvival] ItemsAdder content sync complete.
+    call dev-server\scan-itemsadder-conflicts.bat
+    if errorlevel 3 (
+        echo [SpaceSurvival] ItemsAdder conflict scan failed unexpectedly.
+    )
 )
 
 echo [SpaceSurvival] Deploy complete.
