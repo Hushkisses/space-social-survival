@@ -3,9 +3,11 @@ package com.hushkisses.spacesurvival.paper.hull;
 import com.hushkisses.spacesurvival.integration.itemsadder.ItemsAdderBridge;
 import com.hushkisses.spacesurvival.map.tile.TileId;
 import com.hushkisses.spacesurvival.paper.SpaceSurvivalPlugin;
+import com.hushkisses.spacesurvival.paper.item.FunctionalItemType;
 import com.hushkisses.spacesurvival.paper.map.physical.PhysicalShipSnapshot;
 import com.hushkisses.spacesurvival.player.PlayerId;
 import com.hushkisses.spacesurvival.resource.ResourceType;
+import com.hushkisses.spacesurvival.role.RoleCapability;
 import com.hushkisses.spacesurvival.ship.ShipMetric;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -150,16 +152,21 @@ public final class HullBreachService implements Listener {
             return;
         }
 
-        if (!plugin.resourcePhysicalItemService().remove(
-                player,
-                ResourceType.REPAIR_PARTS,
-                1
-        )) {
-            player.sendMessage("§c[선체 균열] §f현장 수리에는 소지 중인 수리 부품 1개가 필요합니다.");
-            player.sendActionBar(Component.text(
-                    "수리 부품이 없습니다 · 화물실에서 현장 수리 부품을 수령하십시오"
-            ));
-            return;
+        boolean engineerToolRepair = canRepairWithEngineerTool(player);
+        boolean partRepair = false;
+
+        if (!engineerToolRepair) {
+            partRepair = plugin.resourcePhysicalItemService().remove(
+                    player,
+                    ResourceType.REPAIR_PARTS,
+                    1
+            );
+            if (!partRepair) {
+                player.sendMessage(
+                        "§c[선체 균열] §f엔지니어 멀티툴 또는 소지 중인 수리 부품 1개가 필요합니다."
+                );
+                return;
+            }
         }
 
         breach.repaired = true;
@@ -180,7 +187,9 @@ public final class HullBreachService implements Listener {
 
         plugin.getServer().broadcastMessage(
                 "§a[선체] §f" + roomName
-                        + " 균열 봉합 완료 · 선체 "
+                        + " 균열 수리 완료 · "
+                        + (engineerToolRepair ? "엔지니어 멀티툴" : "수리 부품 1개")
+                        + " · 선체 "
                         + nextHull
                         + "%"
         );
@@ -192,10 +201,35 @@ public final class HullBreachService implements Listener {
         );
 
         plugin.telemetryService().increment("hull.breach.repaired");
+        plugin.telemetryService().increment(
+                engineerToolRepair
+                        ? "hull.breach.repaired.engineer_tool"
+                        : "hull.breach.repaired.repair_part"
+        );
         plugin.telemetryService().event(
                 "hull_repair",
-                breach.tileId.value() + ":" + nextHull
+                breach.tileId.value()
+                        + ":"
+                        + (engineerToolRepair ? "engineer_tool" : "repair_part")
+                        + ":"
+                        + nextHull
         );
+    }
+
+    private boolean canRepairWithEngineerTool(Player player) {
+        PlayerId playerId = PlayerId.of(player.getUniqueId());
+
+        boolean engineerCapability = plugin.roleSelectionService()
+                .selectedRole(playerId)
+                .map(plugin.roleRegistry()::require)
+                .map(role -> role.capabilities().contains(RoleCapability.ADVANCED_REPAIR))
+                .orElse(false);
+
+        return engineerCapability
+                && plugin.functionalItemService().has(
+                        player,
+                        FunctionalItemType.ENGINEERING_MULTITOOL
+                );
     }
 
     private void spawnBreach(
@@ -226,7 +260,7 @@ public final class HullBreachService implements Listener {
                 Component.text("⚠ 선체 균열 #" + ordinal, NamedTextColor.RED)
                         .append(Component.newline())
                         .append(Component.text(
-                                "수리 부품 1개 · 우클릭",
+                                "엔지니어 멀티툴 또는 수리 부품 1개 · 우클릭",
                                 NamedTextColor.YELLOW
                         ))
         );

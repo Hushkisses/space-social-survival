@@ -63,6 +63,10 @@ public final class PhysicalSanctionService {
             case EJECT -> eject(target);
         }
 
+        plugin.telemetryService().increment("sanction.physical.total");
+        plugin.telemetryService().increment(
+                "sanction.physical." + choice.sanction().name().toLowerCase(java.util.Locale.ROOT)
+        );
         plugin.telemetryService().event(
                 "sanction.physical",
                 choice.sanction().name() + ":" + target.getName()

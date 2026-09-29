@@ -52,7 +52,7 @@ items:
 
   medical_scanner:
     name: "의료 스캐너"
-    material: CLOCK
+    material: PAPER
     graphics:
       texture: item/medical_scanner
 
@@ -64,19 +64,19 @@ items:
 
   research_scanner:
     name: "연구 스캐너"
-    material: SPYGLASS
+    material: PAPER
     graphics:
       texture: item/research_scanner
 
   radio:
     name: "장거리 무전기"
-    material: COMPASS
+    material: PAPER
     graphics:
       texture: item/radio
 
   cargo_scanner:
     name: "화물 스캐너"
-    material: RECOVERY_COMPASS
+    material: PAPER
     graphics:
       texture: item/cargo_scanner
 

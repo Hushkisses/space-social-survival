@@ -15,6 +15,7 @@ import org.bukkit.*;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.Rotatable;
 import org.bukkit.block.data.type.Light;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -83,6 +84,7 @@ public final class PaperShipWorldService {
         World world = resolveWorld();
         normalizeWorld(world);
         clearLegacyDisplays(world);
+        clearLooseItems(world);
         clearBuildArea(world);
 
         terminals.clear();
@@ -170,16 +172,16 @@ public final class PaperShipWorldService {
         for (RenderedConnection rendered : renderedConnections) {
             GeneratedConnection connection = rendered.connection();
 
-            carveDoorway(rendered.firstDoor().threshold());
-            carveDoorway(rendered.secondDoor().threshold());
-            renderConnectionThreshold(rendered.firstDoor().threshold());
-            renderConnectionThreshold(rendered.secondDoor().threshold());
+            carveDoorway(rendered.firstDoor());
+            carveDoorway(rendered.secondDoor());
+            renderConnectionThreshold(rendered.firstDoor());
+            renderConnectionThreshold(rendered.secondDoor());
 
             connections.register(
                     connectionId++,
                     connection,
-                    rendered.firstDoor().threshold(),
-                    rendered.secondDoor().threshold()
+                    doorwayThresholds(rendered.firstDoor()),
+                    doorwayThresholds(rendered.secondDoor())
             );
 
             routeMarkers.put(
@@ -396,6 +398,27 @@ public final class PaperShipWorldService {
 
         normalizeWorld(world);
         return world;
+    }
+
+    private static void clearLooseItems(World world) {
+        int minX = CompactSingleDeckLayoutPlanner.SHIP_MIN_X - 8;
+        int maxX = CompactSingleDeckLayoutPlanner.SHIP_MAX_X + 8;
+        int minZ = CompactSingleDeckLayoutPlanner.SHIP_MIN_Z - 8;
+        int maxZ = CompactSingleDeckLayoutPlanner.SHIP_MAX_Z + 8;
+        int minY = FLOOR_Y - ENGINEERING_PIT_DEPTH - 4;
+        int maxY = FLOOR_Y + MAX_INTERIOR_HEIGHT + 4;
+
+        world.getEntitiesByClass(Item.class).stream()
+                .filter(item -> {
+                    Location location = item.getLocation();
+                    return location.getX() >= minX
+                            && location.getX() <= maxX
+                            && location.getY() >= minY
+                            && location.getY() <= maxY
+                            && location.getZ() >= minZ
+                            && location.getZ() <= maxZ;
+                })
+                .forEach(Item::remove);
     }
 
     private static void clearBuildArea(World world) {
@@ -1038,14 +1061,18 @@ public final class PaperShipWorldService {
                 Location threshold = new Location(world, maxX, FLOOR_Y + 1, centerZ);
                 return new Doorway(
                         threshold,
-                        new PhysicalDeckCell(maxX + 1, FLOOR_Y, centerZ)
+                        new PhysicalDeckCell(maxX + 1, FLOOR_Y, centerZ),
+                        0,
+                        1
                 );
             }
 
             Location threshold = new Location(world, from.minX(), FLOOR_Y + 1, centerZ);
             return new Doorway(
                     threshold,
-                    new PhysicalDeckCell(from.minX() - 1, FLOOR_Y, centerZ)
+                    new PhysicalDeckCell(from.minX() - 1, FLOOR_Y, centerZ),
+                    0,
+                    1
             );
         }
 
@@ -1053,14 +1080,18 @@ public final class PaperShipWorldService {
             Location threshold = new Location(world, centerX, FLOOR_Y + 1, maxZ);
             return new Doorway(
                     threshold,
-                    new PhysicalDeckCell(centerX, FLOOR_Y, maxZ + 1)
+                    new PhysicalDeckCell(centerX, FLOOR_Y, maxZ + 1),
+                    1,
+                    0
             );
         }
 
         Location threshold = new Location(world, centerX, FLOOR_Y + 1, from.minZ());
         return new Doorway(
                 threshold,
-                new PhysicalDeckCell(centerX, FLOOR_Y, from.minZ() - 1)
+                new PhysicalDeckCell(centerX, FLOOR_Y, from.minZ() - 1),
+                1,
+                0
         );
     }
 
@@ -1289,28 +1320,51 @@ public final class PaperShipWorldService {
         return false;
     }
 
-    private static void carveDoorway(Location threshold) {
-        if (threshold.getWorld() == null) return;
+    private static List<Location> doorwayThresholds(Doorway doorway) {
+        Location center = doorway.threshold();
+        World world = center.getWorld();
+        if (world == null) {
+            return List.of(center);
+        }
 
-        int x = threshold.getBlockX();
-        int z = threshold.getBlockZ();
-        int baseY = threshold.getBlockY();
+        ArrayList<Location> result = new ArrayList<>(3);
+        for (int offset = -1; offset <= 1; offset++) {
+            result.add(new Location(
+                    world,
+                    center.getBlockX() + doorway.lateralX() * offset,
+                    center.getBlockY(),
+                    center.getBlockZ() + doorway.lateralZ() * offset
+            ));
+        }
+        return List.copyOf(result);
+    }
 
-        for (int y = baseY; y <= baseY + 1; y++) {
-            threshold.getWorld().getBlockAt(x, y, z).setType(Material.AIR, false);
+    private static void carveDoorway(Doorway doorway) {
+        for (Location threshold : doorwayThresholds(doorway)) {
+            if (threshold.getWorld() == null) continue;
+
+            int x = threshold.getBlockX();
+            int z = threshold.getBlockZ();
+            int baseY = threshold.getBlockY();
+
+            for (int y = baseY; y <= baseY + 2; y++) {
+                threshold.getWorld().getBlockAt(x, y, z).setType(Material.AIR, false);
+            }
         }
     }
 
-    private static void renderConnectionThreshold(Location threshold) {
-        World world = threshold.getWorld();
-        if (world == null) return;
+    private static void renderConnectionThreshold(Doorway doorway) {
+        for (Location threshold : doorwayThresholds(doorway)) {
+            World world = threshold.getWorld();
+            if (world == null) continue;
 
-        world.getBlockAt(
-                threshold.getBlockX(),
-                threshold.getBlockY() - 1,
-                threshold.getBlockZ()
-        ).setType(Material.GOLD_BLOCK, false);
-        threshold.getBlock().setType(Material.LIGHT_WEIGHTED_PRESSURE_PLATE, false);
+            world.getBlockAt(
+                    threshold.getBlockX(),
+                    threshold.getBlockY() - 1,
+                    threshold.getBlockZ()
+            ).setType(Material.GOLD_BLOCK, false);
+            threshold.getBlock().setType(Material.LIGHT_WEIGHTED_PRESSURE_PLATE, false);
+        }
     }
 
     private static Location markerLocation(World world, PhysicalDeckCell cell) {
@@ -1380,7 +1434,9 @@ public final class PaperShipWorldService {
 
     private record Doorway(
             Location threshold,
-            PhysicalDeckCell outside
+            PhysicalDeckCell outside,
+            int lateralX,
+            int lateralZ
     ) {
     }
 

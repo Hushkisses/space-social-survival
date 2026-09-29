@@ -147,7 +147,7 @@ public final class LobbyReadyService implements Listener {
 
         LobbyJoinResult result = plugin.lobbyService().join(playerId);
         if (result == LobbyJoinResult.FULL) {
-            player.sendMessage("§c[우주 생존] 대기실 정원이 가득 찼습니다.");
+            player.sendMessage("§c[람몽어스] 대기실 정원이 가득 찼습니다.");
             return;
         }
         if (result == LobbyJoinResult.MATCH_ALREADY_STARTED) {
@@ -157,7 +157,7 @@ public final class LobbyReadyService implements Listener {
         prepareWaitingPlayer(player);
 
         LobbySnapshot snapshot = plugin.lobbyService().snapshot();
-        player.sendMessage("§6[우주 생존] §f대기실에 입장했습니다.");
+        player.sendMessage("§6[람몽어스] §f대기실에 입장했습니다.");
         player.sendMessage(
                 "§7초록색 준비 구역으로 이동하십시오. "
                         + snapshot.playerCount()
@@ -234,7 +234,7 @@ public final class LobbyReadyService implements Listener {
         if (countdownRemaining < 0) {
             countdownRemaining = COUNTDOWN_SECONDS;
             plugin.getServer().broadcastMessage(
-                    "§a[우주 생존] §f모든 승무원이 준비되었습니다. "
+                    "§a[람몽어스] §f모든 승무원이 준비되었습니다. "
                             + COUNTDOWN_SECONDS
                             + "초 후 자동으로 시작합니다."
             );
@@ -299,7 +299,7 @@ public final class LobbyReadyService implements Listener {
                             + exception.getMessage()
             );
             plugin.getServer().broadcastMessage(
-                    "§c[우주 생존] 자동 시작에 실패했습니다. 관리자에게 알려주십시오."
+                    "§c[람몽어스] 자동 시작에 실패했습니다. 관리자에게 알려주십시오."
             );
         }
     }
@@ -307,7 +307,7 @@ public final class LobbyReadyService implements Listener {
     private void resetCountdown(boolean announceCancellation) {
         if (announceCancellation) {
             plugin.getServer().broadcastMessage(
-                    "§e[우주 생존] §f준비 인원이 구역을 벗어나 시작 카운트다운이 취소되었습니다."
+                    "§e[람몽어스] §f준비 인원이 구역을 벗어나 시작 카운트다운이 취소되었습니다."
             );
         }
 

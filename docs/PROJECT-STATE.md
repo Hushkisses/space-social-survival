@@ -24,14 +24,16 @@ Player Comprehension / Playability
 - PT-006 through PT-010 First Multiplayer Playtest Build — COMPLETE_FOR_PLAYTEST
 
 ## Current active development
-- PX-008 Meeting UX
+- PX-010 1–3 Player End-to-End Playability Harness
 - Status: IMPLEMENTED / VALIDATION_PENDING
-- Development branch: dev/PX-008-010-social-terminal-playability
-- Base branch: dev/PX-001-004-player-comprehension
-- Draft PR: #26
-- Parent PX-001~007 / PR #24 remains IMPLEMENTED / VALIDATION_PENDING and must not be skipped during merge ordering.
+- Development branch: `dev/PX-010-playability-harness`
+- Base branch: validated `dev/PX-009-terminal-state-ux`
+- Draft PR: #29
+- GitHub Actions full test/build: SUCCESS
+- PX-009 Windows/Paper validation passed on 2026-09-27.
+- Parent PR chain (#23 -> #24 -> #26 -> #27 -> #28) remains open and merge ordering must not be skipped.
 - Details:
-  - docs/PX/PX-008-meeting-ux.md
+  - docs/PX/PX-010-playability-harness.md
 
 ## Parent PX batch
 - PX-001 through PX-007 Player Comprehension + World Readability
@@ -246,6 +248,62 @@ Player Comprehension / Playability
 - Do not merge PR #28 ahead of its parent PR validation/merge order.
 - Details: `docs/PX/PX-009-terminal-state-ux.md`
 
+## PX-010 1–3 Player End-to-End Playability Harness
+- Status: IMPLEMENTED / VALIDATION_PENDING
+- Development branch: `dev/PX-010-playability-harness`
+- Draft PR: #29
+- GitHub Actions full test/build: SUCCESS
+- non-production `/space playability start [seed]` accepts only 1–3 participants and uses the real match flow with the existing minimum-player bypass
+- `/space playability check` reports runtime/telemetry evidence for:
+  - onboarding
+  - role selection
+  - private base objective
+  - starter equipment
+  - physical/logical ship navigation
+  - resource caches
+  - successful facility use
+  - runtime incident
+  - resolved meeting
+  - death/meaningful sanction
+  - return/result
+  - telemetry file save
+  - 20-minute runtime gate
+  - reset -> rematch exercise
+- `/space playability reset` and `/space playability save` provide the PX-010 operator workflow
+- existing `director force`, `resource add`, and `return reset <holdSeconds>` tools are reused rather than duplicated
+- qualitative blind-playtest criteria are deliberately not auto-passed by code
+- telemetry snapshot now retains match end time so the 20-minute gate remains measurable after match finish
+- PX-010.1 left mission HUD prototype:
+  - player-facing active UX brand: `람몽어스`
+  - ItemsAdder CUSTOM HUD on the left for role-selection/opening recovery/return guidance
+  - right scoreboard reduced while custom mission HUD is active
+  - vanilla right-sidebar urgent objective remains as fallback
+  - complex facility-damage states deliberately retain the vanilla fallback for this first pass
+  - ItemsAdder assets changed; `/iazip` required for Windows visual validation
+  - first screenshot correction:
+    - left HUD scale/vertical placement reduced
+    - left HUD shifted further left
+    - right sidebar compressed
+    - onboarding/activation chat reduced to remove duplicate guidance
+  - second screenshot correction:
+    - movement room-entry ActionBar no longer overwrites the ItemsAdder mission HUD
+    - custom HUD is explicitly re-sent/recalculated on refresh
+    - mission textures are normalized to 112x54 and rendered at native `scale_ratio: 54`
+    - routine role/PDA/opening narration removed from player chat/actionbar
+    - PX-010 start/reset success output is console-only for player-issued commands
+    - right sidebar title changed to `함선 상태` to avoid duplicate branding
+    - stale dropped items inside the ship envelope are cleared before a new ship render
+  - playtest readability/gameplay pass:
+    - room/module thresholds widened to 3x3 while preserving full-width connection access checks
+    - facility GUI reduced to status + priority problem + meaningful action controls
+    - inventory/status-only facility actions hidden from player menus
+    - hull breaches support repair-part fallback or Engineer + Engineering Multitool repair
+    - bio samples and data cores removed from normal emergency-cache loot pending concrete loops
+    - Data Core sabotage-log recovery recorded as a future direction only; not implemented yet
+    - destructive 112x54 HUD downsample removed; deploy now crops to native 176x84 panel bounds
+- Windows/Paper integrated validation: pending
+- Details: `docs/PX/PX-010-playability-harness.md`
+
 ## PX-008 Meeting UX
 - GitHub Actions full test/build: SUCCESS (Build #815)
 - meeting is now staged as discussion -> voting -> result instead of opening the vote GUI immediately
@@ -259,9 +317,10 @@ Player Comprehension / Playability
 - Windows/Paper integrated validation: pending
 
 ## Next after current validation stack
-- PX-009 Windows/Paper validation: PASS
-- remaining parent-stack validation/merge ordering is preserved
-- PX-010 1-3 Player End-to-End Playability Harness
+- validate PX-010 on Windows/Paper
+- run the first 1–3 player blind 20-minute playability session
+- review automatic checklist + qualitative observations
+- preserve parent-stack validation/merge ordering
 - do not expand roles/objectives/events/scenarios for content volume before the PX exit gate
 
 ## Environment

@@ -33,6 +33,8 @@ public final class MatchOrchestrator {
 
     private MatchLifecycleStatus status = MatchLifecycleStatus.IDLE;
     private MatchSetupSnapshot setupSnapshot;
+    private int developmentStartCount;
+    private int resetCount;
 
     public MatchOrchestrator(
             SpaceSurvivalPlugin plugin,
@@ -164,6 +166,11 @@ public final class MatchOrchestrator {
         plugin.telemetryService().add("initial.ship.hull", openingShip.hull());
         plugin.telemetryService().add("initial.ship.reactor", openingShip.reactor());
         plugin.telemetryService().event("match", "briefing");
+        plugin.telemetryService().add("playability.onboarding.shown", players.size());
+        if (developmentBypassMinimum) {
+            plugin.telemetryService().event("playability", "development-harness");
+            developmentStartCount++;
+        }
 
         for (PlayerId playerId : players) {
             Player online = plugin.getServer().getPlayer(playerId.value());
@@ -173,27 +180,6 @@ public final class MatchOrchestrator {
             online.setGameMode(GameMode.ADVENTURE);
             online.teleportAsync(ship.bridgeSpawn());
             plugin.roleSelectionUi().giveMenuItem(online);
-
-            online.sendTitle(
-                    "§c긴급 귀환 임무",
-                    "§f직업을 선택하십시오",
-                    5,
-                    50,
-                    10
-            );
-            online.sendMessage("§6[상황] §f" + scenarioDefinition.publicBriefing());
-            online.sendMessage("§6[공통 목표] §f함선을 복구하고 귀환하십시오.");
-            online.sendMessage(
-                    "§7공개된 초기 문제 "
-                            + initialEventCount
-                            + "건 · 함선 모듈 "
-                            + ship.generatedMap().tileIds().size()
-                            + "개"
-            );
-            online.sendMessage(
-                    "§e직업 후보 3개 중 하나를 선택하십시오. "
-                            + "창을 닫아도 핫바의 네더별을 우클릭하면 다시 열립니다."
-            );
 
             plugin.roleSelectionUi().open(online);
         }
@@ -228,14 +214,22 @@ public final class MatchOrchestrator {
 
         plugin.starterKitService().giveRoleKits();
         plugin.crewPdaService().giveToParticipants();
+
+        int participantCount = plugin.lobbyService().snapshot().playerCount();
+        long privateObjectives = plugin.lobbyService().snapshot().players().stream()
+                .filter(playerId -> plugin.objectiveEngine()
+                        .objective(playerId, com.hushkisses.spacesurvival.objective.ObjectiveSlot.BASE)
+                        .isPresent())
+                .count();
+        plugin.telemetryService().add("playability.role.selected", participantCount);
+        plugin.telemetryService().add("playability.starter.granted", participantCount);
+        plugin.telemetryService().add("playability.private_objective.available", privateObjectives);
+
         plugin.gameRuntimeService().start();
         plugin.incidentDirector().start(setupSnapshot.seed());
         plugin.telemetryService().event("match", "active");
         status = MatchLifecycleStatus.ACTIVE;
 
-        plugin.getServer().broadcastMessage(
-                "§a[우주 생존] §f모든 승무원의 직업 선택이 완료되어 임무가 시작되었습니다."
-        );
         return true;
     }
 
@@ -252,6 +246,7 @@ public final class MatchOrchestrator {
     }
 
     public void reset() {
+        resetCount++;
         plugin.incidentDirector().stop();
         plugin.telemetryService().finish("reset");
         if (plugin.gameRuntimeService().isRunning()) {
@@ -273,6 +268,13 @@ public final class MatchOrchestrator {
         return Optional.ofNullable(setupSnapshot);
     }
 
+    public int developmentStartCount() {
+        return developmentStartCount;
+    }
+
+    public int resetCount() {
+        return resetCount;
+    }
 
     private void applyStartingRecoveryState(MatchSetupConfig config) {
         plugin.shipState().set(ShipMetric.POWER, config.startingPower());

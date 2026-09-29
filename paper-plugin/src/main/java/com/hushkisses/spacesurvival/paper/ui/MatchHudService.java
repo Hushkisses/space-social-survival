@@ -29,11 +29,14 @@ import java.util.*;
 public final class MatchHudService {
 
     private static final String OBJECTIVE_NAME = "space_hud";
+    private static final String MISSION_HUD_ID = "spacesurvival:mission_hud";
+    private static final int MISSION_HUD_X_OFFSET = -220;
 
     private final SpaceSurvivalPlugin plugin;
     private final PaperShipWorldService shipWorldService;
     private final PlayerGuidanceResolver guidanceResolver = new PlayerGuidanceResolver();
     private final Map<UUID, HudBoard> boards = new HashMap<>();
+    private final Map<UUID, String> missionHudStates = new HashMap<>();
 
     private BukkitTask task;
     private BossBar crisisBar;
@@ -50,7 +53,7 @@ public final class MatchHudService {
         if (task != null) return;
 
         crisisBar = Bukkit.createBossBar(
-                "§e함선 상태",
+                "§e람몽어스 · 함선 상태",
                 BarColor.YELLOW,
                 BarStyle.SOLID
         );
@@ -124,16 +127,22 @@ public final class MatchHudService {
             }
 
             activePlayers.add(player.getUniqueId());
+            boolean customMissionHud = renderMissionHud(
+                    player,
+                    missionHudImage(playerId, problem, returnStage)
+            );
             renderScoreboard(
                     player,
                     playerId,
                     crisis,
                     problem,
-                    targetFacility
+                    targetFacility,
+                    customMissionHud
             );
         }
 
         cleanupInactiveBoards(activePlayers);
+        cleanupInactiveMissionHuds(activePlayers);
         renderCrisisBar(crisis, problem, targetFacility, activePlayers);
     }
 
@@ -142,7 +151,8 @@ public final class MatchHudService {
             PlayerId playerId,
             CrisisStage crisis,
             PublicProblem problem,
-            String targetFacility
+            String targetFacility,
+            boolean customMissionHud
     ) {
         HudBoard hud = boards.computeIfAbsent(
                 player.getUniqueId(),
@@ -150,23 +160,24 @@ public final class MatchHudService {
         );
 
         ArrayList<String> lines = new ArrayList<>();
-        lines.add("§7위치 §f" + compact(currentArea(player), 20));
+        lines.add("§7위치 §f" + compact(currentArea(player), 16));
         lines.add(shipMetricLineOne());
         lines.add(shipMetricLineTwo());
-        lines.add("§8────────────");
-        lines.add("§b§l개인 목표");
-        lines.addAll(personalObjectiveLines(playerId));
+        lines.add("§8──────────");
+        lines.add(personalObjectiveCompactLine(playerId));
 
         if (plugin.objectiveEngine().objective(playerId, ObjectiveSlot.SECRET).isPresent()) {
-            lines.add("§d비밀 임무 있음 §8· PDA 확인");
+            lines.add("§d비밀 임무 §8· PDA");
         }
 
-        lines.add("§8────────────§r");
-        lines.add("§e§l긴급 목표");
-        lines.add(priorityColor(crisis) + compact(problem.title(), 26));
-        lines.add("§7목표 §f" + compact(targetFacility, 20));
-        lines.add("§7필요 §f" + compact(problem.need(), 24));
-        lines.add("§8PDA 우클릭 · 상세");
+        if (!customMissionHud) {
+            lines.add("§8──────────§r");
+            lines.add("§e긴급 §f" + compact(problem.title(), 18));
+            lines.add("§7→ §f" + compact(targetFacility, 14)
+                    + " §8· §7" + compact(problem.need(), 14));
+        }
+
+        lines.add("§8PDA 우클릭");
 
         if (!lines.equals(hud.lines)) {
             for (String oldLine : hud.lines) {
@@ -195,7 +206,7 @@ public final class MatchHudService {
         Objective objective = scoreboard.registerNewObjective(
                 OBJECTIVE_NAME,
                 Criteria.DUMMY,
-                Component.text("우주 생존")
+                Component.text("함선 상태")
         );
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
         return new HudBoard(scoreboard, objective);
@@ -250,6 +261,91 @@ public final class MatchHudService {
         }
     }
 
+
+    private boolean renderMissionHud(Player player, String fontImageId) {
+        UUID playerId = player.getUniqueId();
+        String previous = missionHudStates.get(playerId);
+
+        if (fontImageId == null) {
+            if (previous != null) {
+                plugin.itemsAdderBridge().hideCustomHud(player, MISSION_HUD_ID);
+                missionHudStates.remove(playerId);
+            }
+            return false;
+        }
+
+        boolean shown = plugin.itemsAdderBridge().showCustomHud(
+                player,
+                MISSION_HUD_ID,
+                fontImageId,
+                MISSION_HUD_X_OFFSET
+        );
+
+        if (shown) {
+            missionHudStates.put(playerId, fontImageId);
+            return true;
+        }
+
+        plugin.itemsAdderBridge().hideCustomHud(player, MISSION_HUD_ID);
+        missionHudStates.remove(playerId);
+        return false;
+    }
+
+    private String missionHudImage(
+            PlayerId playerId,
+            PublicProblem problem,
+            ReturnStage returnStage
+    ) {
+        if (plugin.roleSelectionService().selectedRole(playerId).isEmpty()) {
+            return "spacesurvival:mission_select_role";
+        }
+
+        if (plugin.matchOrchestrator().status()
+                == com.hushkisses.spacesurvival.paper.match.MatchLifecycleStatus.BRIEFING) {
+            return "spacesurvival:mission_wait_crew";
+        }
+
+        String title = problem.title();
+
+        if (title.startsWith("전력 부족")) {
+            return "spacesurvival:mission_power";
+        }
+        if (title.startsWith("선체 안정도 부족")) {
+            return "spacesurvival:mission_hull";
+        }
+        if (title.startsWith("원자로/엔진 출력 부족")) {
+            return "spacesurvival:mission_reactor";
+        }
+        if (title.startsWith("산소 수준 저하")) {
+            return "spacesurvival:mission_oxygen";
+        }
+
+        return switch (returnStage) {
+            case NAVIGATION, RETURN_PREPARATION -> "spacesurvival:mission_return";
+            case FINAL_HOLD -> "spacesurvival:mission_final_hold";
+            case COMPLETED, FAILED -> null;
+            case SURVIVAL_SYSTEMS -> title.equals("생존 기반 복구 완료")
+                    ? "spacesurvival:mission_return"
+                    : null;
+        };
+    }
+
+    private void cleanupInactiveMissionHuds(Set<UUID> activePlayers) {
+        Iterator<Map.Entry<UUID, String>> iterator = missionHudStates.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<UUID, String> entry = iterator.next();
+            if (activePlayers.contains(entry.getKey())) {
+                continue;
+            }
+
+            Player player = Bukkit.getPlayer(entry.getKey());
+            if (player != null) {
+                plugin.itemsAdderBridge().hideCustomHud(player, MISSION_HUD_ID);
+            }
+            iterator.remove();
+        }
+    }
+
     private void cleanupInactiveBoards(Set<UUID> activePlayers) {
         Iterator<Map.Entry<UUID, HudBoard>> iterator = boards.entrySet().iterator();
 
@@ -275,6 +371,14 @@ public final class MatchHudService {
             }
         }
         boards.clear();
+
+        for (UUID playerId : List.copyOf(missionHudStates.keySet())) {
+            Player player = Bukkit.getPlayer(playerId);
+            if (player != null) {
+                plugin.itemsAdderBridge().hideCustomHud(player, MISSION_HUD_ID);
+            }
+        }
+        missionHudStates.clear();
 
         if (crisisBar != null) {
             crisisBar.removeAll();
@@ -345,18 +449,17 @@ public final class MatchHudService {
         return "§a";
     }
 
-    private List<String> personalObjectiveLines(PlayerId playerId) {
+    private String personalObjectiveCompactLine(PlayerId playerId) {
         var objective = plugin.objectiveEngine()
                 .objective(playerId, ObjectiveSlot.BASE)
                 .orElse(null);
 
         if (objective == null) {
-            return List.of("§7아직 배정되지 않았습니다.");
+            return "§b개인 §7미배정";
         }
 
-        String title = "§f" + compact(objective.definition().title(), 24);
-        String progress = switch (objective.status()) {
-            case ACTIVE -> "§7진행 §f"
+        String state = switch (objective.status()) {
+            case ACTIVE -> "§7"
                     + objective.progress()
                     + "/"
                     + objective.definition().targetProgress();
@@ -364,7 +467,10 @@ public final class MatchHudService {
             case FAILED -> "§c실패";
         };
 
-        return List.of(title, progress);
+        return "§b개인 §f"
+                + compact(objective.definition().title(), 14)
+                + " "
+                + state;
     }
 
     private String currentArea(Player player) {
